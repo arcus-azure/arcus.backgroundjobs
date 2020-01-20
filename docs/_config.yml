@@ -1,0 +1,7 @@
+repository: arcus-azure/arcus.backgroundjobs
+theme: jekyll-theme-slate
+logo: https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png
+title: Arcus Background Jobs
+description: Background job development in Azure with a breeze
+plugins:
+  - jemoji
