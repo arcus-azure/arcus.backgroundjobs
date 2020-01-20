@@ -8,7 +8,7 @@ layout: default
 The `Arcus.BackgroundJobs` library provides a collection of background jobs to securely receive [CloudEvents](https://github.com/cloudevents/spec).
 This allows workloads to asynchronously process event from other components without exposing a public endpoint.
 
-## How This Works
+## How does it work?
 
 An Azure Service Bus Topic resource is required to receive CloudEvents on. CloudEvent messages on this Topic will be processed by a background job.
 
