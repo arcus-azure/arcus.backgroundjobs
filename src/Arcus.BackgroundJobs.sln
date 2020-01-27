@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29409.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.Template", "Arcus.Template\Arcus.Template.csproj", "{D0484271-ABA1-4C2F-B0ED-E207130C1DE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.CloudEvent", "Arcus.Template\Arcus.BackgroundJobs.CloudEvent.csproj", "{D0484271-ABA1-4C2F-B0ED-E207130C1DE8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.Template.Tests.Integration", "Arcus.Template.Tests.Integration\Arcus.Template.Tests.Integration.csproj", "{4DCD1626-66B4-4396-9CD6-951E9CE7BDE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.Tests.Integration", "Arcus.Template.Tests.Integration\Arcus.BackgroundJobs.Tests.Integration.csproj", "{4DCD1626-66B4-4396-9CD6-951E9CE7BDE8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.Template.Tests.Unit", "Arcus.Template.Tests.Unit\Arcus.Template.Tests.Unit.csproj", "{3D66B14F-2CC7-44E6-A53F-1E45F9A6BCF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.Tests.Unit", "Arcus.Template.Tests.Unit\Arcus.BackgroundJobs.Tests.Unit.csproj", "{3D66B14F-2CC7-44E6-A53F-1E45F9A6BCF6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
