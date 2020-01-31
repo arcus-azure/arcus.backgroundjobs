@@ -11,6 +11,8 @@ resources:
       endpoint: arcus-azure
 
 variables:
+  - group: 'Arcus Background Jobs - Integration Testing'
+  - group: 'Arcus Security - Integration Testing'
   - group: 'Build Configuration'
   - group: 'Arcus Background Jobs - .NET'
   - name: 'Project'
