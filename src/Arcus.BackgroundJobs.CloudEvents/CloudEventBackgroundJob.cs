@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Arcus.BackgroundJobs.CloudEvent
+namespace Arcus.BackgroundJobs.CloudEvents
 {
     /// <summary>
     /// Representing a Azure Service Bus Topic message pump that will create and delete a Service Bus Topic subscription during the lifetime of the pump.

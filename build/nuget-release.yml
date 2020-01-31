@@ -12,13 +12,11 @@ resources:
 
 variables:
   - group: 'Build Configuration'
-  # Always use fixed version for .NET Core SDK
-  - name: 'DotNet.Sdk.Version'
-    value: '2.2.105'
+  - group: 'Arcus Background Jobs - .NET'
   - name: 'Project'
-    value: 'Arcus.Template'
-  - name: 'Repository'
-    value: 'azure-arcus/arcus.template'
+    value: 'Arcus.BackgroundJobs'
+  - name: 'GitHub.Repository'
+    value: 'azure-arcus/arcus.backgroundjobs'
   # 'Package.Version' is added as queue-time variable on build in Azure DevOps
 
 stages:
@@ -98,22 +96,20 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - ${{ if not(contains(variables['Build.BuildNumber'], '-')) }}:
-              - template: github/create-release.yml@templates
-                parameters:
-                  repositoryName: '$(Repository)'
-                  releaseNotes: |
-                    Install new version via [NuGet](https://www.nuget.org/packages/$(Project)/$(Build.BuildNumber))
-                    ```shell
-                    PM > Install-Package $(Project) --Version $(Build.BuildNumber)
-                    ```
-          - ${{ if contains(variables['Build.BuildNumber'], '-') }}:
-              - template: create-pre-release.yml@templates
-                parameters:
-                  repositoryName: '$(Repository)'
-                  releaseNotes: |
-                    Install new version via [NuGet](https://www.nuget.org/packages/$(Project)/$(Build.BuildNumber))
-                    ```shell
-                    PM > Install-Package $(Project) --Version $(Build.BuildNumber)
-                    ```
+          - template: github/create-release.yml@templates
+            parameters:
+              repositoryName: '$(GitHub.Repository)'
+              releaseNotes: |
+                Install new version via [NuGet](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/$(Build.BuildNumber))
+                ```shell
+                PM > Install-Package Arcus.BackgroundJobs.CloudEvents --Version $(Build.BuildNumber)
+                ```
+          - template: github/create-pre-release.yml@templates
+            parameters:
+              repositoryName: '$(GitHub.Repository)'
+              releaseNotes: |
+                Install new version via [NuGet](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/$(Build.BuildNumber))
+                ```shell
+                PM > Install-Package Arcus.BackgroundJobs.CloudEvents --Version $(Build.BuildNumber)
+                ```
           - template: nuget/publish-official-package.yml@templates

@@ -30,7 +30,7 @@ variables:
   - name: 'DotNet.Sdk.Version'
     value: '3.0.101'
   - name: 'Project'
-    value: 'Arcus.Template'
+    value: 'Arcus.BackgroundJobs'
     # 'Package.Version.ManualTrigger' is added as queue-time variable on build in Azure DevOps
 
 stages:
