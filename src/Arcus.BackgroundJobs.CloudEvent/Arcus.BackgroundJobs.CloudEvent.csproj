@@ -5,7 +5,7 @@
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
+    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Workers;Jobs</PackageTags>
     <Description>Provides capabilities for running background jobs to automate workflows.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
     <PackageLicenseUrl>https://github.com/arcus-azure/arcus.backgroundjobs/blob/master/LICENSE</PackageLicenseUrl>
