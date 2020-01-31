@@ -1,5 +1,5 @@
 ﻿using System;
-using Arcus.BackgroundJobs.CloudEvent;
+using Arcus.BackgroundJobs.CloudEvents;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 
