@@ -18,7 +18,7 @@ variables:
   - name: 'Project'
     value: 'Arcus.BackgroundJobs'
   - name: 'GitHub.Repository'
-    value: 'azure-arcus/arcus.backgroundjobs'
+    value: 'arcus-azure/arcus.backgroundjobs'
   # 'Package.Version' is added as queue-time variable on build in Azure DevOps
 
 stages:

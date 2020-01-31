@@ -14,6 +14,7 @@ using Xunit.Abstractions;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
 {
+    [Trait(name: "Category", value: "Integration")]
     public class AutoInvalidateKeyVaultSecretJobTests : IAsyncLifetime
     {
         private readonly TestConfig _config;
