@@ -1,7 +1,7 @@
 # Arcus Background Jobs
 
 [![Build Status](https://dev.azure.com/codit/Arcus/_apis/build/status/Commit%20builds/CI%20-%20Arcus.BackgroundJobs?branchName=master)](https://dev.azure.com/codit/Arcus/_build/latest?definitionId=794&branchName=master)
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvent?includePreReleases=true)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvent/)
+[![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvents?includePreReleases=true)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/)
 
 Background job development in a breeze.
 
@@ -11,7 +11,7 @@ Background job development in a breeze.
 Soon you will be able to install it via NuGet:
 
 ```shell
-PM > Install-Package Arcus.BackgroundJobs.CloudEvent
+PM > Install-Package Arcus.BackgroundJobs.CloudEvents
 ```
 
 # Documentation
