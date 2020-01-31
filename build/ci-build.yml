@@ -22,6 +22,8 @@ resources:
       endpoint: arcus-azure
 
 variables:
+  - group: 'Arcus Background Jobs - Integration Testing'
+  - group: 'Arcus Security - Integration Testing'
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
   # Always use fixed version for .NET Core SDK

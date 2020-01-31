@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.Tests.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.Tests.Unit", "Arcus.BackgroundJobs.Tests.Unit\Arcus.BackgroundJobs.Tests.Unit.csproj", "{59162B6A-71A8-49B4-A299-691788084D87}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.KeyVault", "Arcus.BackgroundJobs.KeyVault\Arcus.BackgroundJobs.KeyVault.csproj", "{8170286D-CEDD-4CB2-B616-EA8FD113306D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{940B9B9D-3960-40D7-B062-BD7E8B5E967D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,9 +31,17 @@ Global
 		{59162B6A-71A8-49B4-A299-691788084D87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59162B6A-71A8-49B4-A299-691788084D87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59162B6A-71A8-49B4-A299-691788084D87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8170286D-CEDD-4CB2-B616-EA8FD113306D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8170286D-CEDD-4CB2-B616-EA8FD113306D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8170286D-CEDD-4CB2-B616-EA8FD113306D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8170286D-CEDD-4CB2-B616-EA8FD113306D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{03CD564E-8037-494E-8665-6176AA353427} = {940B9B9D-3960-40D7-B062-BD7E8B5E967D}
+		{59162B6A-71A8-49B4-A299-691788084D87} = {940B9B9D-3960-40D7-B062-BD7E8B5E967D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E5382820-51FF-4B00-92BE-C78E80EA0841}

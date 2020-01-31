@@ -3,7 +3,7 @@ using GuardNet;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Arcus.Template.Tests.Integration.Logging
+namespace Arcus.BackgroundJobs.Tests.Integration.Logging
 {
     public class XunitTestLogger : ILogger
     {
