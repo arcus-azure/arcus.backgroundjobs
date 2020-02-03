@@ -1,0 +1,86 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "EventGrid.Subscription.Name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 64,
+            "defaultValue": "Arcus-Background-Jobs-Secret-Renewed",
+            "metadata": {
+                "description": "Name of the subscription to create"
+            }
+        },
+        "ServiceBus.Topic.Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Topic"
+            }
+        },
+        "ServiceBus.Namespace.Name": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 50,
+            "metadata": {
+                "description": "Name of the Service Bus namespace"
+            }
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "name": "[concat('arcus-sandbox/Microsoft.KeyVault/arcus-sandbox/', parameters('EventGrid.Subscription.Name'))]",
+            "type":"Microsoft.KeyVault/vaults/providers/eventSubscriptions",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2019-09-01",
+            "properties": {
+                "destination": {
+                    "endpointType": "ServiceBusTopic",
+                    "properties": {
+                        "resourceId": "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('ServiceBus.Namespace.Name'), parameters('ServiceBus.Topic.Name'))]"
+                    }
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.KeyVault.SecretNewVersionCreated"
+                    ],
+                    "advancedFilters": [
+                    ]
+                },
+                "labels": [
+                ],
+                "eventDeliverySchema": "CloudEventSchemaV1_0"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('ServiceBus.Namespace.Name'), parameters('ServiceBus.Topic.Name'))]"
+            ]
+        },
+        {
+            "apiVersion": "2017-04-01",
+            "name": "[parameters('ServiceBus.Namespace.Name')]",
+            "type": "Microsoft.ServiceBus/namespaces",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "resources": [
+                {
+                    "apiVersion": "2017-04-01",
+                    "name": "[parameters('ServiceBus.Topic.Name')]",
+                    "type": "topics",
+                    "dependsOn": [
+                        "[concat('Microsoft.ServiceBus/namespaces/', parameters('ServiceBus.Namespace.Name'))]"
+                    ],
+                    "properties": {
+                        "enablePartitioning": "true"
+                    },
+                    "resources": [
+                    ]
+                }
+            ]
+        }
+    ],
+    "outputs": {
+    }
+}

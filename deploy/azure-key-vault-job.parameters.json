@@ -1,0 +1,15 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "EventGrid.Subscription.Name": {
+            "value": "Arcus-Background-Jobs-Secret-Renewed"
+        },
+        "ServiceBus.Topic.Name": {
+            "value": "azure-key-vault-secret-renewed"
+        },
+        "ServiceBus.Namespace.Name": {
+            "value": "arcus-backgroundjobs"
+        }
+    }
+}
