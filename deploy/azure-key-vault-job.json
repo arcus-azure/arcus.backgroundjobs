@@ -3,37 +3,38 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "EventGrid.Subscription.Name": {
-            "type": "string",
+            "defaultValue": "Arcus-Background-Jobs-Secret-Renewed",
             "minLength": 3,
             "maxLength": 64,
-            "defaultValue": "Arcus-Background-Jobs-Secret-Renewed",
+            "type": "String",
             "metadata": {
                 "description": "Name of the subscription to create"
             }
         },
         "ServiceBus.Topic.Name": {
-            "type": "string",
+            "type": "String",
             "metadata": {
                 "description": "Name of the Topic"
             }
         },
         "ServiceBus.Namespace.Name": {
-            "type": "string",
             "minLength": 6,
             "maxLength": 50,
+            "type": "String",
             "metadata": {
                 "description": "Name of the Service Bus namespace"
             }
         }
     },
-    "variables": {
-    },
+    "variables": {},
     "resources": [
         {
+            "type": "Microsoft.KeyVault/vaults/providers/eventSubscriptions",
+            "apiVersion": "2020-01-01-preview",
             "name": "[concat('arcus-sandbox/Microsoft.EventGrid/', parameters('EventGrid.Subscription.Name'))]",
-            "type":"Microsoft.KeyVault/vaults/providers/eventSubscriptions",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2020-04-01-preview",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('ServiceBus.Namespace.Name'), parameters('ServiceBus.Topic.Name'))]"
+            ],
             "properties": {
                 "destination": {
                     "endpointType": "ServiceBusTopic",
@@ -45,42 +46,35 @@
                     "includedEventTypes": [
                         "Microsoft.KeyVault.SecretNewVersionCreated"
                     ],
-                    "advancedFilters": [
-                    ]
+                    "advancedFilters": []
                 },
-                "labels": [
-                ],
+                "labels": [],
                 "eventDeliverySchema": "CloudEventSchemaV1_0"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('ServiceBus.Namespace.Name'), parameters('ServiceBus.Topic.Name'))]"
-            ]
+            }
         },
         {
+            "type": "Microsoft.ServiceBus/namespaces",
             "apiVersion": "2017-04-01",
             "name": "[parameters('ServiceBus.Namespace.Name')]",
-            "type": "Microsoft.ServiceBus/namespaces",
             "location": "[resourceGroup().location]",
             "sku": {
                 "name": "Standard"
             },
             "resources": [
                 {
+                    "type": "topics",
                     "apiVersion": "2017-04-01",
                     "name": "[parameters('ServiceBus.Topic.Name')]",
-                    "type": "topics",
                     "dependsOn": [
                         "[concat('Microsoft.ServiceBus/namespaces/', parameters('ServiceBus.Namespace.Name'))]"
                     ],
                     "properties": {
                         "enablePartitioning": "true"
                     },
-                    "resources": [
-                    ]
+                    "resources": []
                 }
             ]
         }
     ],
-    "outputs": {
-    }
+    "outputs": {}
 }
