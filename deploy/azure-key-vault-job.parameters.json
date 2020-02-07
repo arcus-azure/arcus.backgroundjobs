@@ -5,11 +5,14 @@
         "EventGrid.Subscription.Name": {
             "value": "Arcus-Background-Jobs-Secret-Renewed"
         },
-        "ServiceBus.Topic.Name": {
-            "value": "azure-key-vault-secret-renewed"
-        },
         "ServiceBus.Namespace.Name": {
-            "value": "arcus-backgroundjobs"
+            "value": ""
+        },
+        "ServiceBus.Topic.Name": {
+            "value": ""
+        },
+        "KeyVault.Name": {
+            "value": ""
         }
     }
 }
