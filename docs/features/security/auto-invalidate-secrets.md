@@ -9,6 +9,11 @@ The `Arcus.WebApi.Jobs` library provides a background job to automatically inval
 
 ## How does it work?
 
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ftomkerkhove%2Farcus.backgroundjobs%2Fdeploy-azure-infra%2Fdeploy%2Farm%2Fazure-key-vault-job.json" target="_blank">
+    <img src="https://azuredeploy.net/deploybutton.png"/>
+</a>
+
+
 This automation works by subscribing on the `SecretNewVersionCreated` event of an Azure Key Vault resource and placing those events on a Azure Service Bus Topic; which we process in our background job.
 
 To make this automation opperational, following Azure Resources has to be used:
