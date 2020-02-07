@@ -9,7 +9,7 @@ The `Arcus.WebApi.Jobs` library provides a background job to automatically inval
 
 ## How does it work?
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ftomkerkhove%2Farcus.backgroundjobs%2Fdeploy-azure-infra%2Fdeploy%2Farm%2Fazure-key-vault-job.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Farcus.azure%2Farcus.backgroundjobs%2Fmaster%2Fdeploy%2Farm%2Fazure-key-vault-job.json" target="_blank">
     <img src="https://azuredeploy.net/deploybutton.png"/>
 </a>
 
