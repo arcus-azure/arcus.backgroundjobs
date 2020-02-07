@@ -30,10 +30,10 @@
     },
     "resources": [
         {
-            "name": "[concat('arcus-sandbox/Microsoft.KeyVault/arcus-sandbox/', parameters('EventGrid.Subscription.Name'))]",
+            "name": "[concat('arcus-sandbox/Microsoft.EventGrid/', parameters('EventGrid.Subscription.Name'))]",
             "type":"Microsoft.KeyVault/vaults/providers/eventSubscriptions",
             "location": "[resourceGroup().location]",
-            "apiVersion": "2019-09-01",
+            "apiVersion": "2020-04-01-preview",
             "properties": {
                 "destination": {
                     "endpointType": "ServiceBusTopic",
