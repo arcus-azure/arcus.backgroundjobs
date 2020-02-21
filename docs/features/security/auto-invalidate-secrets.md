@@ -9,6 +9,11 @@ The `Arcus.BackgroundJobs.KeyVault` library provides a background job to automat
 
 ## How does it work?
 
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Farcus.azure%2Farcus.backgroundjobs%2Fmaster%2Fdeploy%2Farm%2Fazure-key-vault-job.json" target="_blank">
+    <img src="https://azuredeploy.net/deploybutton.png"/>
+</a>
+
+
 This automation works by subscribing on the `SecretNewVersionCreated` event of an Azure Key Vault resource and placing those events on a Azure Service Bus Topic; which we process in our background job.
 
 ![Automatically Invalidate Azure Key Vault Secrets](/media/Azure-Key-Vault-Job.png)

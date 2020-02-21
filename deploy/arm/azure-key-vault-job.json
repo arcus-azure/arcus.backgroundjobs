@@ -1,0 +1,86 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "EventGrid.Subscription.Name": {
+            "defaultValue": "Arcus-Background-Jobs-Secret-Renewed",
+            "minLength": 3,
+            "maxLength": 64,
+            "type": "String",
+            "metadata": {
+                "description": "Name of the subscription to create"
+            }
+        },
+        "KeyVault.Name": {
+            "type": "String",
+            "metadata": {
+                "description": "Name of the Azure Key Vault"
+            }
+        },
+        "ServiceBus.Namespace.Name": {
+            "minLength": 6,
+            "maxLength": 50,
+            "type": "String",
+            "metadata": {
+                "description": "Name of the Service Bus namespace"
+            }
+        },
+        "ServiceBus.Topic.Name": {
+            "type": "String",
+            "metadata": {
+                "description": "Name of the Topic"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults/providers/eventSubscriptions",
+            "apiVersion": "2020-01-01-preview",
+            "name": "[concat(parameters('KeyVault.Name'), 'arcus-sandbox/Microsoft.EventGrid/', parameters('EventGrid.Subscription.Name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('ServiceBus.Namespace.Name'), parameters('ServiceBus.Topic.Name'))]"
+            ],
+            "properties": {
+                "destination": {
+                    "endpointType": "ServiceBusTopic",
+                    "properties": {
+                        "resourceId": "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('ServiceBus.Namespace.Name'), parameters('ServiceBus.Topic.Name'))]"
+                    }
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.KeyVault.SecretNewVersionCreated"
+                    ],
+                    "advancedFilters": []
+                },
+                "labels": [],
+                "eventDeliverySchema": "CloudEventSchemaV1_0"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces",
+            "apiVersion": "2017-04-01",
+            "name": "[parameters('ServiceBus.Namespace.Name')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "resources": [
+                {
+                    "type": "topics",
+                    "apiVersion": "2017-04-01",
+                    "name": "[parameters('ServiceBus.Topic.Name')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.ServiceBus/namespaces/', parameters('ServiceBus.Namespace.Name'))]"
+                    ],
+                    "properties": {
+                        "enablePartitioning": "true"
+                    },
+                    "resources": []
+                }
+            ]
+        }
+    ],
+    "outputs": {}
+}
