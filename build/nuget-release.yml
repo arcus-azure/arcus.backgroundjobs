@@ -106,12 +106,4 @@ stages:
                 ```shell
                 PM > Install-Package Arcus.BackgroundJobs.CloudEvents --Version $(Build.BuildNumber)
                 ```
-          - template: github/create-pre-release.yml@templates
-            parameters:
-              repositoryName: '$(GitHub.Repository)'
-              releaseNotes: |
-                Install new version via [NuGet](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/$(Build.BuildNumber))
-                ```shell
-                PM > Install-Package Arcus.BackgroundJobs.CloudEvents --Version $(Build.BuildNumber)
-                ```
           - template: nuget/publish-official-package.yml@templates
