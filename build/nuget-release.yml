@@ -15,8 +15,7 @@ variables:
   - group: 'Arcus Security - Integration Testing'
   - group: 'Build Configuration'
   - group: 'Arcus Background Jobs - .NET'
-  - name: 'Project'
-    value: 'Arcus.BackgroundJobs'
+  - template: ./variables/build.yml
   - name: 'GitHub.Repository'
     value: 'arcus-azure/arcus.backgroundjobs'
   # 'Package.Version' is added as queue-time variable on build in Azure DevOps
