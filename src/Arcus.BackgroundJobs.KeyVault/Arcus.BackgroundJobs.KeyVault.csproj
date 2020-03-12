@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.EventGrid" Version="3.0.0-preview-1" />
+    <PackageReference Include="Arcus.EventGrid" Version="3.0.0" />
     <PackageReference Include="Arcus.Security.Core" Version="1.1.0" />
     <PackageReference Include="Arcus.Security.Providers.AzureKeyVault" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.EventGrid" Version="3.2.0" />
