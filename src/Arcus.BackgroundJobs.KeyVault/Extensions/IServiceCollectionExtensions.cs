@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(serviceBusTopicConnectionStringSecretKey, nameof(serviceBusTopicConnectionStringSecretKey), "Requires a non-blank configuration key that points to a Azure Service Bus Topic");
             
             services.AddCloudEventBackgroundJob(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey);
-            services.AddSingleton<IMessageHandler<CloudEvent, AzureServiceBusMessageContext>>(serviceProvider =>
+            services.AddSingleton<IMessageHandler<CloudEvent, AzureServiceBusMessageContext>, InvalidateKeyVaultSecretHandler>(serviceProvider =>
             {
                 var cachedSecretProvider = serviceProvider.GetRequiredService<ICachedSecretProvider>();
                 var logger = serviceProvider.GetRequiredService<ILogger<InvalidateKeyVaultSecretHandler>>();
