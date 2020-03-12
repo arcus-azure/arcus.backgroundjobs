@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Arcus.BackgroundJobs.KeyVault.Extensions;
 using Arcus.BackgroundJobs.Tests.Integration.Logging;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
