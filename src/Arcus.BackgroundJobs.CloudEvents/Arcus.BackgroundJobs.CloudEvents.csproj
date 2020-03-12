@@ -17,8 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.EventGrid" Version="3.0.0-preview-1" />
-    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="0.1.0-preview-2" />
-    <PackageReference Include="Microsoft.Azure.EventGrid" Version="3.2.0" />
+    <PackageReference Include="Arcus.EventGrid" Version="3.0.0" />
+    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="0.1.0-preview-3" />
   </ItemGroup>
+
 </Project>

@@ -1,9 +1,13 @@
-﻿using System;
-using Arcus.BackgroundJobs.CloudEvents;
+﻿using Arcus.BackgroundJobs.KeyVault;
+using Arcus.Messaging.Pumps.Abstractions.MessageHandling;
+using Arcus.Messaging.Pumps.ServiceBus;
+using Arcus.Security.Core.Caching;
+using CloudNative.CloudEvents;
 using GuardNet;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-namespace Arcus.BackgroundJobs.KeyVault.Extensions
+// ReSharper disable once CheckNamespace
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extensions on the <see cref="IServiceCollection"/> to make the registration of jobs more dev-friendly.
@@ -24,13 +28,14 @@ namespace Arcus.BackgroundJobs.KeyVault.Extensions
         {
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
             Guard.NotNullOrWhitespace(serviceBusTopicConnectionStringSecretKey, nameof(serviceBusTopicConnectionStringSecretKey), "Requires a non-blank configuration key that points to a Azure Service Bus Topic");
-
-            var jobId = Guid.NewGuid().ToString();
-            services.Configure<CloudEventBackgroundJobOptions>(options => options.JobId = jobId);
-
-            services.AddServiceBusTopicMessagePump<AutoInvalidateKeyVaultSecretJob>(
-                subscriptionName: $"{subscriptionNamePrefix}.{jobId}",
-                getConnectionStringFromSecretFunc: secretProvider => secretProvider.GetRawSecretAsync(serviceBusTopicConnectionStringSecretKey));
+            
+            services.AddCloudEventBackgroundJob(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey);
+            services.AddSingleton<IMessageHandler<CloudEvent, AzureServiceBusMessageContext>, InvalidateKeyVaultSecretHandler>(serviceProvider =>
+            {
+                var cachedSecretProvider = serviceProvider.GetRequiredService<ICachedSecretProvider>();
+                var logger = serviceProvider.GetRequiredService<ILogger<InvalidateKeyVaultSecretHandler>>();
+                return new InvalidateKeyVaultSecretHandler(cachedSecretProvider, logger);
+            });
 
             return services;
         }
