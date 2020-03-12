@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Arcus.EventGrid" Version="3.0.0" />
-    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="20200312.0.0-PR-80" />
+    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="20200312.3.0-preview" />
   </ItemGroup>
 
   <PropertyGroup>	
