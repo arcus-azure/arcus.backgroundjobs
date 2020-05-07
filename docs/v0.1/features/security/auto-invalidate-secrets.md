@@ -5,8 +5,6 @@ layout: default
 
 # Automatically Invalidate Azure Key Vault Secrets
 
-![](https://img.shields.io/badge/Available%20starting-v0.1-green?link=https://github.com/arcus-azure/arcus.backgroundjobs/releases/tag/v0.1.0)
-
 The `Arcus.BackgroundJobs.KeyVault` library provides a background job to automatically invalidate cached Azure Key Vault secrets from an `ICachedSecretProvider` instance of your choice.
 
 ## How does it work?

@@ -5,8 +5,6 @@ layout: default
 
 # Securely Receive CloudEvents
 
-![](https://img.shields.io/badge/Available%20starting-v0.1-green?link=https://github.com/arcus-azure/arcus.backgroundjobs/releases/tag/v0.1.0)
-
 The `Arcus.BackgroundJobs.CloudEvents` library provides a collection of background jobs to securely receive [CloudEvents](https://github.com/cloudevents/spec).
 
 This allows workloads to asynchronously process event from other components without exposing a public endpoint.
