@@ -1,9 +1,6 @@
 ---
 title: "Home"
 layout: default
-permalink: /
-redirect_from:
- - /index.html
 ---
 
 [![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvents?packageVersion=0.1.0)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/0.1.0)
