@@ -22,6 +22,8 @@ variables:
   - template: ./variables/build.yml
   - name: 'GitHub.Repository'
     value: 'arcus-azure/arcus.backgroundjobs'
+  - name: 'Package.Version'
+    value: ${{ parameters['Package.Version'] }}
 
 stages:
   - stage: Build
