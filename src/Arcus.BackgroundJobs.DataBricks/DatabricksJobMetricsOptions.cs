@@ -7,20 +7,20 @@ using Microsoft.Azure.Databricks.Client;
 namespace Arcus.BackgroundJobs.DataBricks
 {
     /// <summary>
-    /// Options to configure how the <see cref="QueryRepeatedlyDatabricksReportJob"/> background job.
+    /// Options to configure how the <see cref="DatabricksJobMetrics"/> background job.
     /// </summary>
-    public class QueryRepeatedlyDatabricksReportJobOptions
+    public class DatabricksJobMetricsOptions
     {
         private readonly Func<ISecretProvider, Task<DatabricksClient>> _createDataBricksClientAsync;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="QueryRepeatedlyDatabricksReportJobOptions"/> class.
+        /// Initializes a new instance of the <see cref="DatabricksJobMetricsOptions"/> class.
         /// </summary>
         /// <param name="baseUrl">The URL of the Databricks location.</param>
         /// <param name="tokenSecretKey">The secret key to retrieve the token from the registered <see cref="ISecretProvider"/>.</param>
         /// <param name="interval">The interval in which the background job should query the Databricks instance.</param>
         /// <exception cref="ArgumentException">Thrown when <paramref name="baseUrl"/> or <paramref name="tokenSecretKey"/> is blank or <paramref name="interval"/> is less then zero.</exception>
-        public QueryRepeatedlyDatabricksReportJobOptions(string baseUrl, string tokenSecretKey, TimeSpan interval)
+        public DatabricksJobMetricsOptions(string baseUrl, string tokenSecretKey, TimeSpan interval)
         {
             Guard.NotNullOrWhitespace(baseUrl, nameof(baseUrl));
             Guard.NotNullOrWhitespace(tokenSecretKey, nameof(tokenSecretKey));

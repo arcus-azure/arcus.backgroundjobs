@@ -33,6 +33,8 @@ namespace Arcus.BackgroundJobs.DataBricks
         /// <param name="endOfWindow">End of time window which we are interested in. (Exclusive)</param>
         internal async Task<IEnumerable<(string jobName, Run jobRun)>> GetFinishedJobRunsAsync(DateTimeOffset startOfWindow, DateTimeOffset endOfWindow)
         {
+            Guard.NotLessThan(endOfWindow, startOfWindow, nameof(endOfWindow), "Requires the date of the end window to be greater than the start date of the window");
+
             IEnumerable<Run> jobRuns = await GetJobRunsAsync(startOfWindow, endOfWindow);
             IEnumerable<Job> availableJobs = await _databricksClient.Jobs.List();
 
@@ -76,7 +78,6 @@ namespace Arcus.BackgroundJobs.DataBricks
 
                 hasMoreInformation = jobHistory.HasMore;
                 runOffset += jobHistory.Runs.Count();
-
             } while (hasMoreInformation);
 
             return finishedJobs;
@@ -105,7 +106,6 @@ namespace Arcus.BackgroundJobs.DataBricks
 
             return runStartTime.Add(jobExecution);
         }
-
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.

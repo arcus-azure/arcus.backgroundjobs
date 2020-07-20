@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class IServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds the <see cref="QueryRepeatedlyDatabricksReportJob"/> background job as hosted service
+        /// Adds the <see cref="DatabricksJobMetrics"/> background job as hosted service
         /// which will query on a fixed <paramref name="interval"/> for finished Databricks job runs and report them as metrics.
         /// </summary>
         /// <param name="services">The services to add the background job to.</param>
@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="interval">The interval in which to query for Databricks finished job runs.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="baseUrl"/> or <paramref name="tokenSecretKey"/> is blank or <paramref name="interval"/> is less then zero.</exception>
-        public static IServiceCollection AddQueryRepeatedlyDataBricksReportJob(this IServiceCollection services, string baseUrl, string tokenSecretKey, TimeSpan interval)
+        public static IServiceCollection AddDatabricksJobMetrics(this IServiceCollection services, string baseUrl, string tokenSecretKey, TimeSpan interval)
         {
             Guard.NotNull(services, nameof(services));
             Guard.NotNullOrWhitespace(baseUrl, nameof(baseUrl));
@@ -32,11 +32,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return services.AddHostedService(serviceProvider =>
             {
-                var options = new QueryRepeatedlyDatabricksReportJobOptions(baseUrl, tokenSecretKey, interval);
+                var options = new DatabricksJobMetricsOptions(baseUrl, tokenSecretKey, interval);
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var logger = serviceProvider.GetRequiredService<ILogger<QueryRepeatedlyDatabricksReportJob>>();
+                var logger = serviceProvider.GetRequiredService<ILogger<DatabricksJobMetrics>>();
 
-                return new QueryRepeatedlyDatabricksReportJob(options, configuration, serviceProvider, logger);
+                return new DatabricksJobMetrics(options, configuration, serviceProvider, logger);
             });
         }
     }

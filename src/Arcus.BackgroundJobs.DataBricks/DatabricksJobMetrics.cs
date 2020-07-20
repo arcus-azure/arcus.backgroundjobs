@@ -16,19 +16,19 @@ namespace Arcus.BackgroundJobs.DataBricks
     /// <summary>
     /// Representing a background job that repeatedly queries the Databricks instance for finished job runs and writes the report as a metric.
     /// </summary>
-    public class QueryRepeatedlyDatabricksReportJob : MessagePump
+    public class DatabricksJobMetrics : MessagePump
     {
-        private readonly QueryRepeatedlyDatabricksReportJobOptions _options;
+        private readonly DatabricksJobMetricsOptions _options;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="QueryRepeatedlyDatabricksReportJob"/> class.
+        /// Initializes a new instance of the <see cref="DatabricksJobMetrics"/> class.
         /// </summary>
         /// <param name="options">The options to configure the job to query the Data Bricks report.</param>
         /// <param name="configuration">Configuration of the application</param>
         /// <param name="serviceProvider">Collection of services that are configured</param>
         /// <param name="logger">Logger to write telemetry to</param>
-        public QueryRepeatedlyDatabricksReportJob(
-            QueryRepeatedlyDatabricksReportJobOptions options,
+        public DatabricksJobMetrics(
+            DatabricksJobMetricsOptions options,
             IConfiguration configuration,
             IServiceProvider serviceProvider,
             ILogger logger) : base(configuration, serviceProvider, logger)
@@ -60,13 +60,12 @@ namespace Arcus.BackgroundJobs.DataBricks
                         DateTimeOffset.UtcNow, last, next);
 
                     IEnumerable<(string jobName, Run jobRun)> jobRunHistory = await databricksInfoProvider.GetFinishedJobRunsAsync(last, next);
-                    last = next;
-
                     foreach ((string jobName, Run run) in jobRunHistory)
                     {
                         ReportJobRunAsMetric(jobName, run);
                     }
 
+                    last = next;
                     await Task.Delay(_options.Interval, stoppingToken);
                 }
             }
