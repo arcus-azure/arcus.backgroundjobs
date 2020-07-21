@@ -4,7 +4,7 @@ using Arcus.Security.Core;
 using GuardNet;
 using Microsoft.Azure.Databricks.Client;
 
-namespace Arcus.BackgroundJobs.DataBricks
+namespace Arcus.BackgroundJobs.Databricks
 {
     /// <summary>
     /// Options to configure how the <see cref="DatabricksJobMetrics"/> background job.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.DataBricks;
+using Arcus.BackgroundJobs.Databricks;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.Security.Core;
 using Microsoft.Azure.Databricks.Client;

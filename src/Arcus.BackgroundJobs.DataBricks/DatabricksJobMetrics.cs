@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Arcus.BackgroundJobs.DataBricks
+namespace Arcus.BackgroundJobs.Databricks
 {
     /// <summary>
     /// Representing a background job that repeatedly queries the Databricks instance for finished job runs and writes the report as a metric.

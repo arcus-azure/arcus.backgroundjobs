@@ -1,5 +1,6 @@
 ﻿using System;
-using Arcus.BackgroundJobs.DataBricks;
+using System.Threading.Tasks;
+using Arcus.BackgroundJobs.Databricks;
 using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

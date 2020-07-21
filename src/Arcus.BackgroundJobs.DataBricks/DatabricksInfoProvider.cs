@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.Azure.Databricks.Client;
 
-namespace Arcus.BackgroundJobs.DataBricks
+namespace Arcus.BackgroundJobs.Databricks
 {
     /// <summary>
     /// Provides dev-friendly access to the Databricks instance.
