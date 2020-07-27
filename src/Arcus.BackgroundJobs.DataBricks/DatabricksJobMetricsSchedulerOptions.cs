@@ -10,7 +10,7 @@ namespace Arcus.BackgroundJobs.Databricks
     /// <summary>
     /// Options to configure how the <see cref="DatabricksJobMetrics"/> background job.
     /// </summary>
-    public class DatabricksJobMetricsOptions : SchedulerOptions
+    public class DatabricksJobMetricsSchedulerOptions : SchedulerOptions
     {
         private string _baseUrl, _tokenSecretKey;
 
@@ -40,6 +40,23 @@ namespace Arcus.BackgroundJobs.Databricks
                 Guard.NotNullOrWhitespace(value, nameof(value));
                 _tokenSecretKey = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the value which will be used when reporting the metric for finished Databricks job runs.
+        /// </summary>
+        public double MetricValue { get; set; }
+
+        /// <summary>
+        /// Sets the additional user options in a <see cref="SchedulerOptions"/> context.
+        /// </summary>
+        /// <param name="options">The additional user-options to set.</param>
+        internal void SetAdditionalOptions(DatabricksJobMetricsAdditionalOptions options)
+        {
+            Guard.NotNull(options, nameof(options));
+
+            MetricValue = options.MetricValue;
+            CronSchedule = options.IntervalInMinutes == 1 ? "@every_minute" : $"*/{options.IntervalInMinutes} * * * *";
         }
 
         /// <summary>

@@ -2,8 +2,6 @@
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Databricks;
 using GuardNet;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -16,28 +14,35 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Adds the <see cref="DatabricksJobMetrics"/> background job as hosted service
-        /// which will query on a fixed <paramref name="interval"/> for finished Databricks job runs and report them as metrics.
+        /// which will query on a fixed interval for finished Databricks job runs and report them as metrics.
         /// </summary>
         /// <param name="services">The services to add the background job to.</param>
         /// <param name="baseUrl">The URL where the Databricks instance is located on Azure.</param>
         /// <param name="tokenSecretKey">The secret key that points to the token to authenticate with the Databricks instance.</param>
-        /// <param name="intervalInMinutes">The interval (minutes) in which to query for Databricks finished job runs.</param>
+        /// <param name="configureOptions">The optional additional customized user configuration of options for this background job.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="baseUrl"/> or <paramref name="tokenSecretKey"/> is blank or <paramref name="intervalInMinutes"/> is less then zero.</exception>
-        public static IServiceCollection AddDatabricksJobMetrics(this IServiceCollection services, string baseUrl, string tokenSecretKey, int intervalInMinutes = 5)
+        /// <exception cref="ArgumentException">Thrown when <paramref name="baseUrl"/> or <paramref name="tokenSecretKey"/> is blank.</exception>
+        public static IServiceCollection AddDatabricksJobMetrics(
+            this IServiceCollection services, 
+            string baseUrl, 
+            string tokenSecretKey, 
+            Action<DatabricksJobMetricsAdditionalOptions> configureOptions = null)
         {
             Guard.NotNull(services, nameof(services));
             Guard.NotNullOrWhitespace(baseUrl, nameof(baseUrl));
             Guard.NotNullOrWhitespace(tokenSecretKey, nameof(tokenSecretKey));
-            Guard.NotLessThan(intervalInMinutes, 0, nameof(intervalInMinutes));
 
             return services.AddScheduler(builder =>
             {
-                builder.AddJob<DatabricksJobMetrics, DatabricksJobMetricsOptions>(options =>
+                builder.AddJob<DatabricksJobMetrics, DatabricksJobMetricsSchedulerOptions>(options =>
                 {
+                    var additionalOptions = new DatabricksJobMetricsAdditionalOptions();
+                    configureOptions?.Invoke(additionalOptions);
+
                     options.BaseUrl = baseUrl;
                     options.TokenSecretKey = tokenSecretKey;
-                    options.CronSchedule = intervalInMinutes == 1 ? "@every_minute" : $"*/{intervalInMinutes} * * * *";
+                    options.SetAdditionalOptions(additionalOptions);
+
                 });
                 builder.UnobservedTaskExceptionHandler = UnobservedExceptionHandler;
             });

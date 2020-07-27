@@ -17,7 +17,7 @@ namespace Arcus.BackgroundJobs.Databricks
     /// </summary>
     public class DatabricksJobMetrics : IScheduledJob
     {
-        private readonly DatabricksJobMetricsOptions _options;
+        private readonly DatabricksJobMetricsSchedulerOptions _options;
         private readonly ISecretProvider _secretProvider;
         private readonly ILogger<DatabricksJobMetrics> _logger;
 
@@ -30,7 +30,7 @@ namespace Arcus.BackgroundJobs.Databricks
         /// <param name="secretProvider">The instance to provide the token to authenticate with Databricks.</param>
         /// <param name="logger">The logger instance to to write telemetry to.</param>
         public DatabricksJobMetrics(
-            IOptionsMonitor<DatabricksJobMetricsOptions> options,
+            IOptionsMonitor<DatabricksJobMetricsSchedulerOptions> options,
             ISecretProvider secretProvider,
             ILogger<DatabricksJobMetrics> logger)
         {
@@ -38,7 +38,7 @@ namespace Arcus.BackgroundJobs.Databricks
             Guard.NotNull(secretProvider, nameof(secretProvider));
             Guard.NotNull(logger, nameof(logger));
 
-            DatabricksJobMetricsOptions value = options.Get(Name);
+            DatabricksJobMetricsSchedulerOptions value = options.Get(Name);
             Guard.NotNull(options, nameof(options), "Requires a registered options instance for this background job");
 
             _options = value;
@@ -87,7 +87,7 @@ namespace Arcus.BackgroundJobs.Databricks
             RunResultState resultState = jobRun.Run.State.ResultState ?? default(RunResultState);
             string outcome = text.ToLower(resultState.ToString());
 
-            _logger.LogMetric("Databricks Job Completed", value: 1, context: new Dictionary<string, object> 
+            _logger.LogMetric("Databricks Job Completed", value: _options.MetricValue, context: new Dictionary<string, object> 
             {
                 { "Run Id", jobRun.Run.RunId },
                 { "Job Id", jobRun.Run.JobId },

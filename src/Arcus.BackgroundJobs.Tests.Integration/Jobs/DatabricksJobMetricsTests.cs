@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.Databricks;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.Security.Core;
 using Microsoft.Azure.Databricks.Client;
@@ -49,7 +47,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
                           .ReturnsAsync(token);
 
             services.AddSingleton<ISecretProvider>(secretProvider.Object);
-            services.AddDatabricksJobMetrics(baseUrl, tokenSecretKey, intervalInMinutes: 1);
+            services.AddDatabricksJobMetrics(baseUrl, tokenSecretKey, options => options.IntervalInMinutes = 1);
         }
 
         /// <summary>
@@ -60,7 +58,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             return Task.CompletedTask;
         }
 
-        [Fact]
+        [Fact(Skip = "Databricks cluster is to expansive for testing")]
         public async Task FinishedDatabricksJobRun_GetsNoticedByRepeatedlyDatabricksJob_ReportsAsMetric()
         {
             // Arrange
