@@ -42,7 +42,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     options.BaseUrl = baseUrl;
                     options.TokenSecretKey = tokenSecretKey;
                     options.SetAdditionalOptions(additionalOptions);
-
                 });
                 builder.UnobservedTaskExceptionHandler = UnobservedExceptionHandler;
             });
