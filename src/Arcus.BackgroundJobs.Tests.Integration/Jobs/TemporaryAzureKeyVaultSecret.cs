@@ -48,6 +48,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         }
 
         /// <summary>
+        /// Updates the temporary secret value.
+        /// </summary>
+        /// <param name="value">The new secret value.</param>
+        public async Task UpdateSecretAsync(string value)
+        {
+            Guard.NotNullOrWhitespace(value, nameof(value));
+            await _client.SetSecretAsync(_keyVaultUri, Name, value);
+        }
+
+        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public async ValueTask DisposeAsync()

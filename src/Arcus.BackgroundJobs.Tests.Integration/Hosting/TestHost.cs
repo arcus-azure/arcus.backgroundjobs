@@ -1,10 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Arcus.Testing.Logging;
 using GuardNet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,18 +22,18 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
     public class TestHost : WebApplicationFactory<TestStartup>
     {
         private readonly TestConfig _config;
-        private readonly ILogger _outputWriter;
+        private readonly Action<IServiceCollection> _configureServices;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestHost"/> class.
         /// </summary>
-        public TestHost(TestConfig config, ITestOutputHelper outputWriter)
+        public TestHost(TestConfig config, Action<IServiceCollection> configureServices)
         {
             Guard.NotNull(config, nameof(config));
-            Guard.NotNull(outputWriter, nameof(outputWriter));
+            Guard.NotNull(configureServices, nameof(configureServices));
 
             _config = config;
-            _outputWriter = new XunitTestLogger(outputWriter);
+            _configureServices = configureServices;
         }
 
         /// <summary>
@@ -50,23 +52,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
                        .ConfigureAppConfiguration(config => config.AddInMemoryCollection(_config.AsEnumerable()))
                        .ConfigureServices(services =>
                        {
-                           const string secretKey = "Arcus:ServiceBus:ConnectionStringWithTopic";
-
-                           var cachedSecretProvider = new Mock<ICachedSecretProvider>();
-                           cachedSecretProvider
-                               .Setup(p => p.GetRawSecretAsync(secretKey))
-                               .ReturnsAsync(() => _config[secretKey]);
-
-                           cachedSecretProvider
-                               .Setup(p => p.InvalidateSecretAsync(It.IsAny<string>()))
-                               .Returns(Task.CompletedTask);
-
-                           services.AddSingleton<ISecretProvider>(cachedSecretProvider.Object);
-                           services.AddSingleton<ICachedSecretProvider>(cachedSecretProvider.Object);
-                           services.AddSingleton(_outputWriter);
-                           services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
-                               subscriptionNamePrefix: "TestSub",
-                               serviceBusTopicConnectionStringSecretKey: secretKey);
+                           _configureServices(services);
                        });
         }
     }

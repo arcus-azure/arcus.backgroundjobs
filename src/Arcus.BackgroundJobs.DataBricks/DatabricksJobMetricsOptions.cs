@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Arcus.Security.Core;
+using CronScheduler.Extensions.Scheduler;
 using GuardNet;
 using Microsoft.Azure.Databricks.Client;
 
@@ -9,36 +10,37 @@ namespace Arcus.BackgroundJobs.Databricks
     /// <summary>
     /// Options to configure how the <see cref="DatabricksJobMetrics"/> background job.
     /// </summary>
-    public class DatabricksJobMetricsOptions
+    public class DatabricksJobMetricsOptions : SchedulerOptions
     {
-        private readonly Func<ISecretProvider, Task<DatabricksClient>> _createDataBricksClientAsync;
+        private string _baseUrl, _tokenSecretKey;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DatabricksJobMetricsOptions"/> class.
+        /// Gets or sets the URL of the Databricks location.
         /// </summary>
-        /// <param name="baseUrl">The URL of the Databricks location.</param>
-        /// <param name="tokenSecretKey">The secret key to retrieve the token from the registered <see cref="ISecretProvider"/>.</param>
-        /// <param name="interval">The interval in which the background job should query the Databricks instance.</param>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="baseUrl"/> or <paramref name="tokenSecretKey"/> is blank or <paramref name="interval"/> is less then zero.</exception>
-        public DatabricksJobMetricsOptions(string baseUrl, string tokenSecretKey, TimeSpan interval)
+        /// <exception cref="ArgumentException">Thrown when <paramref name="value"/> is blank.</exception>
+        public string BaseUrl
         {
-            Guard.NotNullOrWhitespace(baseUrl, nameof(baseUrl));
-            Guard.NotNullOrWhitespace(tokenSecretKey, nameof(tokenSecretKey));
-            Guard.NotLessThan(interval, TimeSpan.Zero, nameof(interval));
-
-            _createDataBricksClientAsync = async secretProvider =>
+            get => _baseUrl;
+            set
             {
-                string token = await secretProvider.GetRawSecretAsync(tokenSecretKey);
-                return DatabricksClient.CreateClient(baseUrl, token);
-            };
-
-            Interval = interval;
+                Guard.NotNullOrWhitespace(value, nameof(value));
+                _baseUrl = value;
+            }
         }
 
         /// <summary>
-        /// Gets the interval in which the background job should query the Databricks instance.
+        /// Gets or sets the secret key to retrieve the token from the registered <see cref="ISecretProvider"/>.
         /// </summary>
-        public TimeSpan Interval { get; }
+        /// <exception cref="ArgumentException">Thrown when <paramref name="value"/> is blank.</exception>
+        public string TokenSecretKey
+        {
+            get => _tokenSecretKey;
+            set
+            {
+                Guard.NotNullOrWhitespace(value, nameof(value));
+                _tokenSecretKey = value;
+            }
+        }
 
         /// <summary>
         /// Creates an <see cref="DatabricksClient"/> instance using the predefined values.
@@ -46,7 +48,22 @@ namespace Arcus.BackgroundJobs.Databricks
         /// <param name="secretProvider">The provider to retrieve the token during the creation of the instance.</param>
         internal async Task<DatabricksClient> CreateDatabricksClientAsync(ISecretProvider secretProvider)
         {
-            return await _createDataBricksClientAsync(secretProvider);
+            Guard.NotNull(secretProvider, nameof(secretProvider));
+
+            if (String.IsNullOrWhiteSpace(_baseUrl))
+            {
+                throw new InvalidOperationException($"Databricks options are not correctly configured: requires a {nameof(BaseUrl)} that points to the Databricks location");
+            }
+
+            if (String.IsNullOrWhiteSpace(_tokenSecretKey))
+            {
+                throw new InvalidOperationException(
+                    $"Databricks options are not correctly configured: requires a {nameof(TokenSecretKey)} to retrieve the token from the registered {nameof(ISecretProvider)} "
+                    + "to authenticate to the Databricks instance");
+            }
+
+            string token = await secretProvider.GetRawSecretAsync(_tokenSecretKey);
+            return DatabricksClient.CreateClient(_baseUrl, token);
         }
     }
 }

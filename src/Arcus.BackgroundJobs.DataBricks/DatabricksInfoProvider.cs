@@ -11,7 +11,7 @@ namespace Arcus.BackgroundJobs.Databricks
     /// <summary>
     /// Provides dev-friendly access to the Databricks instance.
     /// </summary>
-    internal class DatabricksInfoProvider : IDisposable
+    public class DatabricksInfoProvider : IDisposable
     {
         private readonly DatabricksClient _databricksClient;
 
@@ -19,7 +19,7 @@ namespace Arcus.BackgroundJobs.Databricks
         /// Initializes a new instance of hte <see cref="DatabricksInfoProvider"/> class.
         /// </summary>
         /// <param name="databricksClient">The client to interact with Databricks.</param>
-        internal DatabricksInfoProvider(DatabricksClient databricksClient)
+        public DatabricksInfoProvider(DatabricksClient databricksClient)
         {
             Guard.NotNull(databricksClient, nameof(databricksClient));
 
@@ -31,7 +31,7 @@ namespace Arcus.BackgroundJobs.Databricks
         /// </summary>
         /// <param name="startOfWindow">Start of time window which we are interested in. (Inclusive)</param>
         /// <param name="endOfWindow">End of time window which we are interested in. (Exclusive)</param>
-        internal async Task<IEnumerable<(string jobName, Run jobRun)>> GetFinishedJobRunsAsync(DateTimeOffset startOfWindow, DateTimeOffset endOfWindow)
+        public async Task<IEnumerable<JobRun>> GetFinishedJobRunsAsync(DateTimeOffset startOfWindow, DateTimeOffset endOfWindow)
         {
             Guard.NotLessThan(endOfWindow, startOfWindow, nameof(endOfWindow), "Requires the date of the end window to be greater than the start date of the window");
 
@@ -39,14 +39,9 @@ namespace Arcus.BackgroundJobs.Databricks
             IEnumerable<Job> availableJobs = await _databricksClient.Jobs.List();
 
             return from finishedJobRun in jobRuns
-                   where HasFinished(finishedJobRun)
+                   where finishedJobRun.IsCompleted
                    let jobName = availableJobs.FirstOrDefault(job => job.JobId == finishedJobRun.JobId)?.Settings?.Name
-                   select (jobName, finishedJobRun);
-        }
-
-        private static bool HasFinished(Run run)
-        {
-            return run.State?.ResultState != null;
+                   select new JobRun(jobName, finishedJobRun);
         }
 
         private async Task<IEnumerable<Run>> GetJobRunsAsync(DateTimeOffset startOfWindow, DateTimeOffset endOfWindow)
@@ -65,8 +60,7 @@ namespace Arcus.BackgroundJobs.Databricks
 
                 foreach (Run jobRun in jobHistory.Runs)
                 {
-                    DateTimeOffset? jobEndDate = GetEndDate(jobRun);
-                    if (jobEndDate != null && jobEndDate > startOfWindow && jobEndDate < endOfWindow)
+                    if (jobRun.EndTime != null && jobRun.EndTime > startOfWindow && jobRun.EndTime < endOfWindow)
                     {
                         finishedJobs.Add(jobRun);
                     }
@@ -81,30 +75,6 @@ namespace Arcus.BackgroundJobs.Databricks
             } while (hasMoreInformation);
 
             return finishedJobs;
-        }
-
-        private static DateTimeOffset? GetEndDate(Run run)
-        {
-            if (run.StartTime.HasValue == false)
-            {
-                return null;
-            }
-
-            /*
-             * This is based on the documentation available here:
-             * - https://github.com/Azure/azure-databricks-client/issues/24
-             * - https://docs.microsoft.com/en-us/azure/databricks/dev-tools/api/latest/jobs?toc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fazure-databricks%2FTOC.json&bc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#--run
-             * - This will come in upstream soon via https://github.com/Azure/azure-databricks-client/pull/28
-             */
-
-            DateTimeOffset runStartTime = run.StartTime.Value;
-
-            TimeSpan setupDuration = TimeSpan.FromMilliseconds(run.SetupDuration);
-            TimeSpan cleanupDuration = TimeSpan.FromMilliseconds(run.CleanupDuration);
-            TimeSpan executionDuration = TimeSpan.FromMilliseconds(run.ExecutionDuration);
-            TimeSpan jobExecution = setupDuration.Add(cleanupDuration).Add(executionDuration);
-
-            return runStartTime.Add(jobExecution);
         }
 
         /// <summary>
