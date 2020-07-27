@@ -8,7 +8,7 @@ namespace Arcus.BackgroundJobs.Databricks
     /// </summary>
     public class DatabricksJobMetricsAdditionalOptions
     {
-        private int _intervalInMinutes;
+        private int _intervalInMinutes = 5;
 
         /// <summary>
         /// Gets or sets the value which will be used when reporting the metric for finished Databricks job runs.
@@ -24,6 +24,8 @@ namespace Arcus.BackgroundJobs.Databricks
             set
             {
                 Guard.NotLessThan(value, 0, nameof(value));
+                Guard.NotGreaterThan(value, 59, nameof(value));
+
                 _intervalInMinutes = value;
             }
         }
