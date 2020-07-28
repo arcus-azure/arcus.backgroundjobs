@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class IServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds the <see cref="DatabricksJobMetrics"/> background job as hosted service
+        /// Adds the <see cref="DatabricksJobMetrics"/> scheduled job
         /// which will query on a fixed interval for finished Databricks job runs and report them as metrics.
         /// </summary>
         /// <param name="services">The services to add the background job to.</param>
