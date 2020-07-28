@@ -4,16 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Arcus.BackgroundJobs.Databricks
 {
     /// <summary>
-    /// Represents the additional options that the user can configure during the <see cref="IServiceCollectionExtensions.AddDatabricksJobMetrics"/> call.
+    /// Represents the additional options that the user can configure during the <see cref="IServiceCollectionExtensions.AddDatabricksJobMetricsJob"/> call.
     /// </summary>
-    public class DatabricksJobMetricsAdditionalOptions
+    public class DatabricksJobMetricsJobOptions
     {
         private int _intervalInMinutes = 5;
 
         /// <summary>
-        /// Gets or sets the value which will be used when reporting the metric for finished Databricks job runs.
+        /// Gets or sets the name which will be used when reporting the metric for finished Databricks job runs.
         /// </summary>
-        public double MetricValue { get; set; } = 1;
+        public string MetricName { get; set; } = "Databricks Job Completed";
 
         /// <summary>
         /// Gets or sets the interval (minutes) in which to query for Databricks finished job runs.

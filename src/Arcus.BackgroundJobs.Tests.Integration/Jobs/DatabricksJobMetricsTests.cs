@@ -47,7 +47,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
                           .ReturnsAsync(token);
 
             services.AddSingleton<ISecretProvider>(secretProvider.Object);
-            services.AddDatabricksJobMetrics(baseUrl, tokenSecretKey, options => options.IntervalInMinutes = 1);
+            services.AddDatabricksJobMetricsJob(baseUrl, tokenSecretKey, options => options.IntervalInMinutes = 1);
         }
 
         /// <summary>

@@ -8,9 +8,9 @@ using Microsoft.Azure.Databricks.Client;
 namespace Arcus.BackgroundJobs.Databricks
 {
     /// <summary>
-    /// Options to configure how the <see cref="DatabricksJobMetrics"/> background job.
+    /// Options to configure how the <see cref="DatabricksJobMetricsJob"/> scheduled job.
     /// </summary>
-    public class DatabricksJobMetricsSchedulerOptions : SchedulerOptions
+    public class DatabricksJobMetricsJobSchedulerOptions : SchedulerOptions
     {
         private string _baseUrl, _tokenSecretKey;
 
@@ -43,19 +43,19 @@ namespace Arcus.BackgroundJobs.Databricks
         }
 
         /// <summary>
-        /// Gets or sets the value which will be used when reporting the metric for finished Databricks job runs.
+        /// Gets the additional user options which configures the <see cref="DatabricksJobMetricsJob"/> scheduled job.
         /// </summary>
-        public double MetricValue { get; set; }
+        public DatabricksJobMetricsJobOptions UserOptions { get; private set; } = new DatabricksJobMetricsJobOptions();
 
         /// <summary>
         /// Sets the additional user options in a <see cref="SchedulerOptions"/> context.
         /// </summary>
         /// <param name="options">The additional user-options to set.</param>
-        internal void SetAdditionalOptions(DatabricksJobMetricsAdditionalOptions options)
+        internal void SetUserOptions(DatabricksJobMetricsJobOptions options)
         {
             Guard.NotNull(options, nameof(options));
 
-            MetricValue = options.MetricValue;
+            UserOptions = options;
             CronSchedule = options.IntervalInMinutes == 1 ? "@every_minute" : $"*/{options.IntervalInMinutes} * * * *";
         }
 

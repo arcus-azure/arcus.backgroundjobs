@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Databricks;
 using GuardNet;
+using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -13,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class IServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds the <see cref="DatabricksJobMetrics"/> background job as hosted service
+        /// Adds the <see cref="DatabricksJobMetricsJob"/> background job as hosted service
         /// which will query on a fixed interval for finished Databricks job runs and report them as metrics.
         /// </summary>
         /// <param name="services">The services to add the background job to.</param>
@@ -22,11 +24,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configureOptions">The optional additional customized user configuration of options for this background job.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="baseUrl"/> or <paramref name="tokenSecretKey"/> is blank.</exception>
-        public static IServiceCollection AddDatabricksJobMetrics(
+        public static IServiceCollection AddDatabricksJobMetricsJob(
             this IServiceCollection services, 
             string baseUrl, 
             string tokenSecretKey, 
-            Action<DatabricksJobMetricsAdditionalOptions> configureOptions = null)
+            Action<DatabricksJobMetricsJobOptions> configureOptions = null)
         {
             Guard.NotNull(services, nameof(services));
             Guard.NotNullOrWhitespace(baseUrl, nameof(baseUrl));
@@ -34,22 +36,25 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return services.AddScheduler(builder =>
             {
-                builder.AddJob<DatabricksJobMetrics, DatabricksJobMetricsSchedulerOptions>(options =>
+                builder.AddJob<DatabricksJobMetricsJob, DatabricksJobMetricsJobSchedulerOptions>(options =>
                 {
-                    var additionalOptions = new DatabricksJobMetricsAdditionalOptions();
+                    var additionalOptions = new DatabricksJobMetricsJobOptions();
                     configureOptions?.Invoke(additionalOptions);
 
                     options.BaseUrl = baseUrl;
                     options.TokenSecretKey = tokenSecretKey;
-                    options.SetAdditionalOptions(additionalOptions);
+                    options.SetUserOptions(additionalOptions);
                 });
-                builder.UnobservedTaskExceptionHandler = UnobservedExceptionHandler;
+                builder.UnobservedTaskExceptionHandler = (sender, args) =>  UnobservedExceptionHandler(args, services);
             });
         }
 
-        private static void UnobservedExceptionHandler(object sender, UnobservedTaskExceptionEventArgs eventArgs)
+        private static void UnobservedExceptionHandler(UnobservedTaskExceptionEventArgs eventArgs, IServiceCollection services)
         {
-            Console.WriteLine(eventArgs.Exception?.GetBaseException());
+            ServiceDescriptor logger = services.FirstOrDefault(service => service.ServiceType == typeof(ILogger));
+            var loggerInstance = (ILogger) logger?.ImplementationInstance;
+
+            loggerInstance?.LogCritical(eventArgs.Exception, "Unhandled exception in job {JobName}", nameof(DatabricksJobMetricsJob));
             eventArgs.SetObserved();
         }
     }

@@ -15,30 +15,30 @@ namespace Arcus.BackgroundJobs.Databricks
     /// <summary>
     /// Representing a background job that repeatedly queries the Databricks instance for finished job runs and writes the report as a metric.
     /// </summary>
-    public class DatabricksJobMetrics : IScheduledJob
+    public class DatabricksJobMetricsJob : IScheduledJob
     {
-        private readonly DatabricksJobMetricsSchedulerOptions _options;
+        private readonly DatabricksJobMetricsJobSchedulerOptions _options;
         private readonly ISecretProvider _secretProvider;
-        private readonly ILogger<DatabricksJobMetrics> _logger;
+        private readonly ILogger<DatabricksJobMetricsJob> _logger;
 
         private DateTimeOffset _last = DateTime.UtcNow;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DatabricksJobMetrics"/> class.
+        /// Initializes a new instance of the <see cref="DatabricksJobMetricsJob"/> class.
         /// </summary>
         /// <param name="options">The options to configure the job to query the Databricks report.</param>
         /// <param name="secretProvider">The instance to provide the token to authenticate with Databricks.</param>
         /// <param name="logger">The logger instance to to write telemetry to.</param>
-        public DatabricksJobMetrics(
-            IOptionsMonitor<DatabricksJobMetricsSchedulerOptions> options,
+        public DatabricksJobMetricsJob(
+            IOptionsMonitor<DatabricksJobMetricsJobSchedulerOptions> options,
             ISecretProvider secretProvider,
-            ILogger<DatabricksJobMetrics> logger)
+            ILogger<DatabricksJobMetricsJob> logger)
         {
             Guard.NotNull(options, nameof(options));
             Guard.NotNull(secretProvider, nameof(secretProvider));
             Guard.NotNull(logger, nameof(logger));
 
-            DatabricksJobMetricsSchedulerOptions value = options.Get(Name);
+            DatabricksJobMetricsJobSchedulerOptions value = options.Get(Name);
             Guard.NotNull(options, nameof(options), "Requires a registered options instance for this background job");
 
             _options = value;
@@ -51,7 +51,7 @@ namespace Arcus.BackgroundJobs.Databricks
         /// In order for the <see cref="T:CronScheduler.Extensions.Scheduler.SchedulerOptions" /> options to work correctly make sure that the name is matched
         /// between the job and the named job options.
         /// </summary>
-        public string Name { get; } = nameof(DatabricksJobMetrics);
+        public string Name { get; } = nameof(DatabricksJobMetricsJob);
 
         /// <summary>
         /// This method is called when the <see cref="T:Microsoft.Extensions.Hosting.IHostedService" /> starts. The implementation should return a task that represents
@@ -87,11 +87,11 @@ namespace Arcus.BackgroundJobs.Databricks
             RunResultState resultState = jobRun.Run.State.ResultState ?? default(RunResultState);
             string outcome = text.ToLower(resultState.ToString());
 
-            _logger.LogMetric("Databricks Job Completed", value: _options.MetricValue, context: new Dictionary<string, object> 
+            _logger.LogMetric(_options.UserOptions.MetricName, value: 1, context: new Dictionary<string, object> 
             {
                 { "Run Id", jobRun.Run.RunId },
                 { "Job Id", jobRun.Run.JobId },
-                { "Job Name", jobRun.Name },
+                { "Job Name", jobRun.JobName },
                 { "Outcome", outcome }
             });
         }

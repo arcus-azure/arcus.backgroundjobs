@@ -20,7 +20,7 @@ public void ConfigureServices(IServiceCollection services)
     //     this will get the 'tokenSecretKey' string (configured below) and has to retrieve the connection token for the Databricks instance.
     services.AddSingleton<ISecretProvider>(serviceProvider => ...);
 
-    services.AddDatabricksJobMetrics(
+    services.AddDatabricksJobMetricsJob(
         baseUrl: "https://url.to.databricks.instance/" 
         // Token secret key to connect to the Databricks token.
         tokenSecretKey: "Databricks.Token");
