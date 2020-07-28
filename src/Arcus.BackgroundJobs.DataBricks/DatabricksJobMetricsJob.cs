@@ -101,7 +101,6 @@ namespace Arcus.BackgroundJobs.Databricks
                     { "Outcome", outcome }
                 });
             }
-            
         }
     }
 }
