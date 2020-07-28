@@ -82,18 +82,26 @@ namespace Arcus.BackgroundJobs.Databricks
         private void ReportJobRunAsMetric(JobRun jobRun)
         {
             TextInfo text = new CultureInfo("en-US", useUserOverride: false).TextInfo;
-            _logger.LogInformation("Found finished job run with id {RunId}", jobRun.Run.RunId);
+            _logger.LogInformation("Found finished job run with ID {RunId}", jobRun.Run.RunId);
 
-            RunResultState resultState = jobRun.Run.State.ResultState ?? default(RunResultState);
-            string outcome = text.ToLower(resultState.ToString());
-
-            _logger.LogMetric(_options.UserOptions.MetricName, value: 1, context: new Dictionary<string, object> 
+            RunResultState? resultState = jobRun.Run.State.ResultState;
+            if (resultState is null)
             {
-                { "Run Id", jobRun.Run.RunId },
-                { "Job Id", jobRun.Run.JobId },
-                { "Job Name", jobRun.JobName },
-                { "Outcome", outcome }
-            });
+                _logger.LogWarning("Cannot find result state of finished job run with ID {RunId}", jobRun.Run.RunId);
+            }
+            else
+            {
+                string outcome = text.ToLower(resultState.ToString());
+
+                _logger.LogMetric(_options.UserOptions.MetricName, value: 1, context: new Dictionary<string, object>
+                {
+                    { "Run Id", jobRun.Run.RunId },
+                    { "Job Id", jobRun.Run.JobId },
+                    { "Job Name", jobRun.JobName },
+                    { "Outcome", outcome }
+                });
+            }
+            
         }
     }
 }

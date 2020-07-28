@@ -16,7 +16,7 @@ using Xunit.Sdk;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
 {
-    public class DatabricksJobMetricsTests : IAsyncLifetime
+    public class DatabricksJobMetricsJobTests : IAsyncLifetime
     {
         private readonly ITestOutputHelper _outputWriter;
         private readonly TestHost _host;
@@ -24,9 +24,9 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         private readonly TestLogger _spyLogger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DatabricksJobMetricsTests"/> class.
+        /// Initializes a new instance of the <see cref="DatabricksJobMetricsJobTests"/> class.
         /// </summary>
-        public DatabricksJobMetricsTests(ITestOutputHelper outputWriter)
+        public DatabricksJobMetricsJobTests(ITestOutputHelper outputWriter)
         {
             _outputWriter = outputWriter;
             _config = TestConfig.Create();
