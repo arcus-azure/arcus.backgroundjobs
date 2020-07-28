@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Adds the <see cref="DatabricksJobMetrics"/> scheduled job
-        /// which will query on a fixed interval for finished Databricks job runs and report them as metrics.
+        /// which will query for finished Databricks job runs on a specified interval and report them as metrics.
         /// </summary>
         /// <param name="services">The services to add the background job to.</param>
         /// <param name="baseUrl">The URL where the Databricks instance is located on Azure.</param>
