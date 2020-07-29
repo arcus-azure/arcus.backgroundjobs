@@ -58,7 +58,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             return Task.CompletedTask;
         }
 
-        [Fact(Skip = "Databricks cluster is to expansive for testing")]
+        [Fact(Skip = "Databricks cluster is to expensive for testing")]
         public async Task FinishedDatabricksJobRun_GetsNoticedByRepeatedlyDatabricksJob_ReportsAsMetric()
         {
             // Arrange
