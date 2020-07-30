@@ -36,7 +36,11 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILogger>(_spyLogger);
+            var loggerProvider = new Mock<ILoggerProvider>();
+            loggerProvider.Setup(p => p.CreateLogger(It.IsAny<string>()))
+                          .Returns(_spyLogger);
+
+            services.AddLogging(builder => builder.AddProvider(loggerProvider.Object));
 
             string baseUrl = GetDatabricksUrl();
             string token = GetDatabricksToken();
@@ -53,9 +57,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         /// <summary>
         /// Called immediately after the class has been created, before it is used.
         /// </summary>
-        public Task InitializeAsync()
+        public async Task InitializeAsync()
         {
-            return Task.CompletedTask;
+            var host = _host.Services.GetService<IHost>();
+            await host.StartAsync();
         }
 
         [Fact(Skip = "Databricks cluster is to expansive for testing")]
@@ -79,7 +84,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
 
                 // Assert
                 RetryAssertion(
-                    () => Assert.Contains("Databricks Job Completed", _spyLogger.LatestMessage),
+                    () => Assert.Contains(_spyLogger.Messages, msg => msg.StartsWith("Metric Databricks Job Completed")),
                     timeout: TimeSpan.FromMinutes(3),
                     interval: TimeSpan.FromSeconds(1));
             }

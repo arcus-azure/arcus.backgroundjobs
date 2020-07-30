@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 
@@ -7,8 +9,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
 {
     public class TestLogger : ILogger
     {
-        public string LatestMessage { get; private set; } = String.Empty;
-        
+        private readonly ICollection<string> _messages = new Collection<string>();
+
+        public IEnumerable<string> Messages => _messages.AsEnumerable();
+
         /// <summary>Writes a log entry.</summary>
         /// <param name="logLevel">Entry will be written on this level.</param>
         /// <param name="eventId">Id of the event.</param>
@@ -19,7 +23,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             string message = formatter(state, exception);
-            LatestMessage = message;
+            _messages.Add(message);
         }
 
         /// <summary>
