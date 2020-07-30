@@ -86,7 +86,8 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
                 Settings = new JobSettings { Name = Guid.NewGuid().ToString() }
             }).ToArray();
 
-            DatabricksClient client = CreateDatabricksClient(includedRuns.Concat(tooFarRuns), jobs);
+            IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
+            DatabricksClient client = CreateDatabricksClient(allRuns, jobs);
             var provider = new DatabricksInfoProvider(client);
             
             // Act
