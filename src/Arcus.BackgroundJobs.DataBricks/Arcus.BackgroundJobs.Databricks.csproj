@@ -6,7 +6,7 @@
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Azure;App Services;Databricks;Workers;Jobs</PackageTags>
-    <Description>Provides capabilities for running background jobs to automate workflows.</Description>
+    <Description>Provides capabilities for running background jobs to automate Databricks workflows.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
     <PackageLicenseUrl>https://github.com/arcus-azure/arcus.backgroundjobs/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/arcus-azure/arcus.backgroundjobs</PackageProjectUrl>
