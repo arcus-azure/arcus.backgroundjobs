@@ -6,7 +6,6 @@ using Arcus.BackgroundJobs.Databricks;
 using Bogus;
 using Microsoft.Azure.Databricks.Client;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
@@ -38,13 +37,14 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
 
             IEnumerable<Run> includedRuns = CreateRandomRuns(startWindow, endWindow);
             IEnumerable<Run> tooFarRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
+            IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
             IEnumerable<Job> jobs = includedRuns.Select(r => new Job
             {
                 JobId = r.JobId,
                 Settings = new JobSettings { Name = Guid.NewGuid().ToString() }
             }).ToArray();
 
-            DatabricksClient client = DatabricksClientFactory.Create(includedRuns.Concat(tooFarRuns), jobs);
+            DatabricksClient client = DatabricksClientFactory.Create(allRuns, jobs);
             var provider = new DatabricksInfoProvider(client, NullLogger.Instance);
 
             // Act
@@ -80,13 +80,13 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
 
             IEnumerable<Run> includedRuns = CreateRandomRuns(startWindow, endWindow);
             IEnumerable<Run> tooFarRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
+            IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
             IEnumerable<Job> jobs = includedRuns.Select(r => new Job
             {
                 JobId = r.JobId, 
                 Settings = new JobSettings { Name = Guid.NewGuid().ToString() }
             }).ToArray();
 
-            IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
             DatabricksClient client = DatabricksClientFactory.Create(allRuns, jobs);
             var provider = new DatabricksInfoProvider(client, NullLogger.Instance);
             
