@@ -2,15 +2,22 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
+using GuardNet;
 using Microsoft.Extensions.Logging;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
+namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
 {
-    public class TestLogger : ILogger
+    /// <summary>
+    /// Spy (stub) <see cref="ILogger{TCategoryName}"/> implementation to track the logged messages.
+    /// </summary>
+    /// <typeparam name="T">The type who's name is used for the logger category name.</typeparam>
+    public class SpyLogger<T> : ILogger<T>
     {
         private readonly ICollection<string> _messages = new Collection<string>();
 
+        /// <summary>
+        /// Gets the current logged messages.
+        /// </summary>
         public IEnumerable<string> Messages => _messages.AsEnumerable();
 
         /// <summary>Writes a log entry.</summary>
@@ -22,6 +29,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         /// <typeparam name="TState">The type of the object to be written.</typeparam>
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            Guard.NotNull(formatter, nameof(formatter));
+
             string message = formatter(state, exception);
             _messages.Add(message);
         }

@@ -13,6 +13,7 @@ namespace Arcus.BackgroundJobs.Databricks
     public class DatabricksJobMetricsJobSchedulerOptions : SchedulerOptions
     {
         private string _baseUrl, _tokenSecretKey;
+        private DateTimeOffset _last = DateTime.UtcNow;
 
         /// <summary>
         /// Gets or sets the URL of the Databricks location.
@@ -51,6 +52,7 @@ namespace Arcus.BackgroundJobs.Databricks
         /// Sets the additional user options in a <see cref="SchedulerOptions"/> context.
         /// </summary>
         /// <param name="options">The additional user-options to set.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         internal void SetUserOptions(DatabricksJobMetricsJobOptions options)
         {
             Guard.NotNull(options, nameof(options));
@@ -63,7 +65,8 @@ namespace Arcus.BackgroundJobs.Databricks
         /// Creates an <see cref="DatabricksClient"/> instance using the predefined values.
         /// </summary>
         /// <param name="secretProvider">The provider to retrieve the token during the creation of the instance.</param>
-        internal async Task<DatabricksClient> CreateDatabricksClientAsync(ISecretProvider secretProvider)
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="secretProvider"/> is <c>null</c>.</exception>
+        public virtual async Task<DatabricksClient> CreateDatabricksClientAsync(ISecretProvider secretProvider)
         {
             Guard.NotNull(secretProvider, nameof(secretProvider));
 
@@ -81,6 +84,19 @@ namespace Arcus.BackgroundJobs.Databricks
 
             string token = await secretProvider.GetRawSecretAsync(_tokenSecretKey);
             return DatabricksClient.CreateClient(_baseUrl, token);
+        }
+
+        /// <summary>
+        /// Determining the next time window in which the job runs should be retrieved.
+        /// </summary>
+        public virtual (DateTimeOffset last, DateTimeOffset next) DetermineNextTimeWindow()
+        {
+            DateTimeOffset next = DateTimeOffset.UtcNow;
+
+            (DateTimeOffset _last, DateTimeOffset next) result = (_last, next);
+            _last = next;
+
+            return result;
         }
     }
 }

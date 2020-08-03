@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Arcus.Security.Core;
@@ -21,14 +19,16 @@ namespace Arcus.BackgroundJobs.Databricks
         private readonly ISecretProvider _secretProvider;
         private readonly ILogger<DatabricksJobMetricsJob> _logger;
 
-        private DateTimeOffset _last = DateTime.UtcNow;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabricksJobMetricsJob"/> class.
         /// </summary>
         /// <param name="options">The options to configure the job to query the Databricks report.</param>
         /// <param name="secretProvider">The instance to provide the token to authenticate with Databricks.</param>
         /// <param name="logger">The logger instance to to write telemetry to.</param>
+        /// <exception cref="ArgumentNullException">
+        ///     Thrown when the <paramref name="options"/>, <paramref name="secretProvider"/>, <paramref name="logger"/> is <c>null</c>
+        ///     or the <see cref="IOptionsMonitor{TOptions}.Get"/> on the  <paramref name="options"/> returns <c>null</c>.
+        /// </exception>
         public DatabricksJobMetricsJob(
             IOptionsMonitor<DatabricksJobMetricsJobSchedulerOptions> options,
             ISecretProvider secretProvider,
@@ -57,49 +57,25 @@ namespace Arcus.BackgroundJobs.Databricks
         /// This method is called when the <see cref="T:Microsoft.Extensions.Hosting.IHostedService" /> starts. The implementation should return a task that represents
         /// the lifetime of the long running operation(s) being performed.
         /// </summary>
-        /// <param name="stoppingToken">Triggered when <see cref="M:Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)" /> is called.</param>
-        /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> that represents the long running operations.</returns>
+        /// <param name="stoppingToken">
+        ///     Triggered when <see cref="M:Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)" /> is called.
+        /// </param>
+        /// <returns>
+        ///     A <see cref="T:System.Threading.Tasks.Task" /> that represents the long running operations.
+        /// </returns>
         public async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             using (DatabricksClient client = await _options.CreateDatabricksClientAsync(_secretProvider))
-            using (var databricksInfoProvider = new DatabricksInfoProvider(client))
+            using (var databricksInfoProvider = new DatabricksInfoProvider(client, _logger))
             {
-                DateTimeOffset next = DateTimeOffset.UtcNow;
+                (DateTimeOffset start, DateTimeOffset end) = _options.DetermineNextTimeWindow();
+
                 _logger.LogInformation(
                     "Job monitor for Databricks is starting at {TriggerTime} for time windows {WindowStart} - {WindowEnd}",
-                    DateTimeOffset.UtcNow, _last, next);
+                    DateTimeOffset.UtcNow, start, end);
 
-                IEnumerable<JobRun> jobRunHistory = await databricksInfoProvider.GetFinishedJobRunsAsync(_last, next);
-                foreach (JobRun jobRun in jobRunHistory)
-                {
-                    ReportJobRunAsMetric(jobRun);
-                }
-
-                _last = next;
-            }
-        }
-
-        private void ReportJobRunAsMetric(JobRun jobRun)
-        {
-            TextInfo text = new CultureInfo("en-US", useUserOverride: false).TextInfo;
-            _logger.LogInformation("Found finished job run with ID {RunId}", jobRun.Run.RunId);
-
-            RunResultState? resultState = jobRun.Run.State.ResultState;
-            if (resultState is null)
-            {
-                _logger.LogWarning("Cannot find result state of finished job run with ID {RunId}", jobRun.Run.RunId);
-            }
-            else
-            {
-                string outcome = text.ToLower(resultState.ToString());
-
-                _logger.LogMetric(_options.UserOptions.MetricName, value: 1, context: new Dictionary<string, object>
-                {
-                    { "Run Id", jobRun.Run.RunId },
-                    { "Job Id", jobRun.Run.JobId },
-                    { "Job Name", jobRun.JobName },
-                    { "Outcome", outcome }
-                });
+                string metricName = _options.UserOptions.MetricName;
+                await databricksInfoProvider.MeasureJobOutcomesAsync(metricName, start, end);
             }
         }
     }

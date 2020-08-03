@@ -1,4 +1,5 @@
-﻿using GuardNet;
+﻿using System;
+using GuardNet;
 using Microsoft.Azure.Databricks.Client;
 
 namespace Arcus.BackgroundJobs.Databricks
@@ -13,6 +14,8 @@ namespace Arcus.BackgroundJobs.Databricks
         /// </summary>
         /// <param name="jobName">The name of the job that was ran.</param>
         /// <param name="run">The Databricks run that ran during the job.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="jobName"/> is blank.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="run"/> is <c>null</c>.</exception>
         public JobRun(string jobName, Run run)
         {
             Guard.NotNullOrWhitespace(jobName, nameof(jobName));

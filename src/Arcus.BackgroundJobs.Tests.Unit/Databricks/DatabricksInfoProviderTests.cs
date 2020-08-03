@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Databricks;
 using Bogus;
 using Microsoft.Azure.Databricks.Client;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -22,8 +22,8 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             // Arrange
             DateTimeOffset startWindow = BogusGenerator.Date.SoonOffset();
             DateTimeOffset endWindow = BogusGenerator.Date.RecentOffset();
-            DatabricksClient client = CreateDatabricksClient(Enumerable.Empty<Run>(), Enumerable.Empty<Job>());
-            var provider = new DatabricksInfoProvider(client);
+            DatabricksClient client = DatabricksClientFactory.Create(Enumerable.Empty<Run>(), Enumerable.Empty<Job>());
+            var provider = new DatabricksInfoProvider(client, NullLogger.Instance);
 
             // Act / Assert
             await Assert.ThrowsAnyAsync<ArgumentException>(() => provider.GetFinishedJobRunsAsync(startWindow, endWindow));
@@ -44,8 +44,8 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
                 Settings = new JobSettings { Name = Guid.NewGuid().ToString() }
             }).ToArray();
 
-            DatabricksClient client = CreateDatabricksClient(includedRuns.Concat(tooFarRuns), jobs);
-            var provider = new DatabricksInfoProvider(client);
+            DatabricksClient client = DatabricksClientFactory.Create(includedRuns.Concat(tooFarRuns), jobs);
+            var provider = new DatabricksInfoProvider(client, NullLogger.Instance);
 
             // Act
             IEnumerable<JobRun> finishedJobs = await provider.GetFinishedJobRunsAsync(BogusGenerator.Date.PastOffset(), startWindow);
@@ -61,8 +61,8 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             DateTimeOffset startWindow = BogusGenerator.Date.RecentOffset();
             DateTimeOffset endWindow = BogusGenerator.Date.SoonOffset();
 
-            DatabricksClient client = CreateDatabricksClient(Enumerable.Empty<Run>(), Enumerable.Empty<Job>());
-            var provider = new DatabricksInfoProvider(client);
+            DatabricksClient client = DatabricksClientFactory.Create(Enumerable.Empty<Run>(), Enumerable.Empty<Job>());
+            var provider = new DatabricksInfoProvider(client, NullLogger.Instance);
 
             // Act
             IEnumerable<JobRun> finishedJobs = await provider.GetFinishedJobRunsAsync(startWindow, endWindow);
@@ -87,8 +87,8 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             }).ToArray();
 
             IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
-            DatabricksClient client = CreateDatabricksClient(allRuns, jobs);
-            var provider = new DatabricksInfoProvider(client);
+            DatabricksClient client = DatabricksClientFactory.Create(allRuns, jobs);
+            var provider = new DatabricksInfoProvider(client, NullLogger.Instance);
             
             // Act
             IEnumerable<JobRun> finishedJobs = await provider.GetFinishedJobRunsAsync(startWindow, endWindow);
@@ -105,29 +105,6 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
                 Assert.NotNull(expectedJob);
                 Assert.Equal(expectedJob.JobId, job.Run.JobId);
             });
-        }
-
-        private static DatabricksClient CreateDatabricksClient(IEnumerable<Run> runs, IEnumerable<Job> jobs)
-        {
-            var jobsStub = new Mock<IJobsApi>();
-            jobsStub.Setup(j => j.RunsList(null, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new RunList { Runs = runs });
-
-            jobsStub.Setup(j => j.List(It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(jobs);
-
-            var client = DatabricksClient.CreateClient(
-                clusterApi: null,
-                jobsApi: jobsStub.Object,
-                dbfsApi: null,
-                secretsApi: null,
-                groupsApi: null,
-                librariesApi: null,
-                tokenApi: null,
-                workspaceApi: null,
-                instancePoolApi: null);
-
-            return client;
         }
 
         private static IEnumerable<Run> CreateRandomRuns(DateTimeOffset startWindow, DateTimeOffset endWindow)

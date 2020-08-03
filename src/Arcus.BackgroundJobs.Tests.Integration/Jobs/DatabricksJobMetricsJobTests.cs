@@ -21,7 +21,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         private readonly ITestOutputHelper _outputWriter;
         private readonly TestHost _host;
         private readonly TestConfig _config;
-        private readonly TestLogger _spyLogger;
+        private readonly SpyLogger _spyLogger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabricksJobMetricsJobTests"/> class.
@@ -30,7 +30,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         {
             _outputWriter = outputWriter;
             _config = TestConfig.Create();
-            _spyLogger = new TestLogger();
+            _spyLogger = new SpyLogger();
             _host = new TestHost(_config, ConfigureServices);
         }
 
