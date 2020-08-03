@@ -43,7 +43,7 @@ namespace Arcus.BackgroundJobs.Databricks
         /// </summary>
         /// <param name="metricName">The name of the logging metric.</param>
         /// <param name="startOfWindow">The start of time window which we are interested in. (Inclusive)</param>
-        /// <param name="endOfWindow">The snd of time window which we are interested in. (Exclusive)</param>
+        /// <param name="endOfWindow">The end of time window which we are interested in. (Exclusive)</param>
         /// <seealso cref="GetFinishedJobRunsAsync"/>
         /// <seealso cref="ReportFinishedJobOutcomeAsync"/>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="metricName"/> is blank.</exception>
