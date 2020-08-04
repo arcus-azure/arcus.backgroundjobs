@@ -36,8 +36,8 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             DateTimeOffset endWindow = BogusGenerator.Date.SoonOffset();
 
             IEnumerable<Run> includedRuns = CreateRandomRuns(startWindow, endWindow);
-            IEnumerable<Run> tooFarRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
-            IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
+            IEnumerable<Run> tooLateRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
+            IEnumerable<Run> allRuns = includedRuns.Concat(tooLateRuns);
             IEnumerable<Job> jobs = includedRuns.Select(r => new Job
             {
                 JobId = r.JobId,
@@ -79,8 +79,8 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             DateTimeOffset endWindow = BogusGenerator.Date.SoonOffset();
 
             IEnumerable<Run> includedRuns = CreateRandomRuns(startWindow, endWindow);
-            IEnumerable<Run> tooFarRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
-            IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
+            IEnumerable<Run> tooLateRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
+            IEnumerable<Run> allRuns = includedRuns.Concat(tooLateRuns);
             IEnumerable<Job> jobs = includedRuns.Select(r => new Job
             {
                 JobId = r.JobId, 
@@ -100,7 +100,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             Assert.All(finishedJobs, job => 
             {
                 Assert.Contains(includedRuns, run => run.RunId == job.Run.RunId);
-                Assert.DoesNotContain(tooFarRuns, run => run.RunId == job.Run.RunId);
+                Assert.DoesNotContain(tooLateRuns, run => run.RunId == job.Run.RunId);
                 Job expectedJob = Assert.Single(jobs, j => j.Settings.Name == job.JobName);
                 Assert.NotNull(expectedJob);
                 Assert.Equal(expectedJob.JobId, job.Run.JobId);
@@ -135,8 +135,8 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             string metricName = BogusGenerator.Random.Word();
 
             IEnumerable<Run> includedRuns = CreateRandomRuns(startWindow, endWindow);
-            IEnumerable<Run> tooFarRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
-            IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
+            IEnumerable<Run> tooLateRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
+            IEnumerable<Run> allRuns = includedRuns.Concat(tooLateRuns);
             IEnumerable<Job> jobs = allRuns.Select(r => new Job
             {
                 JobId = r.JobId,
@@ -159,7 +159,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
                 Assert.NotNull(job);
                 Assert.Contains(spyLogger.Messages, msg => msg.Contains(job.Settings.Name));
             });
-            Assert.All(tooFarRuns, run => 
+            Assert.All(tooLateRuns, run => 
             {
                 Assert.DoesNotContain(spyLogger.Messages, msg => msg.Contains(run.RunId.ToString()));
                 Assert.DoesNotContain(spyLogger.Messages, msg => msg.Contains(run.JobId.ToString()));
