@@ -107,6 +107,67 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             });
         }
 
+        [Fact]
+        public async Task MeasureJobOutcomes_WithNoAvailableFinishedJobs_ReturnsNoFinishedJobs()
+        {
+            // Arrange
+            DateTimeOffset startWindow = BogusGenerator.Date.RecentOffset();
+            DateTimeOffset endWindow = BogusGenerator.Date.SoonOffset();
+            string metricName = BogusGenerator.Random.Word();
+
+            DatabricksClient client = DatabricksClientFactory.Create(Enumerable.Empty<Run>(), Enumerable.Empty<Job>());
+            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var provider = new DatabricksInfoProvider(client, spyLogger);
+
+            // Act
+            await provider.MeasureJobOutcomesAsync(metricName, startWindow, endWindow);
+
+            // Assert
+            Assert.DoesNotContain(spyLogger.Messages, msg => msg.StartsWith("Metric " + metricName));
+        }
+
+        [Fact]
+        public async Task MeasureJobOutcomes_WithinTimeWindow_OnlyReturnsFinishedJobsWithinTheTimeWindow()
+        {
+            // Arrange
+            DateTimeOffset startWindow = BogusGenerator.Date.RecentOffset();
+            DateTimeOffset endWindow = BogusGenerator.Date.SoonOffset();
+            string metricName = BogusGenerator.Random.Word();
+
+            IEnumerable<Run> includedRuns = CreateRandomRuns(startWindow, endWindow);
+            IEnumerable<Run> tooFarRuns = CreateRandomRuns(endWindow, BogusGenerator.Date.FutureOffset());
+            IEnumerable<Run> allRuns = includedRuns.Concat(tooFarRuns);
+            IEnumerable<Job> jobs = allRuns.Select(r => new Job
+            {
+                JobId = r.JobId,
+                Settings = new JobSettings { Name = Guid.NewGuid().ToString() }
+            }).ToArray();
+
+            DatabricksClient client = DatabricksClientFactory.Create(allRuns, jobs);
+            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var provider = new DatabricksInfoProvider(client, spyLogger);
+
+            // Act
+            await provider.MeasureJobOutcomesAsync(metricName, startWindow, endWindow);
+
+            // Assert
+            Assert.All(includedRuns, run =>
+            {
+                Assert.Contains(spyLogger.Messages, msg => msg.Contains(run.RunId.ToString()));
+                Assert.Contains(spyLogger.Messages, msg => msg.Contains(run.JobId.ToString()));
+                Job job = Assert.Single(jobs, j => j.JobId == run.JobId);
+                Assert.NotNull(job);
+                Assert.Contains(spyLogger.Messages, msg => msg.Contains(job.Settings.Name));
+            });
+            Assert.All(tooFarRuns, run => 
+            {
+                Assert.DoesNotContain(spyLogger.Messages, msg => msg.Contains(run.RunId.ToString()));
+                Assert.DoesNotContain(spyLogger.Messages, msg => msg.Contains(run.JobId.ToString()));
+                Job job = Assert.Single(jobs, j => j.JobId == run.JobId);
+                Assert.NotNull(job);
+                Assert.DoesNotContain(spyLogger.Messages, msg => msg.Contains(job.Settings.Name));
+            });
+        }
         private static IEnumerable<Run> CreateRandomRuns(DateTimeOffset startWindow, DateTimeOffset endWindow)
         {
             int range = BogusGenerator.Random.Int(5, 10);
@@ -120,6 +181,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
                     SetupDuration = 0,
                     CleanupDuration = 0,
                     StartTime = startTime,
+                    JobId = BogusGenerator.Random.Long(),
                     State = new RunState { ResultState = RunResultState.SUCCESS }
                 };
             });

@@ -14,11 +14,17 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
     public class SpyLogger<T> : ILogger<T>
     {
         private readonly ICollection<string> _messages = new Collection<string>();
+        private readonly ICollection<LogEntry> _entries = new Collection<LogEntry>();
 
         /// <summary>
         /// Gets the current logged messages.
         /// </summary>
         public IEnumerable<string> Messages => _messages.AsEnumerable();
+
+        /// <summary>
+        /// Gets the current logged entries.
+        /// </summary>
+        public IEnumerable<LogEntry> Entries => _entries.AsEnumerable();
 
         /// <summary>Writes a log entry.</summary>
         /// <param name="logLevel">Entry will be written on this level.</param>
@@ -33,6 +39,9 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
 
             string message = formatter(state, exception);
             _messages.Add(message);
+
+            var entry = new LogEntry(eventId, logLevel, message, exception);
+            _entries.Add(entry);
         }
 
         /// <summary>

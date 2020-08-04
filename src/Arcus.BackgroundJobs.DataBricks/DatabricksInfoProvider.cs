@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Arcus.BackgroundJobs.Databricks.Extensions;
 using GuardNet;
 using Microsoft.Azure.Databricks.Client;
 using Microsoft.Extensions.Logging;
@@ -38,14 +38,14 @@ namespace Arcus.BackgroundJobs.Databricks
         /// <para>
         ///  Combines:
         ///  <para><see cref="GetFinishedJobRunsAsync"/> and </para>
-        ///  <para><see cref="ReportFinishedJobOutcomeAsync"/>.</para>
+        ///  <para><see cref="Extensions.ILoggerExtensions.LogMetricFinishedJobOutcome"/>.</para>
         /// </para>
         /// </summary>
         /// <param name="metricName">The name of the logging metric.</param>
         /// <param name="startOfWindow">The start of time window which we are interested in. (Inclusive)</param>
         /// <param name="endOfWindow">The snd of time window which we are interested in. (Exclusive)</param>
         /// <seealso cref="GetFinishedJobRunsAsync"/>
-        /// <seealso cref="ReportFinishedJobOutcomeAsync"/>
+        /// <seealso cref="Extensions.ILoggerExtensions.LogMetricFinishedJobOutcome"/>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="metricName"/> is blank.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endOfWindow"/> is less than the <paramref name="startOfWindow"/>.</exception>
         public async Task MeasureJobOutcomesAsync(string metricName, DateTimeOffset startOfWindow, DateTimeOffset endOfWindow)
@@ -56,7 +56,7 @@ namespace Arcus.BackgroundJobs.Databricks
             IEnumerable<JobRun> finishedJobRuns = await GetFinishedJobRunsAsync(startOfWindow, endOfWindow);
             foreach (JobRun finishedJob in finishedJobRuns)
             {
-                await ReportFinishedJobOutcomeAsync(metricName, finishedJob);
+                _logger.LogMetricFinishedJobOutcome(metricName, finishedJob);
             }
         }
 
@@ -110,42 +110,6 @@ namespace Arcus.BackgroundJobs.Databricks
             } while (hasMoreInformation);
 
             return finishedJobs;
-        }
-
-        /// <summary>
-        /// Report a given <paramref name="jobRun"/> as a logging metric with the specified <paramref name="metricName"/>.
-        /// </summary>
-        /// <param name="metricName">The name of the logging metric.</param>
-        /// <param name="jobRun">The instance to report.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="metricName"/> is blank.</exception>
-        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="jobRun"/> is <c>null</c>.</exception>
-        public Task ReportFinishedJobOutcomeAsync(string metricName, JobRun jobRun)
-        {
-            Guard.NotNullOrWhitespace(metricName, nameof(metricName));
-            Guard.NotNull(jobRun, nameof(jobRun));
-
-            TextInfo text = new CultureInfo("en-US", useUserOverride: false).TextInfo;
-            _logger.LogInformation("Found finished job run with ID {RunId}", jobRun.Run.RunId);
-
-            RunResultState? resultState = jobRun.Run.State.ResultState;
-            if (resultState is null)
-            {
-                _logger.LogWarning("Cannot find result state of finished job run with ID {RunId}", jobRun.Run.RunId);
-            }
-            else
-            {
-                string outcome = text.ToLower(resultState.ToString());
-
-                _logger.LogMetric(metricName, value: 1, context: new Dictionary<string, object>
-                {
-                    { "Run Id", jobRun.Run.RunId },
-                    { "Job Id", jobRun.Run.JobId },
-                    { "Job Name", jobRun.JobName },
-                    { "Outcome", outcome }
-                });
-            }
-
-            return Task.CompletedTask;
         }
 
         /// <summary>
