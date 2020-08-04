@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arcus.BackgroundJobs.DataBricks\Arcus.BackgroundJobs.Databricks.csproj" />
+    <ProjectReference Include="..\Arcus.BackgroundJobs.Databricks\Arcus.BackgroundJobs.Databricks.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.KeyVault\Arcus.BackgroundJobs.KeyVault.csproj" />
   </ItemGroup>
 
