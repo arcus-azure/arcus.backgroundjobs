@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.KeyVau
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{940B9B9D-3960-40D7-B062-BD7E8B5E967D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.Databricks", "Arcus.BackgroundJobs.Databricks\Arcus.BackgroundJobs.Databricks.csproj", "{D38D2F5E-A151-4016-8D09-EDA6845E27C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{8170286D-CEDD-4CB2-B616-EA8FD113306D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8170286D-CEDD-4CB2-B616-EA8FD113306D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8170286D-CEDD-4CB2-B616-EA8FD113306D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D38D2F5E-A151-4016-8D09-EDA6845E27C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D38D2F5E-A151-4016-8D09-EDA6845E27C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D38D2F5E-A151-4016-8D09-EDA6845E27C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D38D2F5E-A151-4016-8D09-EDA6845E27C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
