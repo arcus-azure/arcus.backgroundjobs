@@ -19,6 +19,4 @@
     <ProjectReference Include="..\Arcus.BackgroundJobs.Databricks\Arcus.BackgroundJobs.Databricks.csproj" />
   </ItemGroup>
 
-
-  
 </Project>
