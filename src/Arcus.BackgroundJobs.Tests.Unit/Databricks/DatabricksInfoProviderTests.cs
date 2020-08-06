@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Databricks;
+using Arcus.Testing.Logging;
 using Bogus;
 using Microsoft.Azure.Databricks.Client;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -116,7 +117,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             string metricName = BogusGenerator.Random.Word();
 
             DatabricksClient client = DatabricksClientFactory.Create(Enumerable.Empty<Run>(), Enumerable.Empty<Job>());
-            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var spyLogger = new InMemoryLogger<DatabricksJobMetricsJob>();
             var provider = new DatabricksInfoProvider(client, spyLogger);
 
             // Act
@@ -144,7 +145,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             }).ToArray();
 
             DatabricksClient client = DatabricksClientFactory.Create(allRuns, jobs);
-            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var spyLogger = new InMemoryLogger<DatabricksJobMetricsJob>();
             var provider = new DatabricksInfoProvider(client, spyLogger);
 
             // Act

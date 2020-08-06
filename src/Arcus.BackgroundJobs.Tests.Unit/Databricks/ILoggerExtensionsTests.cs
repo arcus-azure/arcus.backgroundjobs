@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Arcus.BackgroundJobs.Databricks;
 using Arcus.BackgroundJobs.Databricks.Extensions;
+using Arcus.Testing.Logging;
 using Bogus;
 using Microsoft.Azure.Databricks.Client;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
         public void LogMetricFinishedJobOutcome_WithBlankMetricName_Throws(string metricName)
         {
             // Arrange
-            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var spyLogger = new InMemoryLogger<DatabricksJobMetricsJob>();
             var jobRun = new JobRun(BogusGenerator.Random.Word(), new Run());
 
             // Act / Assert
@@ -34,7 +35,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
         public void LogMetricFinishedJobOutcome_WithoutJobRun_Throws()
         {
             // Arrange
-            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var spyLogger = new InMemoryLogger<DatabricksJobMetricsJob>();
             string metricName = BogusGenerator.Random.Word();
 
             // Act / Assert
@@ -46,7 +47,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
         public void LogMetricFinishedJobOutcome_WithoutRunOutcome_LogsWarning()
         {
             // Arrange
-            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var spyLogger = new InMemoryLogger<DatabricksJobMetricsJob>();
             string metricName = BogusGenerator.Random.Word();
             var run = new Run { State = new RunState { ResultState = null } };
             var jobRun = new JobRun(BogusGenerator.Random.Word(), run);
@@ -63,7 +64,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
         public void LogMetricFinishedJobOutcome_WithRunOutcome_LogsRunOutcome()
         {
             // Arrange
-            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var spyLogger = new InMemoryLogger<DatabricksJobMetricsJob>();
             string metricName = BogusGenerator.Random.Word();
             var resultState = BogusGenerator.PickRandom<RunResultState>();
             var run = new Run { State = new RunState { ResultState = resultState } };
@@ -82,7 +83,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
         public void LogMetricFinishedJobOutcome_WithDuplicateContextKey_DiscardsContextItem()
         {
             // Arrange
-            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var spyLogger = new InMemoryLogger<DatabricksJobMetricsJob>();
             string metricName = BogusGenerator.Random.Word();
             var resultState = BogusGenerator.PickRandom<RunResultState>();
             var run = new Run { State = new RunState { ResultState = resultState } };

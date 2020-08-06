@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Databricks;
 using Arcus.Security.Core;
+using Arcus.Testing.Logging;
 using Bogus;
 using Microsoft.Azure.Databricks.Client;
 using Microsoft.Extensions.Options;
@@ -38,7 +39,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             optionsStub.Setup(s => s.Get(nameof(DatabricksJobMetricsJob)))
                        .Returns(options);
 
-            var spyLogger = new SpyLogger<DatabricksJobMetricsJob>();
+            var spyLogger = new InMemoryLogger<DatabricksJobMetricsJob>();
             var schedulerJob = new DatabricksJobMetricsJob(
                 optionsStub.Object,
                 Mock.Of<ISecretProvider>(),

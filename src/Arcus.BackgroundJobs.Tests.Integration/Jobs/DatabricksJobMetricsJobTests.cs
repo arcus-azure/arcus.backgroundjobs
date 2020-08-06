@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.Security.Core;
+using Arcus.Testing.Logging;
 using Microsoft.Azure.Databricks.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         private readonly ITestOutputHelper _outputWriter;
         private readonly TestHost _host;
         private readonly TestConfig _config;
-        private readonly SpyLogger _spyLogger;
+        private readonly InMemoryLogger _spyLogger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabricksJobMetricsJobTests"/> class.
@@ -30,7 +31,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         {
             _outputWriter = outputWriter;
             _config = TestConfig.Create();
-            _spyLogger = new SpyLogger();
+            _spyLogger = new InMemoryLogger();
             _host = new TestHost(_config, ConfigureServices);
         }
 
