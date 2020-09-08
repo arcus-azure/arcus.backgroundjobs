@@ -21,8 +21,9 @@ For more granular packages we recommend reading the documentation.
     - [Securely Receive CloudEvents](features/cloudevent/receive-cloudevents-job)
 - **Security**
     - [Automatically invalidate cached secrets from Azure Key Vault](features/security/auto-invalidate-secrets)
-- **Telemetry**
+- **Databricks**
     - [Measure Databricks job run outcomes as metric](features/databricks/job-metrics)
+        - [Interact directly with Databricks for full control of job measurement](features/databricks/databricks-info-provider)
 
 # License
 This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.
