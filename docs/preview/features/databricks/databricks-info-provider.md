@@ -43,3 +43,5 @@ await provider.MeasureJobOutcomesAsync(metricName, startOfWindow, endOfWindow);
 
 > Note: you can always call **Getting finished jobs** yourself and pass along the finished jobs to the available `ILogger.LogMetricFinishedJobOutcome` extension. 
 > That way, you can pass along additional contextual properties
+
+[&larr; back](/)
