@@ -1,4 +1,9 @@
-### Databricks information provider
+---
+title: "Interact with Databricks to gain insights"
+layout: default
+---
+
+# Interact with Databricks to gain insights
 
 The background job makes use of the available `DatabricksInfoProvider` to measure and report the finished job outcomes.
 This provider can be used outside the background job environment (ex. Azure Functions).
