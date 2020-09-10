@@ -15,7 +15,7 @@ To use these features, you have to install the following package:
 
 ## Usage
 We provide a  `DatabricksInfoProvider` which allows you to interact with Databricks clusters to gain insights on your workloads, such as measuring job run outcomes.
-This provider can be used outside the background job environment (ex. Azure Functions).
+It can be easily setup and used anywhere such as .NET Core workers, Azure Functions and more. We are using this ourselves for our [job metrics](./job-metrics).
 
 ```csharp
 ILogger logger = ...
