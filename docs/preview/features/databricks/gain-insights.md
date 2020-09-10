@@ -13,6 +13,8 @@ To use these features, you have to install the following package:
 PM > Install-Package Arcus.BackgroundJobs.Databricks
 ```
 
+> :bulb: With using our [Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights](https://www.nuget.org/packages/Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights/), you can report these Databricks reports as metrics in Application Insights.
+
 ## Usage
 The background job makes use of the available `DatabricksInfoProvider` to measure and report the finished job outcomes.
 This provider can be used outside the background job environment (ex. Azure Functions).
@@ -45,7 +47,6 @@ Measures the finished job runs by reporting the results as logging metrics.
 
 This method is an combination of the previously defined method (**Getting finished jobs**) and calling an `ILogger` extension provided in this package (`ILogger.LogMetricFinishedJobOutcome`) which will write the finished job runs `JobRun` instances as metrics.
 
-> :bulb: With using our [Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights](https://www.nuget.org/packages/Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights/), you can report these Databricks reports as metrics in Application Insights.
 ```csharp
 DatabricksInfoProvider provider = ...
 var metricName = "Databricks Job Completed";
