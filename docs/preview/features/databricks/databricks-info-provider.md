@@ -24,7 +24,6 @@ using (var provider = new DatabricksInfoProvider(client, logger))
 {
 }
 ```
-The provider provides two methods.
 **Getting finished jobs**
 Gets all the finished job runs within a given time window.
 ```csharp
