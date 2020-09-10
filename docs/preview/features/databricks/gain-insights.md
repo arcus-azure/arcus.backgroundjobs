@@ -9,9 +9,9 @@ layout: default
 
 To use these features, you have to install the following package:
 
-	```shell
-	PM > Install-Package Arcus.BackgroundJobs.Databricks
-	```
+```shell
+PM > Install-Package Arcus.BackgroundJobs.Databricks
+```
 
 ## Usage
 The background job makes use of the available `DatabricksInfoProvider` to measure and report the finished job outcomes.
