@@ -40,7 +40,7 @@ RunResultState? resultState = jobRun.Run.State.ResultState;
 ```
 
 ### Measure finished job outcomes
-Measures the finished job runs by reporting the results as logging metrics.
+Measures the finished job runs by reporting the results as (multi-dimensional) metrics.
 
 This method is an combination of the previously defined method (**Getting finished jobs**) and calling an `ILogger` extension provided in this package (`ILogger.LogMetricFinishedJobOutcome`) which will write the finished job runs `JobRun` instances as metrics.
 
