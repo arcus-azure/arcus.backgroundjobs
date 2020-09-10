@@ -16,7 +16,7 @@ Easy to install it via NuGet:
 PM > Install-Package Arcus.BackgroundJobs.CloudEvents
 ```
 
-- **Azure Key Vault background jobs*"
+- **Azure Key Vault background jobs**
 
 ```shell
 PM > Install-Package Arcus.BackgroundJobs.KeyVault
