@@ -14,7 +14,7 @@ To use these features, you have to install the following package:
 	```
 
 ## Usage
-The background job makes use of the available `DatabricksInfoProvider` to measure and report the finished job outcomes.
+We provide a  `DatabricksInfoProvider` which allows you to interact with Databricks clusters to gain insights on your workloads, such as measuring job run outcomes.
 This provider can be used outside the background job environment (ex. Azure Functions).
 
 ```csharp
