@@ -89,7 +89,7 @@ stages:
 
   - stage: Release
     displayName: 'Release to NuGet.org'
-    dependsOn: 
+    dependsOn:
       - UnitTests
       - IntegrationTests
     condition: succeeded()
