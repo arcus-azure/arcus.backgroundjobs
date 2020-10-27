@@ -82,10 +82,10 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - template: test/run-integration-tests.yml@templates
-            parameters:
-              dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-              projectName: '$(Project).Tests.Integration'
+          #- template: test/run-integration-tests.yml@templates
+          #  parameters:
+          #    dotnetSdkVersion: '$(DotNet.Sdk.Version)'
+          #    projectName: '$(Project).Tests.Integration'
 
   - stage: Release
     displayName: 'Release to NuGet.org'
