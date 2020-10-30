@@ -71,11 +71,12 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             // Arrange
             string baseUrl = GetDatabricksUrl();
             string token = GetDatabricksToken();
+            int jobId = GetDatabricksJobId();
 
             using (var client = DatabricksClient.CreateClient(baseUrl, token))
             {
                 // Act
-                await client.Jobs.RunNow(9, RunParameters.CreateNotebookParams(Enumerable.Empty<KeyValuePair<string, string>>()));
+                await client.Jobs.RunNow(jobId, RunParameters.CreateNotebookParams(Enumerable.Empty<KeyValuePair<string, string>>()));
 
                 // Assert
                 RetryAssertion(
@@ -95,6 +96,12 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         {
             string token = _config.GetValue<string>("Arcus:Databricks:Token");
             return token;
+        }
+
+        private int GetDatabricksJobId()
+        {
+            int jobId = _config.GetValue<int>("Arcus:Databricks:JobId");
+            return jobId;
         }
 
         private static void RetryAssertion(Action assertion, TimeSpan timeout, TimeSpan interval)
