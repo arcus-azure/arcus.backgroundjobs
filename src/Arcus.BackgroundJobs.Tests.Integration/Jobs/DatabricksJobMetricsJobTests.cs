@@ -64,7 +64,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             await host.StartAsync();
         }
 
-        [Fact(Skip = "Databricks cluster is to expensive for testing")]
+        [Fact]
         public async Task FinishedDatabricksJobRun_GetsNoticedByRepeatedlyDatabricksJob_ReportsAsMetric()
         {
             // Arrange
@@ -73,15 +73,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
 
             using (var client = DatabricksClient.CreateClient(baseUrl, token))
             {
-                var parameters = new[]
-                {
-                    new KeyValuePair<string, string>("RequestId", "1"),
-                    new KeyValuePair<string, string>("SenderName", "ArcusSender"),
-                    new KeyValuePair<string, string>("ThrowError", "False")
-                };
-
                 // Act
-                await client.Jobs.RunNow(2, RunParameters.CreateNotebookParams(parameters));
+                await client.Jobs.RunNow(9, RunParameters.CreateNotebookParams(Enumerable.Empty<KeyValuePair<string, string>>()));
 
                 // Assert
                 RetryAssertion(
