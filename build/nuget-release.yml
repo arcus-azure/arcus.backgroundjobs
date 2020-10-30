@@ -20,6 +20,7 @@ variables:
   - group: 'Build Configuration'
   - group: 'Arcus Background Jobs - .NET'
   - template: ./variables/build.yml
+  - template: ./variables/test.yml
   - name: 'GitHub.Repository'
     value: 'arcus-azure/arcus.backgroundjobs'
   - name: 'Package.Version'

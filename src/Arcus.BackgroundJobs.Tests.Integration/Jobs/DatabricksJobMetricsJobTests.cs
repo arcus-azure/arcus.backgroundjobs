@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.Security.Core;
@@ -64,24 +65,18 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             await host.StartAsync();
         }
 
-        [Fact(Skip = "Databricks cluster is to expensive for testing")]
+        [Fact]
         public async Task FinishedDatabricksJobRun_GetsNoticedByRepeatedlyDatabricksJob_ReportsAsMetric()
         {
             // Arrange
             string baseUrl = GetDatabricksUrl();
             string token = GetDatabricksToken();
+            int jobId = GetDatabricksJobId();
 
             using (var client = DatabricksClient.CreateClient(baseUrl, token))
             {
-                var parameters = new[]
-                {
-                    new KeyValuePair<string, string>("RequestId", "1"),
-                    new KeyValuePair<string, string>("SenderName", "ArcusSender"),
-                    new KeyValuePair<string, string>("ThrowError", "False")
-                };
-
                 // Act
-                await client.Jobs.RunNow(2, RunParameters.CreateNotebookParams(parameters));
+                await client.Jobs.RunNow(jobId, RunParameters.CreateNotebookParams(Enumerable.Empty<KeyValuePair<string, string>>()));
 
                 // Assert
                 RetryAssertion(
@@ -101,6 +96,12 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         {
             string token = _config.GetValue<string>("Arcus:Databricks:Token");
             return token;
+        }
+
+        private int GetDatabricksJobId()
+        {
+            int jobId = _config.GetValue<int>("Arcus:Databricks:JobId");
+            return jobId;
         }
 
         private static void RetryAssertion(Action assertion, TimeSpan timeout, TimeSpan interval)
