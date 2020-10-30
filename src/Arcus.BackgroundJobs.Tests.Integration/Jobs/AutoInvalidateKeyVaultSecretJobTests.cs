@@ -64,7 +64,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             return Task.CompletedTask;
         }
 
-        [Fact]
+        [Fact(Skip = "Problem with Azure Key Vault events firing")]
         public async Task NewSecretVersion_TriggersKeyVaultJob_AutoInvalidatesSecret()
         {
             // Arrange
