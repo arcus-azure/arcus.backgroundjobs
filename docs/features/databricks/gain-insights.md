@@ -35,6 +35,8 @@ using (var provider = new DatabricksInfoProvider(client, logger))
 ### Getting finished job run information
 Gets all the finished job runs within a given time window.
 ```csharp
+using Arcus.BackgroundJobs.Databricks;
+
 DatabricksInfoProvider provider = ...
 var startOfWindow = DateTimeOffset.UtcNow.AddDays(-1);
 var endOfWindow = DateTimeOffset.UtcNow;
