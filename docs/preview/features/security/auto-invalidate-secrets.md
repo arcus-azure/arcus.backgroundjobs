@@ -28,22 +28,29 @@ To make this automation opperational, following Azure Resources has to be used:
 Our background job has to be configured in `ConfigureServices` method:
 
 ```csharp
-public void ConfigureServices(IServiceCollection services)
+using Arcus.Security.Core;
+using Arcus.Security.Core.Caching;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    // An 'ISecretProvider' implementation (see: https://security.arcus-azure.net/) to access the Azure Service Bus Topic resource;
-    //     this will get the 'serviceBusTopicConnectionStringSecretKey' string (configured below) and has to retrieve the connection string for the topic.
-    services.AddSingleton<ISecretProvider>(serviceProvider => ...);
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // An 'ISecretProvider' implementation (see: https://security.arcus-azure.net/) to access the Azure Service Bus Topic resource;
+        //     this will get the 'serviceBusTopicConnectionStringSecretKey' string (configured below) and has to retrieve the connection string for the topic.
+        services.AddSingleton<ISecretProvider>(serviceProvider => ...);
 
-    // An `ICachedSecretProvider` implementation which secret keys will automatically be invalidated.
-    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(mySecretProvider));
+        // An `ICachedSecretProvider` implementation which secret keys will automatically be invalidated.
+        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(mySecretProvider));
 
-    services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
-        // Prefix of the Azure Service Bus Topic subscription;
-        //    this allows the background jobs to support applications that are running multiple instances, processing the same type of events, without conflicting subscription names.
-        subscriptionNamePrefix: "MyPrefix"
+        services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
+            // Prefix of the Azure Service Bus Topic subscription;
+            //    this allows the background jobs to support applications that are running multiple instances, processing the same type of events, without conflicting subscription names.
+            subscriptionNamePrefix: "MyPrefix"
 
-        // Connection string secret key to a Azure Service Bus Topic.
-        serviceBusTopicConnectionStringSecretKey: "MySecretKeyToServiceBusTopicConnectionString");
+            // Connection string secret key to a Azure Service Bus Topic.
+            serviceBusTopicConnectionStringSecretKey: "MySecretKeyToServiceBusTopicConnectionString");
+    }
 }
 ```
 
