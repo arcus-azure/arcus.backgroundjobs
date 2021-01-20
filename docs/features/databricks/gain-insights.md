@@ -21,6 +21,10 @@ We provide a  `DatabricksInfoProvider` which allows you to interact with Databri
 It can be easily setup and used anywhere such as .NET Core workers, Azure Functions and more. We are using this ourselves for our [job metrics](./job-metrics).
 
 ```csharp
+using Arcus.BackgroundJobs.Databricks;
+using Microsoft.Azure.Databricks.Client;
+using Microsoft.Extensions.Logging;
+
 ILogger logger = ...
 using (var client = DatabricksClient.CreateClient("https://databricks.base.url", "security.token"))
 using (var provider = new DatabricksInfoProvider(client, logger))
@@ -45,6 +49,8 @@ Measures the finished job runs by reporting the results as (multi-dimensional) m
 This method is an combination of the previously defined method (**Getting finished jobs**) and calling an `ILogger` extension provided in this package (`ILogger.LogMetricFinishedJobOutcome`) which will write the finished job runs `JobRun` instances as metrics.
 
 ```csharp
+using Arcus.BackgroundJobs.Databricks;
+
 DatabricksInfoProvider provider = ...
 var metricName = "Databricks Job Completed";
 var startOfWindow = DateTimeOffset.UtcNow.AddDays(-1);
