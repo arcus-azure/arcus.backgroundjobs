@@ -15,7 +15,7 @@ ID = "948a2fc9-c3a2-45db-871c-ff2aaeaacad8"
   publish = "_site"
 
   # Default build command.
-  command = "hugo --gc --minify"
+  command = "hugo --minify"
 
   # Directory with the lambda functions to deploy to AWS.
   # functions = "project/functions/"
