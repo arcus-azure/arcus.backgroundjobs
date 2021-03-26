@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,maximum-scale=2">
+    <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css?v=7553ce33bbf9e8c83cdc25dc8fd9357eca9b96ab">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Securely Receive CloudEvents | Arcus Background Jobs</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Securely Receive CloudEvents" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Background job development in Azure with a breeze" />
+<meta property="og:description" content="Background job development in Azure with a breeze" />
+<link rel="canonical" href="http://localhost:4000/features/cloudevent/receive-cloudevents-job.html" />
+<meta property="og:url" content="http://localhost:4000/features/cloudevent/receive-cloudevents-job.html" />
+<meta property="og:site_name" content="Arcus Background Jobs" />
+<script type="application/ld+json">
+{"headline":"Securely Receive CloudEvents","url":"http://localhost:4000/features/cloudevent/receive-cloudevents-job.html","description":"Background job development in Azure with a breeze","@type":"WebPage","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png"}},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/arcus-azure/arcus.backgroundjobs">View on GitHub</a>
+
+          <h1 id="project_title">Arcus Background Jobs</h1>
+          <h2 id="project_tagline">Background job development in Azure with a breeze</h2>
+
+          
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1 id="securely-receive-cloudevents">Securely Receive CloudEvents</h1>
+
+<p>The <code class="highlighter-rouge">Arcus.BackgroundJobs.CloudEvents</code> library provides a collection of background jobs to securely receive <a href="https://github.com/cloudevents/spec">CloudEvents</a>.</p>
+
+<p>This allows workloads to asynchronously process event from other components without exposing a public endpoint.</p>
+
+<h2 id="how-does-it-work">How does it work?</h2>
+
+<p>An Azure Service Bus Topic resource is required to receive CloudEvents on. CloudEvent messages on this Topic will be processed by a background job.</p>
+
+<p><img src="/media/CloudEvents-Job.png" alt="Automatically Invalidate Azure Key Vault Secrets" /></p>
+
+<p>You can write your own background job(s) by deriving from <code class="highlighter-rouge">CloudEventBackgroundJob</code> which already takes care of topic subscription creation/deletion on start/stop of the job.</p>
+
+<h2 id="usage">Usage</h2>
+
+<p>You can easily implement your own job by implementing the <code class="highlighter-rouge">ProcessMessageAsync</code> method to prcocess new CloudEvents.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">MyBackgroundJob</span> <span class="p">:</span> <span class="n">CloudEventBackgroundJob</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="nf">MyBackgroundJob</span><span class="p">(</span>
+        <span class="n">IConfiguration</span> <span class="n">configuration</span><span class="p">,</span>
+        <span class="n">IServiceProvider</span> <span class="n">serviceProvider</span><span class="p">,</span>
+        <span class="n">ILogger</span><span class="p">&lt;</span><span class="n">CloudEventBackgroundJob</span><span class="p">&gt;</span> <span class="n">logger</span><span class="p">)</span> <span class="p">:</span> <span class="k">base</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">serviceProvider</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+    <span class="p">{</span>
+
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">override</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">ProcessMessageAsync</span><span class="p">(</span>
+        <span class="n">CloudEvent</span> <span class="n">message</span><span class="p">,</span>
+        <span class="n">AzureServiceBusMessageContext</span> <span class="n">messageContext</span><span class="p">,</span>
+        <span class="n">MessageCorrelationInfo</span> <span class="n">correlationInfo</span><span class="p">,</span>
+        <span class="n">CancellationToken</span> <span class="n">cancellationToken</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">// Process the CloudEvent message...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="/">← back</a></p>
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        
+        <p class="copyright">Arcus Background Jobs maintained by <a href="https://github.com/arcus-azure">arcus-azure</a></p>
+        
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+  </body>
+</html>
