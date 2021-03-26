@@ -332,3 +332,4 @@ ASALocalRun/
 
 # Custom
 docs/_site/*
+docs-legacy/_site/*
