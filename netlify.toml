@@ -15,13 +15,13 @@ ID = "948a2fc9-c3a2-45db-871c-ff2aaeaacad8"
   publish = "_site"
 
   # Default build command.
-  command = "jekyll build"
+  command = "hugo --gc --minify"
 
   # Directory with the lambda functions to deploy to AWS.
   # functions = "project/functions/"
 
 [build.environment]
-  RUBY_VERSION = "2.6.2"
+  HUGO_VERSION = "0.67.0"
 
 # Production context: all deploys from the Production branch set in your site's 
 # deploy settings will inherit these settings.
