@@ -10,6 +10,10 @@ using Microsoft.Extensions.Logging;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extensions on the <see cref="IServiceCollection"/> to add CloudEvent-related background jobs.
+    /// </summary>
+    // ReSharper disable once InconsistentNaming
     public static class IServiceCollectionExtensions
     {
         /// <summary>
