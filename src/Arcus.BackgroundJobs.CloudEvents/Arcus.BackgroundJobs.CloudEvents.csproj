@@ -18,8 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.EventGrid" Version="3.0.0" />
-    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="0.1.0" />
+    <PackageReference Include="Arcus.EventGrid" Version="[3.0.0,4.0.0)" />
+    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="[0.1.0,1.0.0)" />
   </ItemGroup>
 
 </Project>
