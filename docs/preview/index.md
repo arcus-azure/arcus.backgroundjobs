@@ -21,6 +21,7 @@ For more granular packages we recommend reading the documentation.
     - [Securely Receive CloudEvents](features/cloudevent/receive-cloudevents-job)
 - **Security**
     - [Automatically invalidate cached secrets from Azure Key Vault](features/security/auto-invalidate-secrets)
+    - [Automatically restart Azure Service Bus message pump on rotated credentials](features/security/auto-restart-servicebus-messagepump-on-rotated-credentials)
 - **Databricks**
     - [Measure Databricks job run outcomes as metric](features/databricks/job-metrics)
     - [Interact with Databricks to gain insights](features/databricks/gain-insights)
