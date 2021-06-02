@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     if (messagePump is null)
                     {
                         throw new InvalidOperationException(
-                            $"Cannot register re-authentication without a '{nameof(AzureServiceBusMessagePump)}' with 'JobId' = '{jobId}'");
+                            $"Cannot register re-authentication without a '{nameof(AzureServiceBusMessagePump)}' with job id {jobId}");
                     }
 
                     var messageHandlerLogger = serviceProvider.GetRequiredService<ILogger<ReAuthenticateOnRotatedCredentialsMessageHandler>>();
