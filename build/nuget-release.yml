@@ -32,7 +32,7 @@ stages:
     jobs:
       - job: Compile
         pool:
-          vmImage: 'ubuntu-16.04'
+          vmImage: '$(Vm.Image)'
         steps:
           - template: build/build-solution.yml@templates
             parameters:
@@ -57,7 +57,7 @@ stages:
       - job: UnitTests
         displayName: 'Run unit tests'
         pool:
-          vmImage: 'ubuntu-16.04'
+          vmImage: '$(Vm.Image)'
         steps:
           - task: DownloadPipelineArtifact@2
             displayName: 'Download build artifacts'
@@ -77,7 +77,7 @@ stages:
       - job: IntegrationTests
         displayName: 'Run integration tests'
         pool:
-          vmImage: 'ubuntu-16.04'
+          vmImage: '$(Vm.Image)'
         steps:
           - task: DownloadPipelineArtifact@2
             displayName: 'Download build artifacts'
@@ -99,7 +99,7 @@ stages:
       - job: PushToNuGet
         displayName: 'Push to NuGet.org'
         pool:
-          vmImage: 'ubuntu-16.04'
+          vmImage: '$(Vm.Image)'
         steps:
           - task: DownloadPipelineArtifact@2
             displayName: 'Download build artifacts'
