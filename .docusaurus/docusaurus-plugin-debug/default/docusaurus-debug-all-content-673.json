@@ -1,0 +1,555 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "loadedVersions": [
+        {
+          "versionName": "current",
+          "versionLabel": "Next",
+          "versionPath": "/next",
+          "versionEditUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs",
+          "versionEditUrlLocalized": "https://github.com/facebook/docusaurus/edit/master/website/i18n/en/docusaurus-plugin-content-docs/current",
+          "versionBanner": "unreleased",
+          "isLast": false,
+          "sidebarFilePath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/sidebars.js",
+          "contentPath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/docs",
+          "contentPathLocalized": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/i18n/en/docusaurus-plugin-content-docs/current",
+          "mainDocId": "home",
+          "sidebars": {
+            "tutorialSidebar": [
+              {
+                "type": "category",
+                "label": "features",
+                "items": [
+                  {
+                    "type": "category",
+                    "label": "cloudevent",
+                    "items": [
+                      {
+                        "type": "doc",
+                        "id": "features/cloudevent/receive-cloudevents-job"
+                      }
+                    ],
+                    "collapsed": true
+                  },
+                  {
+                    "type": "category",
+                    "label": "databricks",
+                    "items": [
+                      {
+                        "type": "doc",
+                        "id": "features/databricks/gain-insights"
+                      },
+                      {
+                        "type": "doc",
+                        "id": "features/databricks/job-metrics"
+                      }
+                    ],
+                    "collapsed": true
+                  },
+                  {
+                    "type": "category",
+                    "label": "security",
+                    "items": [
+                      {
+                        "type": "doc",
+                        "id": "features/security/auto-invalidate-secrets"
+                      }
+                    ],
+                    "collapsed": true
+                  }
+                ],
+                "collapsed": true
+              },
+              {
+                "type": "doc",
+                "id": "home"
+              }
+            ]
+          },
+          "permalinkToSidebar": {
+            "/next/features/cloudevent/receive-cloudevents-job": "tutorialSidebar",
+            "/next/features/databricks/gain-insights": "tutorialSidebar",
+            "/next/features/databricks/job-metrics": "tutorialSidebar",
+            "/next/features/security/auto-invalidate-secrets": "tutorialSidebar",
+            "/next/": "tutorialSidebar"
+          },
+          "docs": [
+            {
+              "unversionedId": "features/cloudevent/receive-cloudevents-job",
+              "id": "features/cloudevent/receive-cloudevents-job",
+              "isDocsHomePage": false,
+              "title": "Securely Receive CloudEvents",
+              "description": "The Arcus.BackgroundJobs.CloudEvents library provides a collection of background jobs to securely receive CloudEvents.",
+              "source": "@site/docs/features/cloudevent/receive-cloudevents-job.md",
+              "sourceDirName": "features/cloudevent",
+              "slug": "/features/cloudevent/receive-cloudevents-job",
+              "permalink": "/next/features/cloudevent/receive-cloudevents-job",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/cloudevent/receive-cloudevents-job.md",
+              "version": "current",
+              "frontMatter": {
+                "title": "Securely Receive CloudEvents",
+                "layout": "default"
+              },
+              "sidebar": "tutorialSidebar",
+              "next": {
+                "title": "Interact with Databricks to gain insights",
+                "permalink": "/next/features/databricks/gain-insights"
+              }
+            },
+            {
+              "unversionedId": "features/databricks/gain-insights",
+              "id": "features/databricks/gain-insights",
+              "isDocsHomePage": false,
+              "title": "Interact with Databricks to gain insights",
+              "description": "Installation",
+              "source": "@site/docs/features/databricks/gain-insights.md",
+              "sourceDirName": "features/databricks",
+              "slug": "/features/databricks/gain-insights",
+              "permalink": "/next/features/databricks/gain-insights",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/databricks/gain-insights.md",
+              "version": "current",
+              "frontMatter": {
+                "title": "Interact with Databricks to gain insights",
+                "layout": "default"
+              },
+              "sidebar": "tutorialSidebar",
+              "previous": {
+                "title": "Securely Receive CloudEvents",
+                "permalink": "/next/features/cloudevent/receive-cloudevents-job"
+              },
+              "next": {
+                "title": "Measure Databricks job run outcomes as metric",
+                "permalink": "/next/features/databricks/job-metrics"
+              }
+            },
+            {
+              "unversionedId": "features/databricks/job-metrics",
+              "id": "features/databricks/job-metrics",
+              "isDocsHomePage": false,
+              "title": "Measure Databricks job run outcomes as metric",
+              "description": "The Arcus.BackgroundJobs.Databricks library provides a background job to repeatedly query for Databricks finished job runs, and reports them as metrics.",
+              "source": "@site/docs/features/databricks/job-metrics.md",
+              "sourceDirName": "features/databricks",
+              "slug": "/features/databricks/job-metrics",
+              "permalink": "/next/features/databricks/job-metrics",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/databricks/job-metrics.md",
+              "version": "current",
+              "frontMatter": {
+                "title": "Measure Databricks job run outcomes as metric",
+                "layout": "default"
+              },
+              "sidebar": "tutorialSidebar",
+              "previous": {
+                "title": "Interact with Databricks to gain insights",
+                "permalink": "/next/features/databricks/gain-insights"
+              },
+              "next": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "permalink": "/next/features/security/auto-invalidate-secrets"
+              }
+            },
+            {
+              "unversionedId": "features/security/auto-invalidate-secrets",
+              "id": "features/security/auto-invalidate-secrets",
+              "isDocsHomePage": false,
+              "title": "Automatically Invalidate Azure Key Vault Secrets",
+              "description": "The Arcus.BackgroundJobs.KeyVault library provides a background job to automatically invalidate cached Azure Key Vault secrets from an ICachedSecretProvider instance of your choice.",
+              "source": "@site/docs/features/security/auto-invalidate-secrets.md",
+              "sourceDirName": "features/security",
+              "slug": "/features/security/auto-invalidate-secrets",
+              "permalink": "/next/features/security/auto-invalidate-secrets",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/security/auto-invalidate-secrets.md",
+              "version": "current",
+              "frontMatter": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "layout": "default"
+              },
+              "sidebar": "tutorialSidebar",
+              "previous": {
+                "title": "Measure Databricks job run outcomes as metric",
+                "permalink": "/next/features/databricks/job-metrics"
+              },
+              "next": {
+                "title": "Home",
+                "permalink": "/next/"
+              }
+            },
+            {
+              "unversionedId": "home",
+              "id": "home",
+              "isDocsHomePage": false,
+              "title": "Home",
+              "description": "NuGet Badge",
+              "source": "@site/docs/index.md",
+              "sourceDirName": ".",
+              "slug": "/",
+              "permalink": "/next/",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/index.md",
+              "version": "current",
+              "frontMatter": {
+                "id": "home",
+                "title": "Home",
+                "slug": "/"
+              },
+              "sidebar": "tutorialSidebar",
+              "previous": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "permalink": "/next/features/security/auto-invalidate-secrets"
+              }
+            }
+          ]
+        },
+        {
+          "versionName": "0.2",
+          "versionLabel": "0.2",
+          "versionPath": "/",
+          "versionEditUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2",
+          "versionEditUrlLocalized": "https://github.com/facebook/docusaurus/edit/master/website/i18n/en/docusaurus-plugin-content-docs/version-0.2",
+          "versionBanner": "none",
+          "isLast": true,
+          "routePriority": -1,
+          "sidebarFilePath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/versioned_sidebars/version-0.2-sidebars.json",
+          "contentPath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/versioned_docs/version-0.2",
+          "contentPathLocalized": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/i18n/en/docusaurus-plugin-content-docs/version-0.2",
+          "mainDocId": "index",
+          "sidebars": {
+            "version-0.2/tutorialSidebar": [
+              {
+                "type": "doc",
+                "id": "version-0.2/index"
+              },
+              {
+                "type": "category",
+                "label": "Features",
+                "items": [
+                  {
+                    "type": "category",
+                    "label": "General",
+                    "items": [
+                      {
+                        "type": "doc",
+                        "id": "version-0.2/Features/General/receive-cloudevents-job"
+                      }
+                    ],
+                    "collapsed": true
+                  },
+                  {
+                    "type": "category",
+                    "label": "Security",
+                    "items": [
+                      {
+                        "type": "doc",
+                        "id": "version-0.2/Features/Security/auto-invalidate-secrets"
+                      }
+                    ],
+                    "collapsed": true
+                  },
+                  {
+                    "type": "category",
+                    "label": "Databricks",
+                    "items": [
+                      {
+                        "type": "doc",
+                        "id": "version-0.2/Features/Databricks/gain-insights"
+                      },
+                      {
+                        "type": "doc",
+                        "id": "version-0.2/Features/Databricks/job-metrics"
+                      }
+                    ],
+                    "collapsed": true
+                  }
+                ],
+                "collapsed": true
+              }
+            ]
+          },
+          "permalinkToSidebar": {
+            "/Features/Databricks/gain-insights": "version-0.2/tutorialSidebar",
+            "/Features/Databricks/job-metrics": "version-0.2/tutorialSidebar",
+            "/Features/General/receive-cloudevents-job": "version-0.2/tutorialSidebar",
+            "/Features/Security/auto-invalidate-secrets": "version-0.2/tutorialSidebar",
+            "/": "version-0.2/tutorialSidebar"
+          },
+          "docs": [
+            {
+              "unversionedId": "Features/Databricks/gain-insights",
+              "id": "version-0.2/Features/Databricks/gain-insights",
+              "isDocsHomePage": false,
+              "title": "Interact with Databricks to gain insights",
+              "description": "Installation",
+              "source": "@site/versioned_docs/version-0.2/02-Features/03-Databricks/gain-insights.md",
+              "sourceDirName": "02-Features/03-Databricks",
+              "slug": "/Features/Databricks/gain-insights",
+              "permalink": "/Features/Databricks/gain-insights",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/03-Databricks/gain-insights.md",
+              "version": "0.2",
+              "frontMatter": {
+                "title": "Interact with Databricks to gain insights",
+                "layout": "default"
+              },
+              "sidebar": "version-0.2/tutorialSidebar",
+              "previous": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "permalink": "/Features/Security/auto-invalidate-secrets"
+              },
+              "next": {
+                "title": "Measure Databricks job run outcomes as metric",
+                "permalink": "/Features/Databricks/job-metrics"
+              }
+            },
+            {
+              "unversionedId": "Features/Databricks/job-metrics",
+              "id": "version-0.2/Features/Databricks/job-metrics",
+              "isDocsHomePage": false,
+              "title": "Measure Databricks job run outcomes as metric",
+              "description": "The Arcus.BackgroundJobs.Databricks library provides a background job to repeatedly query for Databricks finished job runs, and reports them as metrics.",
+              "source": "@site/versioned_docs/version-0.2/02-Features/03-Databricks/job-metrics.md",
+              "sourceDirName": "02-Features/03-Databricks",
+              "slug": "/Features/Databricks/job-metrics",
+              "permalink": "/Features/Databricks/job-metrics",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/03-Databricks/job-metrics.md",
+              "version": "0.2",
+              "frontMatter": {
+                "title": "Measure Databricks job run outcomes as metric",
+                "layout": "default"
+              },
+              "sidebar": "version-0.2/tutorialSidebar",
+              "previous": {
+                "title": "Interact with Databricks to gain insights",
+                "permalink": "/Features/Databricks/gain-insights"
+              }
+            },
+            {
+              "unversionedId": "Features/General/receive-cloudevents-job",
+              "id": "version-0.2/Features/General/receive-cloudevents-job",
+              "isDocsHomePage": false,
+              "title": "Securely Receive CloudEvents",
+              "description": "The Arcus.BackgroundJobs.CloudEvents library provides a collection of background jobs to securely receive CloudEvents.",
+              "source": "@site/versioned_docs/version-0.2/02-Features/01-General/receive-cloudevents-job.md",
+              "sourceDirName": "02-Features/01-General",
+              "slug": "/Features/General/receive-cloudevents-job",
+              "permalink": "/Features/General/receive-cloudevents-job",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/01-General/receive-cloudevents-job.md",
+              "version": "0.2",
+              "frontMatter": {
+                "title": "Securely Receive CloudEvents",
+                "layout": "default"
+              },
+              "sidebar": "version-0.2/tutorialSidebar",
+              "previous": {
+                "title": "Home",
+                "permalink": "/"
+              },
+              "next": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "permalink": "/Features/Security/auto-invalidate-secrets"
+              }
+            },
+            {
+              "unversionedId": "Features/Security/auto-invalidate-secrets",
+              "id": "version-0.2/Features/Security/auto-invalidate-secrets",
+              "isDocsHomePage": false,
+              "title": "Automatically Invalidate Azure Key Vault Secrets",
+              "description": "The Arcus.BackgroundJobs.KeyVault library provides a background job to automatically invalidate cached Azure Key Vault secrets from an ICachedSecretProvider instance of your choice.",
+              "source": "@site/versioned_docs/version-0.2/02-Features/02-Security/auto-invalidate-secrets.md",
+              "sourceDirName": "02-Features/02-Security",
+              "slug": "/Features/Security/auto-invalidate-secrets",
+              "permalink": "/Features/Security/auto-invalidate-secrets",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/02-Security/auto-invalidate-secrets.md",
+              "version": "0.2",
+              "frontMatter": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "layout": "default"
+              },
+              "sidebar": "version-0.2/tutorialSidebar",
+              "previous": {
+                "title": "Securely Receive CloudEvents",
+                "permalink": "/Features/General/receive-cloudevents-job"
+              },
+              "next": {
+                "title": "Interact with Databricks to gain insights",
+                "permalink": "/Features/Databricks/gain-insights"
+              }
+            },
+            {
+              "unversionedId": "index",
+              "id": "version-0.2/index",
+              "isDocsHomePage": false,
+              "title": "Home",
+              "description": "NuGet Badge",
+              "source": "@site/versioned_docs/version-0.2/01-index.md",
+              "sourceDirName": ".",
+              "slug": "/",
+              "permalink": "/",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/01-index.md",
+              "version": "0.2",
+              "sidebarPosition": 1,
+              "frontMatter": {
+                "title": "Home",
+                "layout": "default",
+                "permalink": "/",
+                "slug": "/"
+              },
+              "sidebar": "version-0.2/tutorialSidebar",
+              "next": {
+                "title": "Securely Receive CloudEvents",
+                "permalink": "/Features/General/receive-cloudevents-job"
+              }
+            }
+          ]
+        },
+        {
+          "versionName": "0.1",
+          "versionLabel": "0.1",
+          "versionPath": "/0.1",
+          "versionEditUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1",
+          "versionEditUrlLocalized": "https://github.com/facebook/docusaurus/edit/master/website/i18n/en/docusaurus-plugin-content-docs/version-0.1",
+          "versionBanner": "unmaintained",
+          "isLast": false,
+          "sidebarFilePath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/versioned_sidebars/version-0.1-sidebars.json",
+          "contentPath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/versioned_docs/version-0.1",
+          "contentPathLocalized": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/i18n/en/docusaurus-plugin-content-docs/version-0.1",
+          "mainDocId": "features/cloudevent/receive-cloudevents-job",
+          "sidebars": {
+            "version-0.1/tutorialSidebar": [
+              {
+                "type": "category",
+                "label": "features",
+                "items": [
+                  {
+                    "type": "category",
+                    "label": "cloudevent",
+                    "items": [
+                      {
+                        "type": "doc",
+                        "id": "version-0.1/features/cloudevent/receive-cloudevents-job"
+                      }
+                    ],
+                    "collapsed": true
+                  },
+                  {
+                    "type": "category",
+                    "label": "security",
+                    "items": [
+                      {
+                        "type": "doc",
+                        "id": "version-0.1/features/security/auto-invalidate-secrets"
+                      }
+                    ],
+                    "collapsed": true
+                  }
+                ],
+                "collapsed": true
+              },
+              {
+                "type": "doc",
+                "id": "version-0.1/index"
+              }
+            ]
+          },
+          "permalinkToSidebar": {
+            "/0.1/features/cloudevent/receive-cloudevents-job": "version-0.1/tutorialSidebar",
+            "/0.1/features/security/auto-invalidate-secrets": "version-0.1/tutorialSidebar",
+            "/0.1/index": "version-0.1/tutorialSidebar"
+          },
+          "docs": [
+            {
+              "unversionedId": "features/cloudevent/receive-cloudevents-job",
+              "id": "version-0.1/features/cloudevent/receive-cloudevents-job",
+              "isDocsHomePage": false,
+              "title": "Securely Receive CloudEvents",
+              "description": "The Arcus.BackgroundJobs.CloudEvents library provides a collection of background jobs to securely receive CloudEvents.",
+              "source": "@site/versioned_docs/version-0.1/features/cloudevent/receive-cloudevents-job.md",
+              "sourceDirName": "features/cloudevent",
+              "slug": "/features/cloudevent/receive-cloudevents-job",
+              "permalink": "/0.1/features/cloudevent/receive-cloudevents-job",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1/features/cloudevent/receive-cloudevents-job.md",
+              "version": "0.1",
+              "frontMatter": {
+                "title": "Securely Receive CloudEvents",
+                "layout": "default"
+              },
+              "sidebar": "version-0.1/tutorialSidebar",
+              "next": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "permalink": "/0.1/features/security/auto-invalidate-secrets"
+              }
+            },
+            {
+              "unversionedId": "features/security/auto-invalidate-secrets",
+              "id": "version-0.1/features/security/auto-invalidate-secrets",
+              "isDocsHomePage": false,
+              "title": "Automatically Invalidate Azure Key Vault Secrets",
+              "description": "The Arcus.BackgroundJobs.KeyVault library provides a background job to automatically invalidate cached Azure Key Vault secrets from an ICachedSecretProvider instance of your choice.",
+              "source": "@site/versioned_docs/version-0.1/features/security/auto-invalidate-secrets.md",
+              "sourceDirName": "features/security",
+              "slug": "/features/security/auto-invalidate-secrets",
+              "permalink": "/0.1/features/security/auto-invalidate-secrets",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1/features/security/auto-invalidate-secrets.md",
+              "version": "0.1",
+              "frontMatter": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "layout": "default"
+              },
+              "sidebar": "version-0.1/tutorialSidebar",
+              "previous": {
+                "title": "Securely Receive CloudEvents",
+                "permalink": "/0.1/features/cloudevent/receive-cloudevents-job"
+              },
+              "next": {
+                "title": "Home",
+                "permalink": "/0.1/index"
+              }
+            },
+            {
+              "unversionedId": "index",
+              "id": "version-0.1/index",
+              "isDocsHomePage": false,
+              "title": "Home",
+              "description": "NuGet Badge",
+              "source": "@site/versioned_docs/version-0.1/index.md",
+              "sourceDirName": ".",
+              "slug": "/index",
+              "permalink": "/0.1/index",
+              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1/index.md",
+              "version": "0.1",
+              "frontMatter": {
+                "title": "Home",
+                "layout": "default"
+              },
+              "sidebar": "version-0.1/tutorialSidebar",
+              "previous": {
+                "title": "Automatically Invalidate Azure Key Vault Secrets",
+                "permalink": "/0.1/features/security/auto-invalidate-secrets"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "docusaurus-plugin-content-blog": {
+    "default": {
+      "blogPosts": [],
+      "blogListPaginated": [],
+      "blogTags": {},
+      "blogTagsListPath": null
+    }
+  },
+  "docusaurus-plugin-content-pages": {
+    "default": [
+      {
+        "type": "mdx",
+        "permalink": "/markdown-page",
+        "source": "@site/src/pages/markdown-page.md"
+      }
+    ]
+  },
+  "docusaurus-plugin-debug": {
+    "default": null
+  },
+  "docusaurus-theme-classic": {
+    "default": null
+  }
+}

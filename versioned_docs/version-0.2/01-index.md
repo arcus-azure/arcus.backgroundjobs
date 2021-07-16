@@ -1,7 +1,8 @@
 ---
-id: home
 title: "Home"
-slug: "/"
+layout: default
+permalink: /
+slug: /
 ---
 
 [![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvents?includePreReleases=true)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/)
@@ -19,7 +20,7 @@ For more granular packages we recommend reading the documentation.
 # Features
 
 - **General**
-    - [Securely Receive CloudEvents](features/cloudevent/receive-cloudevents-job)
+    - [Securely Receive CloudEvents](features/general/receive-cloudevents-job)
 - **Security**
     - [Automatically invalidate cached secrets from Azure Key Vault](features/security/auto-invalidate-secrets)
 - **Databricks**

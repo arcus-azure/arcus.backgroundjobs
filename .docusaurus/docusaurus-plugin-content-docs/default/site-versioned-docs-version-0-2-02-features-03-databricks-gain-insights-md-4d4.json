@@ -1,0 +1,26 @@
+{
+  "unversionedId": "Features/Databricks/gain-insights",
+  "id": "version-0.2/Features/Databricks/gain-insights",
+  "isDocsHomePage": false,
+  "title": "Interact with Databricks to gain insights",
+  "description": "Installation",
+  "source": "@site/versioned_docs/version-0.2/02-Features/03-Databricks/gain-insights.md",
+  "sourceDirName": "02-Features/03-Databricks",
+  "slug": "/Features/Databricks/gain-insights",
+  "permalink": "/Features/Databricks/gain-insights",
+  "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/03-Databricks/gain-insights.md",
+  "version": "0.2",
+  "frontMatter": {
+    "title": "Interact with Databricks to gain insights",
+    "layout": "default"
+  },
+  "sidebar": "version-0.2/tutorialSidebar",
+  "previous": {
+    "title": "Automatically Invalidate Azure Key Vault Secrets",
+    "permalink": "/Features/Security/auto-invalidate-secrets"
+  },
+  "next": {
+    "title": "Measure Databricks job run outcomes as metric",
+    "permalink": "/Features/Databricks/job-metrics"
+  }
+}

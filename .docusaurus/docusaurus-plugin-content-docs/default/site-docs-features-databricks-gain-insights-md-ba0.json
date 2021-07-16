@@ -1,0 +1,26 @@
+{
+  "unversionedId": "features/databricks/gain-insights",
+  "id": "features/databricks/gain-insights",
+  "isDocsHomePage": false,
+  "title": "Interact with Databricks to gain insights",
+  "description": "Installation",
+  "source": "@site/docs/features/databricks/gain-insights.md",
+  "sourceDirName": "features/databricks",
+  "slug": "/features/databricks/gain-insights",
+  "permalink": "/next/features/databricks/gain-insights",
+  "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/databricks/gain-insights.md",
+  "version": "current",
+  "frontMatter": {
+    "title": "Interact with Databricks to gain insights",
+    "layout": "default"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Securely Receive CloudEvents",
+    "permalink": "/next/features/cloudevent/receive-cloudevents-job"
+  },
+  "next": {
+    "title": "Measure Databricks job run outcomes as metric",
+    "permalink": "/next/features/databricks/job-metrics"
+  }
+}

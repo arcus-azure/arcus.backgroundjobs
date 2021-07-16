@@ -1,0 +1,22 @@
+{
+  "unversionedId": "index",
+  "id": "version-0.1/index",
+  "isDocsHomePage": false,
+  "title": "Home",
+  "description": "NuGet Badge",
+  "source": "@site/versioned_docs/version-0.1/index.md",
+  "sourceDirName": ".",
+  "slug": "/index",
+  "permalink": "/0.1/index",
+  "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1/index.md",
+  "version": "0.1",
+  "frontMatter": {
+    "title": "Home",
+    "layout": "default"
+  },
+  "sidebar": "version-0.1/tutorialSidebar",
+  "previous": {
+    "title": "Automatically Invalidate Azure Key Vault Secrets",
+    "permalink": "/0.1/features/security/auto-invalidate-secrets"
+  }
+}

@@ -1,42 +1,33 @@
-# Arcus Background Jobs
+# Website
 
-[![Build Status](https://dev.azure.com/codit/Arcus/_apis/build/status/Commit%20builds/CI%20-%20Arcus.BackgroundJobs?branchName=master)](https://dev.azure.com/codit/Arcus/_build/latest?definitionId=794&branchName=master)
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvents?includePreReleases=true)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/)
+This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
-Background job development in a breeze.
+## Installation
 
-![Arcus](https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png)
-
-# Installation
-Easy to install it via NuGet:
-
-- **CloudEvents background jobs**
-
-```shell
-PM > Install-Package Arcus.BackgroundJobs.CloudEvents
+```console
+yarn install
 ```
 
-- **Azure Key Vault background jobs**
+## Local Development
 
-```shell
-PM > Install-Package Arcus.BackgroundJobs.KeyVault
+```console
+yarn start
 ```
 
-- **Databricks background jobs**
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
 
-```shell
-PM > Install-Package Arcus.BackgroundJobs.Databricks
+## Build
+
+```console
+yarn build
 ```
 
-For a more thorough overview, we recommend reading our [documentation](#documentation).
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
-# Documentation
-All documentation can be found on [here](https://background-jobs.arcus-azure.net/).
+## Deployment
 
-# Customers
-Are you an Arcus user? Let us know and [get listed](https://bit.ly/become-a-listed-arcus-user)!
+```console
+GIT_USER=<Your GitHub username> USE_SSH=true yarn deploy
+```
 
-# License Information
-This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.
-
-Read the full license [here](https://github.com/arcus-azure/arcus.backgroundjobs/blob/master/LICENSE).
+If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.

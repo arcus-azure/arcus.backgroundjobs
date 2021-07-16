@@ -1,0 +1,25 @@
+{
+  "unversionedId": "index",
+  "id": "version-0.2/index",
+  "isDocsHomePage": false,
+  "title": "Home",
+  "description": "NuGet Badge",
+  "source": "@site/versioned_docs/version-0.2/01-index.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/",
+  "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/01-index.md",
+  "version": "0.2",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "title": "Home",
+    "layout": "default",
+    "permalink": "/",
+    "slug": "/"
+  },
+  "sidebar": "version-0.2/tutorialSidebar",
+  "next": {
+    "title": "Securely Receive CloudEvents",
+    "permalink": "/Features/General/receive-cloudevents-job"
+  }
+}
