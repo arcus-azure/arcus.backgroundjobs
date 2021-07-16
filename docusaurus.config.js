@@ -4,15 +4,15 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'Arcus Background Jobs',
-  tagline: 'Dinosaurs are cool',
   url: 'https://michaelcalewaert.netlify.app/',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'Codit', // Usually your GitHub org/user name.
+  projectName: 'Arcus Background Jobs', // Usually your repo name.
   themeConfig: {
+    sidebarCollapsible: false,
     navbar: {
       title: 'Arcus Background Jobs',
       logo: {
@@ -36,7 +36,7 @@ module.exports = {
           position: 'right',
         },
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/Mcalewaert/arcus.backgroundjobs',
           label: 'GitHub',
           position: 'right',
         },
@@ -67,7 +67,7 @@ module.exports = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/Mcalewaert/arcus.backgroundjobs',
             },
           ],
         },
@@ -88,7 +88,7 @@ module.exports = {
           routeBasePath: "/",
           // Please change this to your repo.
           editUrl:
-            'https://github.com/facebook/docusaurus/edit/master/website/',
+            'https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
