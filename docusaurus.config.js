@@ -5,7 +5,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 module.exports = {
   title: 'Arcus Background Jobs',
   tagline: 'Dinosaurs are cool',
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'https://michaelcalewaert.netlify.app/',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -27,7 +27,6 @@ module.exports = {
           position: 'right',
           // Add additional dropdown items at the beginning/end of the dropdown.
           dropdownItemsBefore: [],
-          dropdownItemsAfter: [{to: '/versions', label: 'All versions'}],
           // Do not add the link active class when browsing docs.
           dropdownActiveClassDisabled: true,
           docsPluginId: 'default',
@@ -46,15 +45,6 @@ module.exports = {
     footer: {
       style: 'dark',
       links: [
-        {
-          title: 'Docs',
-          items: [
-            {
-              label: 'Tutorial',
-              to: '/docs/intro',
-            },
-          ],
-        },
         {
           title: 'Community',
           items: [

@@ -20,14 +20,9 @@ export default {
           "type": "docsVersionDropdown",
           "position": "right",
           "dropdownItemsBefore": [],
-          "dropdownItemsAfter": [
-            {
-              "to": "/versions",
-              "label": "All versions"
-            }
-          ],
           "dropdownActiveClassDisabled": true,
-          "docsPluginId": "default"
+          "docsPluginId": "default",
+          "dropdownItemsAfter": []
         },
         {
           "type": "search",
@@ -44,15 +39,6 @@ export default {
     "footer": {
       "style": "dark",
       "links": [
-        {
-          "title": "Docs",
-          "items": [
-            {
-              "label": "Tutorial",
-              "to": "/docs/intro"
-            }
-          ]
-        },
         {
           "title": "Community",
           "items": [
