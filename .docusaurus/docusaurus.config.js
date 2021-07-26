@@ -10,10 +10,11 @@ export default {
   "themeConfig": {
     "sidebarCollapsible": false,
     "navbar": {
-      "title": "Arcus Background Jobs",
+      "title": "Background Jobs",
       "logo": {
         "alt": "My Site Logo",
-        "src": "img/logo.svg"
+        "src": "img/arcus-black.svg",
+        "srcDark": "img/arcus-white.svg"
       },
       "items": [
         {
