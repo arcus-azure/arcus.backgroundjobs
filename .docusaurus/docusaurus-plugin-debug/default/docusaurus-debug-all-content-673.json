@@ -6,8 +6,8 @@
           "versionName": "current",
           "versionLabel": "Next",
           "versionPath": "/next",
-          "versionEditUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs",
-          "versionEditUrlLocalized": "https://github.com/facebook/docusaurus/edit/master/website/i18n/en/docusaurus-plugin-content-docs/current",
+          "versionEditUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/docs",
+          "versionEditUrlLocalized": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/i18n/en/docusaurus-plugin-content-docs/current",
           "versionBanner": "unreleased",
           "isLast": false,
           "sidebarFilePath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/sidebars.js",
@@ -84,7 +84,7 @@
               "sourceDirName": "features/cloudevent",
               "slug": "/features/cloudevent/receive-cloudevents-job",
               "permalink": "/next/features/cloudevent/receive-cloudevents-job",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/cloudevent/receive-cloudevents-job.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/docs/features/cloudevent/receive-cloudevents-job.md",
               "version": "current",
               "frontMatter": {
                 "title": "Securely Receive CloudEvents",
@@ -106,7 +106,7 @@
               "sourceDirName": "features/databricks",
               "slug": "/features/databricks/gain-insights",
               "permalink": "/next/features/databricks/gain-insights",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/databricks/gain-insights.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/docs/features/databricks/gain-insights.md",
               "version": "current",
               "frontMatter": {
                 "title": "Interact with Databricks to gain insights",
@@ -132,7 +132,7 @@
               "sourceDirName": "features/databricks",
               "slug": "/features/databricks/job-metrics",
               "permalink": "/next/features/databricks/job-metrics",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/databricks/job-metrics.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/docs/features/databricks/job-metrics.md",
               "version": "current",
               "frontMatter": {
                 "title": "Measure Databricks job run outcomes as metric",
@@ -158,7 +158,7 @@
               "sourceDirName": "features/security",
               "slug": "/features/security/auto-invalidate-secrets",
               "permalink": "/next/features/security/auto-invalidate-secrets",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/features/security/auto-invalidate-secrets.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/docs/features/security/auto-invalidate-secrets.md",
               "version": "current",
               "frontMatter": {
                 "title": "Automatically Invalidate Azure Key Vault Secrets",
@@ -184,7 +184,7 @@
               "sourceDirName": ".",
               "slug": "/",
               "permalink": "/next/",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/docs/index.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/docs/index.md",
               "version": "current",
               "frontMatter": {
                 "id": "home",
@@ -203,8 +203,8 @@
           "versionName": "0.2",
           "versionLabel": "0.2",
           "versionPath": "/",
-          "versionEditUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2",
-          "versionEditUrlLocalized": "https://github.com/facebook/docusaurus/edit/master/website/i18n/en/docusaurus-plugin-content-docs/version-0.2",
+          "versionEditUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.2",
+          "versionEditUrlLocalized": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/i18n/en/docusaurus-plugin-content-docs/version-0.2",
           "versionBanner": "none",
           "isLast": true,
           "routePriority": -1,
@@ -282,7 +282,7 @@
               "sourceDirName": "02-Features/03-Databricks",
               "slug": "/Features/Databricks/gain-insights",
               "permalink": "/Features/Databricks/gain-insights",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/03-Databricks/gain-insights.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.2/02-Features/03-Databricks/gain-insights.md",
               "version": "0.2",
               "frontMatter": {
                 "title": "Interact with Databricks to gain insights",
@@ -308,7 +308,7 @@
               "sourceDirName": "02-Features/03-Databricks",
               "slug": "/Features/Databricks/job-metrics",
               "permalink": "/Features/Databricks/job-metrics",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/03-Databricks/job-metrics.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.2/02-Features/03-Databricks/job-metrics.md",
               "version": "0.2",
               "frontMatter": {
                 "title": "Measure Databricks job run outcomes as metric",
@@ -330,7 +330,7 @@
               "sourceDirName": "02-Features/01-General",
               "slug": "/Features/General/receive-cloudevents-job",
               "permalink": "/Features/General/receive-cloudevents-job",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/01-General/receive-cloudevents-job.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.2/02-Features/01-General/receive-cloudevents-job.md",
               "version": "0.2",
               "frontMatter": {
                 "title": "Securely Receive CloudEvents",
@@ -356,7 +356,7 @@
               "sourceDirName": "02-Features/02-Security",
               "slug": "/Features/Security/auto-invalidate-secrets",
               "permalink": "/Features/Security/auto-invalidate-secrets",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/02-Features/02-Security/auto-invalidate-secrets.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.2/02-Features/02-Security/auto-invalidate-secrets.md",
               "version": "0.2",
               "frontMatter": {
                 "title": "Automatically Invalidate Azure Key Vault Secrets",
@@ -382,7 +382,7 @@
               "sourceDirName": ".",
               "slug": "/",
               "permalink": "/",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.2/01-index.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.2/01-index.md",
               "version": "0.2",
               "sidebarPosition": 1,
               "frontMatter": {
@@ -403,8 +403,8 @@
           "versionName": "0.1",
           "versionLabel": "0.1",
           "versionPath": "/0.1",
-          "versionEditUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1",
-          "versionEditUrlLocalized": "https://github.com/facebook/docusaurus/edit/master/website/i18n/en/docusaurus-plugin-content-docs/version-0.1",
+          "versionEditUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.1",
+          "versionEditUrlLocalized": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/i18n/en/docusaurus-plugin-content-docs/version-0.1",
           "versionBanner": "unmaintained",
           "isLast": false,
           "sidebarFilePath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/versioned_sidebars/version-0.1-sidebars.json",
@@ -464,7 +464,7 @@
               "sourceDirName": "features/cloudevent",
               "slug": "/features/cloudevent/receive-cloudevents-job",
               "permalink": "/0.1/features/cloudevent/receive-cloudevents-job",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1/features/cloudevent/receive-cloudevents-job.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.1/features/cloudevent/receive-cloudevents-job.md",
               "version": "0.1",
               "frontMatter": {
                 "title": "Securely Receive CloudEvents",
@@ -486,7 +486,7 @@
               "sourceDirName": "features/security",
               "slug": "/features/security/auto-invalidate-secrets",
               "permalink": "/0.1/features/security/auto-invalidate-secrets",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1/features/security/auto-invalidate-secrets.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.1/features/security/auto-invalidate-secrets.md",
               "version": "0.1",
               "frontMatter": {
                 "title": "Automatically Invalidate Azure Key Vault Secrets",
@@ -512,7 +512,7 @@
               "sourceDirName": ".",
               "slug": "/index",
               "permalink": "/0.1/index",
-              "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/versioned_docs/version-0.1/index.md",
+              "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.1/index.md",
               "version": "0.1",
               "frontMatter": {
                 "title": "Home",
@@ -538,13 +538,7 @@
     }
   },
   "docusaurus-plugin-content-pages": {
-    "default": [
-      {
-        "type": "mdx",
-        "permalink": "/markdown-page",
-        "source": "@site/src/pages/markdown-page.md"
-      }
-    ]
+    "default": []
   },
   "docusaurus-plugin-debug": {
     "default": null

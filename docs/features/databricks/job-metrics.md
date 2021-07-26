@@ -21,7 +21,7 @@ PM > Install-Package Arcus.BackgroundJobs.Databricks
 
 Our background job has to be configured in `ConfigureServices` method:
 
-```csharp
+```objectivec
 using Arcus.Security.Core;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -32,24 +32,24 @@ public class Startup
         // An 'ISecretProvider' implementation (see: https://security.arcus-azure.net/) to access the Azure Service Bus Topic resource;
         //     this will get the 'tokenSecretKey' string (configured below) and has to retrieve the connection token for the Databricks instance.
         services.AddSingleton<ISecretProvider>(serviceProvider => ...);
-    
+
         // Simplest registration of the scheduler job:
         services.AddDatabricksJobMetricsJob(
-            baseUrl: "https://url.to.databricks.instance/" 
+            baseUrl: "https://url.to.databricks.instance/"
             // Token secret key to connect to the Databricks token.
             tokenSecretKey: "Databricks.Token");
-    
+
         // Customized registration of the scheduler job:
         services.AddDatabricksJobMetricsJob(
-            baseUrl: "https://url.to.databricks.instance/" 
+            baseUrl: "https://url.to.databricks.instance/"
             // Token secret key to connect to the Databricks token.
             tokenSecretKey: "Databricks.Token",
             options =>
             {
                 // Setting the name which will be used when reporting the metric for finished Databricks job runs (default: "Databricks Job Completed").
                 options.MetricName = "MyDatabricksJobMetric";
-    
-                // Settings the time interval (in minutes) in which the scheduler job should run (default: 5 minutes). 
+
+                // Settings the time interval (in minutes) in which the scheduler job should run (default: 5 minutes).
                 options.IntervalInMinutes = 6;
             });
     }

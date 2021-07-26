@@ -1,14 +1,14 @@
 export default {
   "title": "Arcus Background Jobs",
-  "tagline": "Dinosaurs are cool",
-  "url": "https://your-docusaurus-test-site.com",
+  "url": "https://michaelcalewaert.netlify.app/",
   "baseUrl": "/",
   "onBrokenLinks": "throw",
   "onBrokenMarkdownLinks": "warn",
   "favicon": "img/favicon.ico",
-  "organizationName": "facebook",
-  "projectName": "docusaurus",
+  "organizationName": "Codit",
+  "projectName": "Arcus Background Jobs",
   "themeConfig": {
+    "sidebarCollapsible": false,
     "navbar": {
       "title": "Arcus Background Jobs",
       "logo": {
@@ -29,7 +29,7 @@ export default {
           "position": "right"
         },
         {
-          "href": "https://github.com/facebook/docusaurus",
+          "href": "https://github.com/Mcalewaert/arcus.backgroundjobs",
           "label": "GitHub",
           "position": "right"
         }
@@ -43,30 +43,13 @@ export default {
           "title": "Community",
           "items": [
             {
-              "label": "Stack Overflow",
-              "href": "https://stackoverflow.com/questions/tagged/docusaurus"
-            },
-            {
-              "label": "Discord",
-              "href": "https://discordapp.com/invite/docusaurus"
-            },
-            {
-              "label": "Twitter",
-              "href": "https://twitter.com/docusaurus"
-            }
-          ]
-        },
-        {
-          "title": "More",
-          "items": [
-            {
-              "label": "GitHub",
-              "href": "https://github.com/facebook/docusaurus"
+              "label": "Arcus Azure Github",
+              "href": "https://github.com/arcus-azure"
             }
           ]
         }
       ],
-      "copyright": "Copyright © 2021 My Project, Inc. Built with Docusaurus."
+      "copyright": "Copyright © 2021 Arcus Background Jobs maintained by arcus-azure"
     },
     "prism": {
       "theme": {
@@ -286,7 +269,7 @@ export default {
         "docs": {
           "sidebarPath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/sidebars.js",
           "routeBasePath": "/",
-          "editUrl": "https://github.com/facebook/docusaurus/edit/master/website/"
+          "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master"
         },
         "theme": {
           "customCss": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/src/css/custom.css"
