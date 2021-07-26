@@ -4,7 +4,7 @@ export default {
   "baseUrl": "/",
   "onBrokenLinks": "throw",
   "onBrokenMarkdownLinks": "warn",
-  "favicon": "img/favicon.ico",
+  "favicon": "img/favicon.png",
   "organizationName": "Codit",
   "projectName": "Arcus Background Jobs",
   "themeConfig": {

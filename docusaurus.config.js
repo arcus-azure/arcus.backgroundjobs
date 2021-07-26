@@ -8,7 +8,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.png',
   organizationName: 'Codit', // Usually your GitHub org/user name.
   projectName: 'Arcus Background Jobs', // Usually your repo name.
   themeConfig: {
