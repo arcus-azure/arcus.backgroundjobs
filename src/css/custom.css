@@ -45,12 +45,16 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 }
 
 html[data-theme='dark'] .prism-code {
-  background-color: rgb(31, 31, 62)!important;
+  background-color: rgba(31, 31, 62, 0.6)!important;
 }
 
 html[data-theme='dark'] {
   --ifm-background-color: rgb(19, 19, 51);
   --ifm-color-primary: #38C1E0;
 
-  --ifm-navbar-background-color: rgb(19, 19, 51);
+  --ifm-navbar-background-color: #1F1F3E;
+}
+
+html[data-theme='dark'] .footer--dark {
+  background-color: rgb(31, 31, 62);;
 }

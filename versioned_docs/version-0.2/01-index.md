@@ -27,9 +27,6 @@ For more granular packages we recommend reading the documentation.
     - [Measure Databricks job run outcomes as metric](features/databricks/job-metrics)
     - [Interact with Databricks to gain insights](features/databricks/gain-insights)
 
-# Older versions
-
-
 # License
 This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.
 
