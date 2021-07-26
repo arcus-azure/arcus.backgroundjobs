@@ -13,8 +13,8 @@ export default {
       "title": "Background Jobs",
       "logo": {
         "alt": "My Site Logo",
-        "src": "img/arcus-black.svg",
-        "srcDark": "img/arcus-white.svg"
+        "src": "img/arcus-black-bold.svg",
+        "srcDark": "img/arcus-white-bold.svg"
       },
       "items": [
         {
