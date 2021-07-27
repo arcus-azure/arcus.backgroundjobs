@@ -19,7 +19,7 @@ module.exports = {
       logo: {
         alt: 'My Site Logo',
         src: 'img/arcus-black-bold.svg',
-        srcDark: 'img/arcus-white-bold.svg'
+        srcDark: 'img/arcus-inverted.svg'
       },
       items: [
         {

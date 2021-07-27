@@ -14,7 +14,7 @@ export default {
       "logo": {
         "alt": "My Site Logo",
         "src": "img/arcus-black-bold.svg",
-        "srcDark": "img/arcus-white-bold.svg"
+        "srcDark": "img/arcus-inverted.svg"
       },
       "items": [
         {
@@ -271,7 +271,7 @@ export default {
           "sidebarPath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/sidebars.js",
           "routeBasePath": "/",
           "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master",
-          "includeCurrentVersion": false
+          "includeCurrentVersion": true
         },
         "theme": {
           "customCss": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/src/css/custom.css"

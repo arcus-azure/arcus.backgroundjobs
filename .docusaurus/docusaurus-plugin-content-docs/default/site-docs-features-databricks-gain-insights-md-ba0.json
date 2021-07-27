@@ -8,6 +8,7 @@
   "sourceDirName": "features/databricks",
   "slug": "/features/databricks/gain-insights",
   "permalink": "/next/features/databricks/gain-insights",
+  "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/docs/features/databricks/gain-insights.md",
   "version": "current",
   "frontMatter": {
     "title": "Interact with Databricks to gain insights",
