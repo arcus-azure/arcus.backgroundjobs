@@ -1,6 +1,7 @@
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
+console.log(process.env);
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'Arcus Background Jobs',
@@ -73,7 +74,7 @@ module.exports = {
           // Please change this to your repo.
           editUrl:
             'https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master',
-          includeCurrentVersion:false,
+          includeCurrentVersion:process.env.CONTEXT !== 'production',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

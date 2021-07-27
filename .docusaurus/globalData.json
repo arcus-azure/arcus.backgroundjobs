@@ -4,40 +4,6 @@
       "path": "/",
       "versions": [
         {
-          "name": "current",
-          "label": "Next",
-          "isLast": false,
-          "path": "/next",
-          "mainDocId": "home",
-          "docs": [
-            {
-              "id": "features/cloudevent/receive-cloudevents-job",
-              "path": "/next/features/cloudevent/receive-cloudevents-job",
-              "sidebar": "tutorialSidebar"
-            },
-            {
-              "id": "features/databricks/gain-insights",
-              "path": "/next/features/databricks/gain-insights",
-              "sidebar": "tutorialSidebar"
-            },
-            {
-              "id": "features/databricks/job-metrics",
-              "path": "/next/features/databricks/job-metrics",
-              "sidebar": "tutorialSidebar"
-            },
-            {
-              "id": "features/security/auto-invalidate-secrets",
-              "path": "/next/features/security/auto-invalidate-secrets",
-              "sidebar": "tutorialSidebar"
-            },
-            {
-              "id": "home",
-              "path": "/next/",
-              "sidebar": "tutorialSidebar"
-            }
-          ]
-        },
-        {
           "name": "0.2",
           "label": "0.2",
           "isLast": true,
