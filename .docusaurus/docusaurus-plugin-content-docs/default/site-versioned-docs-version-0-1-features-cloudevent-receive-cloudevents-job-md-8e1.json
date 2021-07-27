@@ -8,7 +8,6 @@
   "sourceDirName": "features/cloudevent",
   "slug": "/features/cloudevent/receive-cloudevents-job",
   "permalink": "/0.1/features/cloudevent/receive-cloudevents-job",
-  "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.1/features/cloudevent/receive-cloudevents-job.md",
   "version": "0.1",
   "frontMatter": {
     "title": "Securely Receive CloudEvents",

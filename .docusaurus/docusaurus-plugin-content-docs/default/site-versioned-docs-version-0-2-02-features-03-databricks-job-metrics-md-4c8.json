@@ -8,7 +8,6 @@
   "sourceDirName": "02-Features/03-Databricks",
   "slug": "/Features/Databricks/job-metrics",
   "permalink": "/Features/Databricks/job-metrics",
-  "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master/versioned_docs/version-0.2/02-Features/03-Databricks/job-metrics.md",
   "version": "0.2",
   "frontMatter": {
     "title": "Measure Databricks job run outcomes as metric",

@@ -73,6 +73,7 @@ module.exports = {
           // Please change this to your repo.
           editUrl:
             'https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master',
+          includeCurrentVersion:false,
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

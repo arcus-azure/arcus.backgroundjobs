@@ -270,7 +270,7 @@ export default {
         "docs": {
           "sidebarPath": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/sidebars.js",
           "routeBasePath": "/",
-          "editUrl": "https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master"
+          "includeCurrentVersion": true
         },
         "theme": {
           "customCss": "/Users/michaelcalewaert/Documents/Projects/arcus.backgroundjobs/src/css/custom.css"
