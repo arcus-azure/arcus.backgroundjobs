@@ -1,7 +1,6 @@
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
-console.log(process.env);
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'Arcus Background Jobs',
@@ -17,7 +16,7 @@ module.exports = {
     navbar: {
       title: 'Background Jobs',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'Arcus',
         src: 'img/arcus-black-bold.svg',
         srcDark: 'img/arcus-inverted.svg'
       },

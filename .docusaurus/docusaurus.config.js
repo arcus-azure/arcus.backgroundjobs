@@ -12,7 +12,7 @@ export default {
     "navbar": {
       "title": "Background Jobs",
       "logo": {
-        "alt": "My Site Logo",
+        "alt": "Arcus",
         "src": "img/arcus-black-bold.svg",
         "srcDark": "img/arcus-inverted.svg"
       },
