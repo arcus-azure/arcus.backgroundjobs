@@ -17,8 +17,8 @@ module.exports = {
       title: 'Background Jobs',
       logo: {
         alt: 'Arcus',
-        src: 'img/arcus-black-bold.svg',
-        srcDark: 'img/arcus-inverted.svg'
+        src: 'img/arcus.png',
+        srcDark: 'img/arcus.png'
       },
       items: [
         {

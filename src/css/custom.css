@@ -58,3 +58,8 @@ html[data-theme='dark'] {
 html[data-theme='dark'] .footer--dark {
   background-color: rgb(31, 31, 62);;
 }
+
+.navbar__brand img {
+  width: 75px;
+  height: auto;
+}
