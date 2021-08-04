@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Arcus</Authors>
+    <Company>Arcus</Company>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Workers;Jobs</PackageTags>
+    <Description>Provides capabilities for running background jobs to automate workflows such as updating cached Azure Key Value secrets.</Description>
+    <Copyright>Copyright (c) Arcus</Copyright>
+    <PackageLicenseUrl>https://github.com/arcus-azure/arcus.backgroundjobs/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/arcus-azure/arcus.backgroundjobs</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/arcus-azure/arcus.backgroundjobs</RepositoryUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>NU5125;NU5048</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Arcus.EventGrid" Version="[3.0.0,4.0.0)" />
+    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="[0.6.0,1.0.0)" />
+    <PackageReference Include="Arcus.Security.Core" Version="[1.3.0,2.0.0)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Arcus.BackgroundJobs.CloudEvents\Arcus.BackgroundJobs.CloudEvents.csproj" />
+  </ItemGroup>
+
+</Project>
