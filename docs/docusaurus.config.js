@@ -38,7 +38,7 @@ module.exports = {
           position: 'right',
         },
         {
-          href: 'https://github.com/Mcalewaert/arcus.backgroundjobs',
+          href: 'https://github.com/arcus-azure/arcus.backgroundjobs',
           label: 'GitHub',
           position: 'right',
         },
@@ -73,7 +73,7 @@ module.exports = {
           routeBasePath: "/",
           // Please change this to your repo.
           editUrl:
-            'https://github.com/Mcalewaert/arcus.backgroundjobs/edit/master',
+            'https://github.com/arcus-azure/arcus.backgroundjobs/edit/master',
           includeCurrentVersion:process.env.CONTEXT !== 'production',
         },
         theme: {
