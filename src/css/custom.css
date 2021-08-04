@@ -45,18 +45,23 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 }
 
 html[data-theme='dark'] .prism-code {
-  background-color: rgba(31, 31, 62, 0.6)!important;
+  background-color: rgb(45, 51, 59)!important;
 }
 
-html[data-theme='dark'] {
-  --ifm-background-color: rgb(19, 19, 51);
-  --ifm-color-primary: #38C1E0;
+html[data-theme='dark'] main img[src$=".png"] {
+  background-color:white;
+}
 
-  --ifm-navbar-background-color: #1F1F3E;
+
+html[data-theme='dark'] {
+  --ifm-background-color: rgb(34, 39, 46);
+  --ifm-color-primary:#0098cc;
+
+  --ifm-navbar-background-color: rgb(45, 51, 59)
 }
 
 html[data-theme='dark'] .footer--dark {
-  background-color: rgb(31, 31, 62);;
+  background-color: rgb(45, 51, 59);
 }
 
 .navbar__brand img {
