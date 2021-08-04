@@ -78,8 +78,7 @@ When creating a new documentation website update these values within the `docusa
 ## Syntax higlighting
 
 To have syntax highlighting within the codeblocks you have to use one of the prism supported languages:
-
-https://github.com/FormidableLabs/prism-react-renderer/blob/master/src/vendor/prism/includeLangs.js
+om/FormidableLabs/prism-react-renderer/blob/master/src/vendor/prism/includeLangs.js
 
 ## Deploying to Netlify
 
