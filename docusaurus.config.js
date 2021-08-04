@@ -13,6 +13,7 @@ module.exports = {
   projectName: 'Arcus Background Jobs', // Usually your repo name.
   themeConfig: {
     sidebarCollapsible: false,
+    image: 'img/arcus.jpg',
     navbar: {
       title: 'Background Jobs',
       logo: {

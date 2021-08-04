@@ -9,6 +9,7 @@ export default {
   "projectName": "Arcus Background Jobs",
   "themeConfig": {
     "sidebarCollapsible": false,
+    "image": "img/arcus.jpg",
     "navbar": {
       "title": "Background Jobs",
       "logo": {
