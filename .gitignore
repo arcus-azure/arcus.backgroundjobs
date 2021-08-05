@@ -332,5 +332,5 @@ ASALocalRun/
 
 # Custom
 docs/_site/*
-docs/.docusaurus
-docs/build
+documentation/.docusaurus
+documentation/build
