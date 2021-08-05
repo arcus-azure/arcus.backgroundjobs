@@ -9,7 +9,7 @@ module.exports = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.png',
-  organizationName: 'Codit', // Usually your GitHub org/user name.
+  organizationName: 'arcus-azure', // Usually your GitHub org/user name.
   projectName: 'Arcus Background Jobs', // Usually your repo name.
   themeConfig: {
     sidebarCollapsible: false,
