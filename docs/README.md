@@ -2,16 +2,24 @@
 
 This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
+## Prerequisites
+This documentation assumes that you run all scripts within the docs folder.
+
+```console
+cd docs
+```
+
+
 ## Installation
 
 ```console
-yarn install
+npm install
 ```
 
 ## Local Development
 
 ```console
-yarn start
+npm start
 ```
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
@@ -78,8 +86,8 @@ When creating a new documentation website update these values within the `docusa
 ## Syntax higlighting
 
 To have syntax highlighting within the codeblocks you have to use one of the prism supported languages:
-om/FormidableLabs/prism-react-renderer/blob/master/src/vendor/prism/includeLangs.js
 
+https://github.com/FormidableLabs/prism-react-renderer/blob/master/src/vendor/prism/includeLangs.js
 ## Deploying to Netlify
 
 https://docusaurus.io/docs/deployment#deploying-to-netlify
