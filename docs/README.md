@@ -27,11 +27,11 @@ This command starts a local development server and opens up a browser window. Mo
 ## Versioning
 https://docusaurus.io/docs/versioning
 
-You can use the version script to create a new documentation version based on the latest content in the `./next` directory. That specific set of documentation will then be preserved and accessible even as the documentation in the docs directory changes moving forward.
+You can use the version script to create a new documentation version based on the latest content in the `./preview` directory. That specific set of documentation will then be preserved and accessible even as the documentation in the docs directory changes moving forward.
 
 ### Tagging a new version
 
-1. First, make sure your content in the `./next` directory is ready to be frozen as a version. A version always should be based from master.
+1. First, make sure your content in the `./preview` directory is ready to be frozen as a version. A version always should be based from master.
 2. Enter a new version number: 
    
 `npm run docusaurus docs:version 1.1.0`
@@ -39,7 +39,7 @@ You can use the version script to create a new documentation version based on th
 ---
 When tagging a new version, the document versioning mechanism will:
 
-- Copy the full `./next` folder contents into a new `versioned_docs/version-<version>/` folder.
+- Copy the full `./preview` folder contents into a new `versioned_docs/version-<version>/` folder.
 - Create a versioned sidebars file based from your current sidebar configuration (if it exists) - saved as `versioned_sidebars/version-<version>-sidebars.json`.
 - Append the new version number to `versions.json`.
 

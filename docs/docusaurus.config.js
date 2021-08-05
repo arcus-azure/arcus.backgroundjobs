@@ -72,7 +72,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           routeBasePath: "/",
-          path: 'next',
+          path: 'preview',
           // Please change this to your repo.
           editUrl:
             'https://github.com/arcus-azure/arcus.backgroundjobs/edit/master',
