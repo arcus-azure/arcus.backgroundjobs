@@ -21,7 +21,8 @@ You can write your own background job(s) by deriving from `CloudEventBackgroundJ
 
 You can easily implement your own job by implementing the `ProcessMessageAsync` method to prcocess new CloudEvents.
 
-```objectivec
+
+```csharp
 using Arcus.BackgroundJobs.CloudEvents;
 using CloudNative.CloudEvents;
 using Microsoft.Extensions.Configuration;

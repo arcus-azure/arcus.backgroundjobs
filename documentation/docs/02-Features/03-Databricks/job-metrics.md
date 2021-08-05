@@ -21,7 +21,7 @@ PM > Install-Package Arcus.BackgroundJobs.Databricks
 
 Our background job has to be configured in `ConfigureServices` method:
 
-```objectivec
+```csharp
 using Arcus.Security.Core;
 using Microsoft.Extensions.DependencyInjection;
 

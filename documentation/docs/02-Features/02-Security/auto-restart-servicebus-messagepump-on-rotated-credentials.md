@@ -26,7 +26,7 @@ PM > Install-Package Arcus.BackgroundJobs.KeyVault
 
 When the package is installed, you'll be able to use the extension in your application:
 
-```objectivec
+```csharp
 using Microsoft.Extensions.DependencyInjection;
 
 public class Startup

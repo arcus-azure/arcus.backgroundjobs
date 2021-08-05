@@ -27,7 +27,7 @@ To make this automation opperational, following Azure Resources has to be used:
 
 Our background job has to be configured in `ConfigureServices` method:
 
-```objectivec
+```csharp
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Microsoft.Extensions.DependencyInjection;
