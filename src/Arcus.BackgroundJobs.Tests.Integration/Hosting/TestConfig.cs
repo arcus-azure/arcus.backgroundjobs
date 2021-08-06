@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
-using Arcus.BackgroundJobs.Tests.Integration.Fixture.KeyVault;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
+using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using GuardNet;

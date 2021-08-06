@@ -1,8 +1,9 @@
 ﻿using System;
+using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using GuardNet;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.KeyVault
+namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
 {
     /// <summary>
     /// Represents all the configuration values related to testing key rotation.

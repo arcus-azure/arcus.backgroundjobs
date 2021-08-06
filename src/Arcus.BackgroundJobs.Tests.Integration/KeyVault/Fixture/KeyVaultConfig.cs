@@ -1,7 +1,7 @@
 ﻿using System;
 using GuardNet;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.KeyVault
+namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
 {
     /// <summary>
     /// Represents a secret inside an Azure Key Vault instance.
