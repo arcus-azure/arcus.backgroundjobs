@@ -15,75 +15,36 @@ An Azure Service Bus Topic resource is required to receive CloudEvents on. Cloud
 
 ![Automatically Invalidate Azure Key Vault Secrets](/media/CloudEvents-Job.png)
 
+You can write your own background job(s) by deriving from `CloudEventBackgroundJob` which already takes care of topic subscription creation/deletion on start/stop of the job.
+
 ## Usage
 
-The CloudEvents background job uses the [Arcus Messaging](https://github.com/arcus-azure/arcus.messaging) functionality to receive messages. 
-Make sure you take a look at the [documentation on message handlers](https://messaging.arcus-azure.net/features/message-pumps/service-bus) to fully grasp the possibilities.
-
-The CloudEvent background job itself can be easily registered:
+You can easily implement your own job by implementing the `ProcessMessageAsync` method to prcocess new CloudEvents.
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
-
-public class Startup
-{
-    public void ConfigureServices(IServiceCollection services)
-    {
-        // Add CloudEvents background job with an namespace-scoped connection string.
-        services.AddCloudEventBackgroundJob(
-            topicName: "<your-topic>",
-            subscriptionNamePrefix: "Sub-",
-            serviceBusNamespaceConnectionStringSecretKey: "<secret-key-name-for-servicebus-namespace-connection-string>");
-
-        // Add CloudEvent background job with an entity-scoped connection string.
-        services.AddCloudEventBackgroundJob(
-            subscriptionNamePrefix: "Sub-",
-            serviceBusTopicConnectionStringSecretKey: "<secret-key-name-for-servicebus-topic-connection-string>");
-    }
-}
-```
-
-To handle the incoming CloudEvents messages, you can register an custom `IAzureServiceBusMessageHandler<CloudEvent>` message handler instance:
-
-```csharp
+using Arcus.BackgroundJobs.CloudEvents;
 using CloudNative.CloudEvents;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-public class Startup
-{
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddCloudEventEventBackgroundJob(...)
-                .WithServiceBusMessageHandler<MyCloudEventMessageHandler, CloudEvent>();
-    }
-}
-```
-
-Such an custom implementation could look like this:
-
-```csharp
-using Arcus.Messaging.Abstractions;
-using Arcus.Messaging.Abstractions.ServiceBus;
-using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
-using CloudNative.CloudEvents;
 using Microsoft.Extensions.Logging;
 
-public class MyCloudEventMessageHandler : IAzureServiceBusMessageHandler<CloudEvent>
+public class MyBackgroundJob : CloudEventBackgroundJob
 {
-    private readonly ILogger _logger;
-
-    public MyCloudEventMessageHandler(ILogger<MyCloudEventMessageHandler> logger)
+    public MyBackgroundJob(
+        IConfiguration configuration,
+        IServiceProvider serviceProvider,
+        ILogger<CloudEventBackgroundJob> logger) : base(configuration, serviceProvider, logger)
     {
-        _logger = logger;
+
     }
 
-    public async Task ProcessMessageAsync(
+    protected override async Task ProcessMessageAsync(
         CloudEvent message,
         AzureServiceBusMessageContext messageContext,
         MessageCorrelationInfo correlationInfo,
         CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Processing CloudEvent message");
+        {
+            // Process the CloudEvent message...
     }
 }
 ```
