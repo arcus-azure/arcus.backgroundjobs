@@ -49,7 +49,6 @@ https://docusaurus.io/docs/configuration
 
 When creating a new documentation website update these values within the `docusaurus.config.js` file:
 
-
 ```typescript
 {
   title,
