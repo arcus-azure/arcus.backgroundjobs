@@ -27,8 +27,6 @@ resources:
       endpoint: arcus-azure
 
 variables:
-  - group: 'Arcus Security - Integration Testing'
-  - group: 'Arcus Messaging - Integration Testing'
   - group: 'Arcus Background Jobs - Integration Testing'
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
