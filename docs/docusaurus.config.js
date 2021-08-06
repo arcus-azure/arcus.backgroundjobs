@@ -8,7 +8,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.png',
+  favicon: 'img/arcus.png',
   organizationName: 'arcus-azure', // Usually your GitHub org/user name.
   projectName: 'Arcus Background Jobs', // Usually your repo name.
   themeConfig: {
