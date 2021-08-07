@@ -75,7 +75,7 @@ module.exports = {
           path: 'preview',
           // Please change this to your repo.
           editUrl:
-            'https://github.com/arcus-azure/arcus.backgroundjobs/edit/master',
+            'https://github.com/arcus-azure/arcus.backgroundjobs/edit/master/docs',
           includeCurrentVersion:process.env.CONTEXT !== 'production',
         },
         theme: {

@@ -1,5 +1,5 @@
 ---
-title: "Arcus BackgroundJobs"
+title: "Arcus Background Jobs"
 layout: default
 permalink: /
 slug: /
