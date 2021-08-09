@@ -8,7 +8,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.png',
+  favicon: 'img/arcus.png',
   organizationName: 'arcus-azure', // Usually your GitHub org/user name.
   projectName: 'Arcus Background Jobs', // Usually your repo name.
   themeConfig: {
@@ -75,7 +75,7 @@ module.exports = {
           path: 'preview',
           // Please change this to your repo.
           editUrl:
-            'https://github.com/arcus-azure/arcus.backgroundjobs/edit/master',
+            'https://github.com/arcus-azure/arcus.backgroundjobs/edit/master/docs',
           includeCurrentVersion:process.env.CONTEXT !== 'production',
         },
         theme: {
