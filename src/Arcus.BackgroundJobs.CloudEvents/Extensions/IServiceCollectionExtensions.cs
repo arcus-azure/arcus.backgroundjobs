@@ -3,7 +3,6 @@ using Arcus.BackgroundJobs.CloudEvents;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using CloudNative.CloudEvents;
 using GuardNet;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
