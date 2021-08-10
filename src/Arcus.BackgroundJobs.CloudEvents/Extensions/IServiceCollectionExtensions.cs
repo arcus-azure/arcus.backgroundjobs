@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription");
             Guard.NotNullOrWhitespace(serviceBusNamespaceConnectionStringSecretKey, nameof(serviceBusNamespaceConnectionStringSecretKey), "Requires a non-blank secret key that points to a Azure Service Bus namespace-scoped connection string");
 
-            services.TryAddSingleton<IAzureServiceBusMessageRouter>(serviceProvider =>
+            services.AddServiceBusMessageRouting(serviceProvider =>
             {
                 var logger = serviceProvider.GetRequiredService<ILogger<CloudEventMessageRouter>>();
                 return new CloudEventMessageRouter(serviceProvider, new AzureServiceBusMessageRouterOptions(), logger);
