@@ -2,7 +2,8 @@
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.KeyVault.Events;
 using Arcus.Messaging.Abstractions;
-using Arcus.Messaging.Pumps.ServiceBus;
+using Arcus.Messaging.Abstractions.ServiceBus;
+using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Security.Core.Caching;
 using CloudNative.CloudEvents;
 using GuardNet;

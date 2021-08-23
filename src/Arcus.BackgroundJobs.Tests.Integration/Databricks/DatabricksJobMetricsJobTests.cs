@@ -16,7 +16,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
+namespace Arcus.BackgroundJobs.Tests.Integration.Databricks
 {
     public class DatabricksJobMetricsJobTests : IAsyncLifetime
     {

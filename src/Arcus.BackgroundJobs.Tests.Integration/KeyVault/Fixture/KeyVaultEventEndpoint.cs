@@ -1,7 +1,7 @@
 ﻿using System;
 using GuardNet;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.KeyVault
+namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
 {
     /// <summary>
     /// Represents an endpoint where an Azure Key Vault event will be send to.

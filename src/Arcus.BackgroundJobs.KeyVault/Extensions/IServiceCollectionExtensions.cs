@@ -2,7 +2,6 @@
 using System.Linq;
 using Arcus.BackgroundJobs.KeyVault;
 using Arcus.BackgroundJobs.KeyVault.Events;
-using Arcus.Messaging.Pumps.Abstractions.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Security.Core.Caching;
 using CloudNative.CloudEvents;
@@ -32,14 +31,16 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
             Guard.NotNullOrWhitespace(serviceBusTopicConnectionStringSecretKey, nameof(serviceBusTopicConnectionStringSecretKey), "Requires a non-blank configuration key that points to a Azure Service Bus Topic");
-            
-            services.AddCloudEventBackgroundJob(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey);
-            services.AddSingleton<IMessageHandler<CloudEvent, AzureServiceBusMessageContext>, InvalidateKeyVaultSecretHandler>(serviceProvider =>
-            {
-                var cachedSecretProvider = serviceProvider.GetRequiredService<ICachedSecretProvider>();
-                var logger = serviceProvider.GetRequiredService<ILogger<InvalidateKeyVaultSecretHandler>>();
-                return new InvalidateKeyVaultSecretHandler(cachedSecretProvider, logger);
-            });
+
+            services.AddCloudEventBackgroundJob(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey)
+                    .WithServiceBusMessageHandler<InvalidateKeyVaultSecretHandler, CloudEvent>(
+                        messageBodyFilter: cloudEvent => cloudEvent?.GetPayload<SecretNewVersionCreated>() != null,
+                        implementationFactory: serviceProvider =>
+                        {
+                            var cachedSecretProvider = serviceProvider.GetRequiredService<ICachedSecretProvider>();
+                            var logger = serviceProvider.GetRequiredService<ILogger<InvalidateKeyVaultSecretHandler>>();
+                            return new InvalidateKeyVaultSecretHandler(cachedSecretProvider, logger);
+                        });
 
             return services;
         }
@@ -74,25 +75,25 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(serviceBusTopicConnectionStringSecretKey, nameof(serviceBusTopicConnectionStringSecretKey), "Requires a non-blank secret key that points to a Azure Service Bus Topic");
             Guard.NotNullOrWhitespace(messagePumpConnectionStringKey, nameof(messagePumpConnectionStringKey), "Requires a non-blank secret key that points to the credentials that holds the connection string of the target message pump");
 
-            services.AddCloudEventBackgroundJob(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey);
-            services.WithServiceBusMessageHandler<ReAuthenticateOnRotatedCredentialsMessageHandler, CloudEvent>(
-                messageBodyFilter: cloudEvent => cloudEvent?.GetPayload<SecretNewVersionCreated>() != null,
-                implementationFactory: serviceProvider =>
-                {
-                    AzureServiceBusMessagePump messagePump =
-                        serviceProvider.GetServices<IHostedService>()
-                                       .OfType<AzureServiceBusMessagePump>()
-                                       .FirstOrDefault(pump => pump.JobId == jobId);
-
-                    if (messagePump is null)
-                    {
-                        throw new InvalidOperationException(
-                            $"Cannot register re-authentication without a '{nameof(AzureServiceBusMessagePump)}' with job id {jobId}");
-                    }
-
-                    var messageHandlerLogger = serviceProvider.GetRequiredService<ILogger<ReAuthenticateOnRotatedCredentialsMessageHandler>>();
-                    return new ReAuthenticateOnRotatedCredentialsMessageHandler(messagePumpConnectionStringKey, messagePump, messageHandlerLogger);
-                });
+            services.AddCloudEventBackgroundJob(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey)
+                    .WithServiceBusMessageHandler<ReAuthenticateOnRotatedCredentialsMessageHandler, CloudEvent>(
+                        messageBodyFilter: cloudEvent => cloudEvent?.GetPayload<SecretNewVersionCreated>() != null,
+                        implementationFactory: serviceProvider =>
+                        {
+                            AzureServiceBusMessagePump messagePump =
+                                serviceProvider.GetServices<IHostedService>()
+                                               .OfType<AzureServiceBusMessagePump>()
+                                               .FirstOrDefault(pump => pump.JobId == jobId);
+                        
+                            if (messagePump is null)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Cannot register re-authentication without a '{nameof(AzureServiceBusMessagePump)}' with job id {jobId}");
+                            }
+                        
+                            var messageHandlerLogger = serviceProvider.GetRequiredService<ILogger<ReAuthenticateOnRotatedCredentialsMessageHandler>>();
+                            return new ReAuthenticateOnRotatedCredentialsMessageHandler(messagePumpConnectionStringKey, messagePump, messageHandlerLogger);
+                        });
 
             return services;
         }

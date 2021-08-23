@@ -1,27 +1,23 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Azure.Security.KeyVault.Secrets;
 using GuardNet;
-using Microsoft.Azure.KeyVault;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.Jobs 
+namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture 
 {
     /// <summary>
     /// Representation of a Azure Key Vault secret with a lifetime the same as the type (dispose type = delete secret).
     /// </summary>
     public class TemporaryAzureKeyVaultSecret : IAsyncDisposable
     {
-        private readonly IKeyVaultClient _client;
-        private readonly string _keyVaultUri;
+        private readonly SecretClient _client;
 
-        private TemporaryAzureKeyVaultSecret(IKeyVaultClient client, string keyVaultUri, string secretName)
+        private TemporaryAzureKeyVaultSecret(SecretClient client, string secretName)
         {
             Guard.NotNull(client, nameof(client));
-            Guard.NotNullOrWhitespace(keyVaultUri, nameof(keyVaultUri));
             Guard.NotNullOrWhitespace(secretName, nameof(secretName));
 
             _client = client;
-            _keyVaultUri = keyVaultUri;
-            
             Name = secretName;
         }
 
@@ -34,17 +30,15 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         /// Creates a temporary Azure Key Vault secret, deleting when the <see cref="DisposeAsync"/> is called.
         /// </summary>
         /// <param name="client">The client to the vault where the temporary secret should be set.</param>
-        /// <param name="keyVaultUri">The URI of the vault.</param>
-        public static async Task<TemporaryAzureKeyVaultSecret> CreateNewAsync(IKeyVaultClient client, string keyVaultUri)
+        public static async Task<TemporaryAzureKeyVaultSecret> CreateNewAsync(SecretClient client)
         {
             Guard.NotNull(client, nameof(client));
-            Guard.NotNullOrWhitespace(keyVaultUri, nameof(keyVaultUri));
 
             var testSecretName = Guid.NewGuid().ToString("N");
             var testSecretValue = Guid.NewGuid().ToString("N");
-            await client.SetSecretAsync(keyVaultUri, testSecretName, testSecretValue);
+            await client.SetSecretAsync(testSecretName, testSecretValue);
 
-            return new TemporaryAzureKeyVaultSecret(client, keyVaultUri, testSecretName);
+            return new TemporaryAzureKeyVaultSecret(client, testSecretName);
         }
 
         /// <summary>
@@ -54,7 +48,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         public async Task UpdateSecretAsync(string value)
         {
             Guard.NotNullOrWhitespace(value, nameof(value));
-            await _client.SetSecretAsync(_keyVaultUri, Name, value);
+            await _client.SetSecretAsync(Name, value);
         }
 
         /// <summary>
@@ -62,7 +56,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
         /// </summary>
         public async ValueTask DisposeAsync()
         {
-            await _client.DeleteSecretAsync(_keyVaultUri, Name);
+            await _client.StartDeleteSecretAsync(Name);
         }
     }
 }

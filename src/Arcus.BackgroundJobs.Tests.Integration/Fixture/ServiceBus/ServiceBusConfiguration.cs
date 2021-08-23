@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.Tests.Integration.Fixture.KeyVault;
+using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
 using GuardNet;
 using Microsoft.Azure.Management.ServiceBus;
 using Microsoft.Azure.Management.ServiceBus.Models;

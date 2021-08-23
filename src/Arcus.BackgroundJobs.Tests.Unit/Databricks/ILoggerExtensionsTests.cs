@@ -74,7 +74,6 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             spyLogger.LogMetricFinishedJobOutcome(metricName, jobRun);
 
             // Assert
-            Assert.All(spyLogger.Entries, entry => Assert.Equal(LogLevel.Information, entry.Level));
             Assert.Single(spyLogger.Messages, msg => msg.Contains(resultState.ToString(), StringComparison.OrdinalIgnoreCase));
             Assert.Single(spyLogger.Messages, msg => msg.StartsWith("Metric " + metricName));
         }

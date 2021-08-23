@@ -5,10 +5,10 @@ using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
 using Arcus.EventGrid.Parsers;
 using Arcus.EventGrid.Testing.Infrastructure.Hosts.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Bogus;
 using GuardNet;
 using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -88,8 +88,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting.ServiceBus
             var transactionId = Guid.NewGuid().ToString();
 
             Order order = GenerateOrder();
-            Message orderMessage = order.AsServiceBusMessage(operationId, transactionId);
-            orderMessage.UserProperties["Topic"] = "Orders";
+            ServiceBusMessage orderMessage = order.AsServiceBusMessage(operationId, transactionId);
+            orderMessage.ApplicationProperties["Topic"] = "Orders";
             await SendMessageToServiceBusAsync(connectionString, orderMessage);
 
             string receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent(operationId, retryCount: 10);
@@ -131,21 +131,31 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting.ServiceBus
         /// </summary>
         /// <param name="connectionString">The connection string to connect to the service bus.</param>
         /// <param name="message">The message to send.</param>
-        public async Task SendMessageToServiceBusAsync(string connectionString, Message message)
+        public async Task SendMessageToServiceBusAsync(string connectionString, ServiceBusMessage message)
         {
             Guard.NotNullOrWhitespace(connectionString, nameof(connectionString));
 
-            var serviceBusConnectionStringBuilder = new ServiceBusConnectionStringBuilder(connectionString);
-            var messageSender = new MessageSender(serviceBusConnectionStringBuilder);
+            ServiceBusConnectionStringProperties serviceBusConnectionString = ServiceBusConnectionStringProperties.Parse(connectionString);
 
-            try
+            await using (var client = new ServiceBusClient(connectionString))
+            await using (ServiceBusSender messageSender = client.CreateSender(serviceBusConnectionString.EntityPath))
             {
-                await messageSender.SendAsync(message);
+                await messageSender.SendMessageAsync(message);
             }
-            finally
+        }
+
+        private static ServiceBusReceiver CreateServiceBusReceiver(
+            ServiceBusClient client,
+            string connectionString,
+            string subscriptionName)
+        {
+            var properties = ServiceBusConnectionStringProperties.Parse(connectionString);
+            if (subscriptionName is null)
             {
-                await messageSender.CloseAsync();
+                return client.CreateReceiver(properties.EntityPath);
             }
+
+            return client.CreateReceiver(properties.EntityPath, subscriptionName);
         }
 
         /// <summary>
