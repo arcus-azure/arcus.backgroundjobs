@@ -87,7 +87,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting.ServiceBus
             var operationId = Guid.NewGuid().ToString();
             var transactionId = Guid.NewGuid().ToString();
 
-            Order order = GenerateOrder();
+            Order order = OrderGenerator.GenerateOrder();
             ServiceBusMessage orderMessage = order.AsServiceBusMessage(operationId, transactionId);
             orderMessage.ApplicationProperties["Topic"] = "Orders";
             await SendMessageToServiceBusAsync(connectionString, orderMessage);
@@ -109,21 +109,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting.ServiceBus
             Assert.Equal(transactionId, orderCreatedEventData.CorrelationInfo.TransactionId);
             Assert.Equal(operationId, orderCreatedEventData.CorrelationInfo.OperationId);
             Assert.NotEmpty(orderCreatedEventData.CorrelationInfo.CycleId);
-        }
-        
-        public static Order GenerateOrder()
-        {
-            var customerGenerator = new Faker<Customer>()
-                .RuleFor(u => u.FirstName, (f, u) => f.Name.FirstName())
-                .RuleFor(u => u.LastName, (f, u) => f.Name.LastName());
-
-            var orderGenerator = new Faker<Order>()
-                .RuleFor(u => u.Customer, () => customerGenerator)
-                .RuleFor(u => u.Id, f => Guid.NewGuid().ToString())
-                .RuleFor(u => u.Amount, f => f.Random.Int())
-                .RuleFor(u => u.ArticleNumber, f => f.Commerce.Product());
-
-            return orderGenerator.Generate();
         }
 
         /// <summary>
