@@ -17,6 +17,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
     public class WorkerOptions : IServiceCollection
     {
         private readonly ICollection<Action<IHostBuilder>> _additionalHostOptions = new Collection<Action<IHostBuilder>>();
+        private readonly ICollection<Action<IConfigurationBuilder>> _additionalConfigures = new List<Action<IConfigurationBuilder>>();
         
         /// <summary>
         /// Gets the services that will be included in the test <see cref="Worker"/>.
@@ -38,6 +39,12 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
             Guard.NotNull(additionalHostOption, nameof(additionalHostOption), "Requires an custom action that will add the additional hosting option");
             _additionalHostOptions.Add(additionalHostOption);
 
+            return this;
+        }
+
+        public WorkerOptions ConfigureAppConfiguration(Action<IConfigurationBuilder> configure)
+        {
+            _additionalConfigures.Add(configure);
             return this;
         }
 
@@ -71,7 +78,14 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         {
             Guard.NotNull(hostBuilder, nameof(hostBuilder), "Requires a host builder instance to apply the worker options to");
             
-            hostBuilder.ConfigureAppConfiguration(config => config.AddInMemoryCollection(Configuration))
+            hostBuilder.ConfigureAppConfiguration(configBuilder =>
+                       {
+                           configBuilder.AddInMemoryCollection(Configuration);
+                           foreach (Action<IConfigurationBuilder> configure in _additionalConfigures)
+                           {
+                               configure(configBuilder);
+                           }
+                       })
                        .ConfigureServices(services =>
                        {
                            foreach (ServiceDescriptor service in Services)

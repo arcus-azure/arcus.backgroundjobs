@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Arcus.BackgroundJobs.Tests.Integration.AppConfiguration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
@@ -84,6 +85,18 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         }
 
         /// <summary>
+        /// Gets the test configuration to interact with the Azure App Configuration resource.
+        /// </summary>
+        /// <exception cref="KeyNotFoundException">Thrown when a value in the test configuration cannot be found.</exception>
+        public AppTestConfiguration GetAppConfiguration()
+        {
+            var connectionString = GetRequiredValue<string>("Arcus:AppConfiguration:ConnectionString");
+            var serviceBusTopicConnectionString = GetRequiredValue<string>("Arcus:AppConfiguration:ServiceBus:ConnectionStringWithTopic");
+
+            return new AppTestConfiguration(connectionString, serviceBusTopicConnectionString);
+        }
+
+        /// <summary>
         /// Gets the immediate descendant configuration sub-sections.
         /// </summary>
         /// <returns>The configuration sub-sections.</returns>
@@ -136,5 +149,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         /// The <see cref="T:Microsoft.Extensions.Configuration.IConfigurationProvider" />s for this configuration.
         /// </summary>
         public IEnumerable<IConfigurationProvider> Providers => _config.Providers;
+
+        private TValue GetRequiredValue<TValue>(string key)
+        {
+            var value = _config.GetValue<TValue>(key);
+            if (value is null)
+            {
+                throw new KeyNotFoundException($"Could not found configuration key '{key}' in test configuration");
+            }
+
+            return value;
+        }
     }
 }
