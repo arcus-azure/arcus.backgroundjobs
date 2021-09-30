@@ -42,8 +42,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
             return this;
         }
 
+        /// <summary>
+        /// Adds a configuration function to setup the <see cref="IConfiguration"/> of the test worker.
+        /// </summary>
+        /// <param name="configure">The addition function to setup up the application configuration.</param>
+        /// <remarks>Multiple calls will be aggregated.</remarks>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configure"/> is <c>null</c>.</exception>
         public WorkerOptions ConfigureAppConfiguration(Action<IConfigurationBuilder> configure)
         {
+            Guard.NotNull(configure, nameof(configure), "Requires an additional configure function to setup the application configuration of the test worker");
+            
             _additionalConfigures.Add(configure);
             return this;
         }
