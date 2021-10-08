@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.Tests.Integration.Fixture.KeyVault;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting.ServiceBus;
+using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
 using Arcus.EventGrid.Publishing;
 using Arcus.Security.Providers.AzureKeyVault.Authentication;
 using Arcus.Testing.Logging;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.ServiceBus.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
+namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 {
     [Trait("Category", "Integration")]
     public class AutoRestartServiceBusMessagePumpOnRotatedCredentialsJobTests
@@ -36,13 +39,18 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             // Arrange
             var config = TestConfig.Create();
             KeyRotationConfig rotationConfig = config.GetKeyRotationConfig();
-            _logger.LogInformation("Using Service Principal [ClientID: '{0}']", rotationConfig.ServicePrincipal.ClientId);
+            var tenantId = config.GetValue<string>("Arcus:KeyRotation:ServiceBus:TenantId");
+            var applicationId = config.GetValue<string>("Arcus:ServicePrincipal:ApplicationId");
+            var clientKey = config.GetValue<string>("Arcus:ServicePrincipal:AccessKey");
+            var keyVaultUri = config.GetValue<string>("Arcus:KeyVault:Uri");
+            
+            _logger.LogInformation("Using Service Principal [ClientID: '{0}']", applicationId);
 
             var client = new ServiceBusConfiguration(rotationConfig, _logger);
             string freshConnectionString = await client.RotateConnectionStringKeysForQueueAsync(KeyType.PrimaryKey);
 
-            IKeyVaultClient keyVaultClient = await CreateKeyVaultClientAsync(rotationConfig);
-            await SetConnectionStringInKeyVaultAsync(keyVaultClient, rotationConfig, freshConnectionString);
+            SecretClient keyVaultClient = CreateKeyVaultClient(tenantId, keyVaultUri, applicationId, clientKey);
+            await keyVaultClient.SetSecretAsync(rotationConfig.KeyVault.SecretName, freshConnectionString);
 
             string jobId = Guid.NewGuid().ToString();
             const string connectionStringSecretKey = "ARCUS_KEYVAULT_SECRETNEWVERSIONCREATED_CONNECTIONSTRING";
@@ -50,7 +58,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             var options = new WorkerOptions();
             options.Configuration.Add(connectionStringSecretKey, rotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString);
             AddEventGridPublisher(options, config);
-            AddSecretStore(options, rotationConfig);
+            AddSecretStore(options, tenantId, keyVaultUri, applicationId, clientKey);
             AddServiceBusMessagePump(options, rotationConfig, jobId);
             
             options.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
@@ -62,7 +70,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             await using (var worker = await Worker.StartNewAsync(options))
             {
                 string newSecondaryConnectionString = await client.RotateConnectionStringKeysForQueueAsync(KeyType.SecondaryKey);
-                await SetConnectionStringInKeyVaultAsync(keyVaultClient, rotationConfig, newSecondaryConnectionString);
+                await keyVaultClient.SetSecretAsync(rotationConfig.KeyVault.SecretName, newSecondaryConnectionString);
 
                 await using (var service = await TestMessagePumpService.StartNewAsync(config, _logger))
                 {
@@ -75,20 +83,15 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             }
         }
 
-        private static async Task<IKeyVaultClient> CreateKeyVaultClientAsync(KeyRotationConfig rotationConfig)
+        private static SecretClient CreateKeyVaultClient(string tenantId, string keyVaultUri, string applicationId, string clientKey)
         {
-            ServicePrincipalAuthentication authentication = rotationConfig.ServicePrincipal.CreateAuthentication();
-            IKeyVaultClient keyVaultClient = await authentication.AuthenticateAsync();
+            var credential = new ClientSecretCredential(
+                tenantId,
+                applicationId,
+                clientKey);
             
-            return keyVaultClient;
-        }
-
-        private static async Task SetConnectionStringInKeyVaultAsync(IKeyVaultClient keyVaultClient, KeyRotationConfig keyRotationConfig, string rotatedConnectionString)
-        {
-            await keyVaultClient.SetSecretAsync(
-                vaultBaseUrl: keyRotationConfig.KeyVault.VaultUri,
-                secretName: keyRotationConfig.KeyVault.SecretName,
-                value: rotatedConnectionString);
+            var secretClient = new SecretClient(new Uri(keyVaultUri), credential);
+            return secretClient;
         }
 
         private static void AddEventGridPublisher(WorkerOptions options, TestConfig config)
@@ -104,14 +107,11 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Jobs
             });
         }
 
-        private static void AddSecretStore(WorkerOptions options, KeyRotationConfig rotationConfig)
+        private static void AddSecretStore(WorkerOptions options, string tenantId, string vaultUri, string clientId, string clientSecret)
         {
             options.Configure(host => host.ConfigureSecretStore((configuration, stores) =>
             {
-                stores.AddAzureKeyVaultWithServicePrincipal(
-                          rotationConfig.KeyVault.VaultUri,
-                          rotationConfig.ServicePrincipal.ClientId,
-                          rotationConfig.ServicePrincipal.ClientSecret)
+                stores.AddAzureKeyVaultWithServicePrincipal(vaultUri, tenantId, clientId, clientSecret)
                       .AddConfiguration(configuration);
             }));
         }

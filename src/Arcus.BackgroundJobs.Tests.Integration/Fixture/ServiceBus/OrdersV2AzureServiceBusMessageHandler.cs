@@ -12,12 +12,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
 {
-    public class OrdersAzureServiceBusMessageHandler : IAzureServiceBusMessageHandler<Order>
+    public class OrdersV2AzureServiceBusMessageHandler : IAzureServiceBusMessageHandler<OrderV2>
     {
         private readonly IEventGridPublisher _eventGridPublisher;
-        private readonly ILogger<OrdersAzureServiceBusMessageHandler> _logger;
+        private readonly ILogger _logger;
 
-        public OrdersAzureServiceBusMessageHandler(IEventGridPublisher eventGridPublisher, ILogger<OrdersAzureServiceBusMessageHandler> logger)
+        public OrdersV2AzureServiceBusMessageHandler(IEventGridPublisher eventGridPublisher, ILogger<OrdersV2AzureServiceBusMessageHandler> logger)
         {
             Guard.NotNull(eventGridPublisher, nameof(eventGridPublisher));
             Guard.NotNull(logger, nameof(logger));
@@ -37,7 +37,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
         /// </param>
         /// <param name="cancellationToken">Cancellation token</param>
         public async Task ProcessMessageAsync(
-            Order order,
+            OrderV2 order,
             AzureServiceBusMessageContext azureMessageContext,
             MessageCorrelationInfo correlationInfo,
             CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
             _logger.LogInformation("Order {OrderId} processed", order.Id);
         }
 
-        private async Task PublishEventToEventGridAsync(Order orderMessage, string operationId, MessageCorrelationInfo correlationInfo)
+        private async Task PublishEventToEventGridAsync(OrderV2 orderMessage, string operationId, MessageCorrelationInfo correlationInfo)
         {
             var eventData = new OrderCreatedEventData(
                 orderMessage.Id,
