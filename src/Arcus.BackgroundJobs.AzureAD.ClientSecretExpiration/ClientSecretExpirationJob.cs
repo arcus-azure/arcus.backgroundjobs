@@ -1,0 +1,113 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
+using Arcus.EventGrid.Publishing.Interfaces;
+using Arcus.Security.Core;
+using Azure.Identity;
+using CloudNative.CloudEvents;
+using CronScheduler.Extensions.Scheduler;
+using GuardNet;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Graph;
+
+namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
+{
+    /// <summary>
+    /// Representing a background job that repeatedly queries Azure Active Directory for client secrets that are about to expire or have already expired.
+    /// </summary>
+    public class ClientSecretExpirationJob : IScheduledJob
+    {
+        private readonly ClientSecretExpirationJobSchedulerOptions _options;
+        private readonly ISecretProvider _secretProvider;
+        private readonly ILogger<ClientSecretExpirationJob> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClientSecretExpirationJob"/> class.
+        /// </summary>
+        /// <param name="options">The options to configure the job to query Azure Active Directory.</param>
+        /// <param name="secretProvider">The instance to provide the information to authenticate with Azure Active Directory.</param>
+        /// <param name="logger">The logger instance to to write telemetry to.</param>
+        /// <exception cref="ArgumentNullException">
+        ///     Thrown when the <paramref name="options"/>, <paramref name="secretProvider"/>, <paramref name="logger"/> is <c>null</c>
+        ///     or the <see cref="IOptionsMonitor{TOptions}.Get"/> on the  <paramref name="options"/> returns <c>null</c>.
+        /// </exception>
+        public ClientSecretExpirationJob(
+            IOptionsMonitor<ClientSecretExpirationJobSchedulerOptions> options,
+            ISecretProvider secretProvider,
+            ILogger<ClientSecretExpirationJob> logger)
+        {
+            Guard.NotNull(options, nameof(options));
+            Guard.NotNull(secretProvider, nameof(secretProvider));
+            Guard.NotNull(logger, nameof(logger));
+
+            ClientSecretExpirationJobSchedulerOptions value = options.Get(Name);
+            Guard.NotNull(options, nameof(options), "Requires a registered options instance for this background job");
+
+            _options = value;
+            _secretProvider = secretProvider;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// The name of the executing job.
+        /// In order for the <see cref="T:CronScheduler.Extensions.Scheduler.SchedulerOptions" /> options to work correctly make sure that the name is matched
+        /// between the job and the named job options.
+        /// </summary>
+        public string Name { get; } = nameof(ClientSecretExpirationJob);
+
+        /// <summary>
+        /// This method is called when the <see cref="T:Microsoft.Extensions.Hosting.IHostedService" /> starts. The implementation should return a task that represents
+        /// the lifetime of the long running operation(s) being performed.
+        /// </summary>
+        /// <param name="stoppingToken">
+        ///     Triggered when <see cref="M:Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)" /> is called.
+        /// </param>
+        /// <returns>
+        ///     A <see cref="T:System.Threading.Tasks.Task" /> that represents the long running operations.
+        /// </returns>
+        public async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            string token = await GetToken();
+            GraphServiceClient graphServiceClient = new GraphServiceClient(
+                new DelegateAuthenticationProvider((requestMessage) =>
+                {
+                    requestMessage
+                    .Headers
+                    .Authorization = new AuthenticationHeaderValue("bearer", token);
+
+                    return Task.CompletedTask;
+                })
+            );
+
+            ClientSecretExpirationInfoProvider clientSecretExpirationInfoProvider = new ClientSecretExpirationInfoProvider(graphServiceClient, _logger);
+            List<ApplicationWithExpiredAndAboutToExpireSecrets> applicationsWithExpiredAndAboutToExpireSecrets = await clientSecretExpirationInfoProvider.GetApplicationsWithExpiredAndAboutToExpireSecrets(_options.UserOptions.ExpirationThreshold);
+
+            IEventGridPublisher eventGridPublisher = await _options.CreateEventGridPublisherBuilderAsync(_secretProvider);
+            foreach (var applicationWithExpiredAndAboutToExpireSecrets in applicationsWithExpiredAndAboutToExpireSecrets)
+            {
+                EventType eventType = EventType.ClientSecretAboutToExpire;
+                if (applicationWithExpiredAndAboutToExpireSecrets.RemainingValidDays < 0)
+                {
+                    eventType = EventType.ClientSecretExpired;
+                }
+
+                CloudEvent @event = _options.UserOptions.CreateEvent(applicationWithExpiredAndAboutToExpireSecrets, eventType, _options.UserOptions.EventUri);
+                
+                await eventGridPublisher.PublishAsync(@event);
+            }
+        }
+
+        private async Task<string> GetToken()
+        {
+            var credential = new DefaultAzureCredential();
+            var token = await credential.GetTokenAsync(
+                new Azure.Core.TokenRequestContext(
+                    new[] { "https://graph.microsoft.com/.default" }));
+
+            return token.Token;
+        }
+    }
+}
