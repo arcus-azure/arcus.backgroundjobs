@@ -13,7 +13,7 @@ module.exports = {
   projectName: 'Arcus Background Jobs', // Usually your repo name.
   themeConfig: {
     algolia: {
-      apiKey: 'fdbac718aeb246ac60aeae5bd286cbbf',
+      apiKey: process.env.ALGOLIA_API_KEY,
       indexName: 'arcus-azure',
       contextualSearch: true,
       searchParameters: {
