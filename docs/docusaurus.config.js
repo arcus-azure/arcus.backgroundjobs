@@ -12,14 +12,6 @@ module.exports = {
   organizationName: 'arcus-azure', // Usually your GitHub org/user name.
   projectName: 'Arcus Background Jobs', // Usually your repo name.
   themeConfig: {
-    algolia: {
-      apiKey: process.env.ALGOLIA_API_KEY,
-      indexName: 'arcus-azure',
-      contextualSearch: true,
-      searchParameters: {
-        facetFilters: ["tags:background-jobs"]
-      },
-    },
     image: 'img/arcus.jpg',
     navbar: {
       title: 'Background Jobs',
