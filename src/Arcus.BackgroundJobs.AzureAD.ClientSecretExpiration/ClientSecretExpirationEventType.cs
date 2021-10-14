@@ -1,7 +1,7 @@
 ﻿namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
 {
     /// <summary>
-    /// Represents the available event types/>.
+    /// Represents the available event types.
     /// </summary>
     public enum EventType
     {
