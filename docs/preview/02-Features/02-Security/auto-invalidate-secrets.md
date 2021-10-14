@@ -25,6 +25,40 @@ To make this automation opperational, following Azure Resources has to be used:
 
 ## Usage
 
+Make sure that you have registered the [Arcus secret store](https://security.arcus-azure.net/features/secret-store/) so an `ISecretProvider`/`ICachedSecretProvider` is available to auto invalidate.
+This is usually done in the `Program.cs`. See our [dedicated documentation](https://security.arcus-azure.net/features/secret-store/) for more information on the secret store.
+
+```csharp
+using Microsoft.Extensions.Hosting;
+
+public class Program
+{
+    public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((context, config) => 
+                {
+                    config.AddJsonFile("appsettings.json")
+                          .AddJsonFile("appsettings.Development.json");
+                })
+                .ConfigureSecretStore((context, config, builder) =>
+                {
+#if DEBUG
+                    builder.AddConfiguration(config);
+#endif
+                    var keyVaultName = config["KeyVault_Name"];
+                    builder.AddEnvironmentVariables()
+                           .AddAzureKeyVaultWithManagedServiceIdentity($"https://{keyVaultName}.vault.azure.net");
+                })
+                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+    }
+}
+```
+
 Our background job has to be configured in `ConfigureServices` method:
 
 ```csharp
@@ -36,19 +70,13 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        // An 'ISecretProvider' implementation (see: https://security.arcus-azure.net/) to access the Azure Service Bus Topic resource;
-        //     this will get the 'serviceBusTopicConnectionStringSecretKey' string (configured below) and has to retrieve the connection string for the topic.
-        services.AddSingleton<ISecretProvider>(serviceProvider => ...);
-
-        // An `ICachedSecretProvider` implementation which secret keys will automatically be invalidated.
-        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(mySecretProvider));
-
         services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
             // Prefix of the Azure Service Bus Topic subscription;
             //    this allows the background jobs to support applications that are running multiple instances, processing the same type of events, without conflicting subscription names.
             subscriptionNamePrefix: "MyPrefix"
 
             // Connection string secret key to a Azure Service Bus Topic.
+            // Make sure that this key is available in the Arcus secret store.
             serviceBusTopicConnectionStringSecretKey: "MySecretKeyToServiceBusTopicConnectionString");
     }
 }
