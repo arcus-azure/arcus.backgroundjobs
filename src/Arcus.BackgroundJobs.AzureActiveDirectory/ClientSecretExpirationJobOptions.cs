@@ -13,7 +13,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
     {
         private int _runAtHour = 0;
         private bool _runImmediately = false;
-        private Uri _eventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
+        private Uri _eventUri = null;
         private int _expirationThreshold = 14;
 
         /// <summary>

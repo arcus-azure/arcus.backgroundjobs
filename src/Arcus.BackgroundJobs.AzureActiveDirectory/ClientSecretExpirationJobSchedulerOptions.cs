@@ -56,6 +56,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         internal void SetUserOptions(ClientSecretExpirationJobOptions options)
         {
             Guard.NotNull(options, nameof(options));
+            Guard.NotNull(options.EventUri, nameof(options.EventUri));
 
             UserOptions = options;
             CronSchedule = $"* {options.RunAtHour} * * *";
