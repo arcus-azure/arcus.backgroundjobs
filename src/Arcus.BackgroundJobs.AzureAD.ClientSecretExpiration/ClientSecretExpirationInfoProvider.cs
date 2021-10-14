@@ -10,7 +10,7 @@ using Microsoft.Graph;
 namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
 {
     /// <summary>
-    /// Provides dev-friendly access to the ClientSecretExpiration instance.
+    /// Provides dev-friendly access to the <see cref="ClientSecretExpiration" /> instance.
     /// </summary>
     public class ClientSecretExpirationInfoProvider
     {
