@@ -53,7 +53,6 @@ public class Program
 }
 ```
 
-
 Our background job has to be configured in `ConfigureServices` method:
 
 ```csharp

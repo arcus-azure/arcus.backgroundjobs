@@ -19,6 +19,40 @@ PM > Install-Package Arcus.BackgroundJobs.Databricks -Version 0.3.0
 
 ## Usage
 
+Make sure that you have registered the [Arcus secret store](https://security.arcus-azure.net/features/secret-store/) so an `ISecretProvider` is available to retrieve the connection token for the Databricks instance.
+This is usually done in the `Program.cs`. See our [dedicated documentation](https://security.arcus-azure.net/features/secret-store/) for more information on the secret store.
+
+```csharp
+using Microsoft.Extensions.Hosting;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        CreateHostBuilder(args).Build().Run();
+    }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((context, config) => 
+            {
+                config.AddJsonFile("appsettings.json")
+                      .AddJsonFile("appsettings.Development.json");
+            })
+            .ConfigureSecretStore((context, config, builder) =>
+            {
+#if DEBUG
+                    builder.AddConfiguration(config);
+#endif
+                    var keyVaultName = config["KeyVault_Name"];
+                    builder.AddEnvironmentVariables()
+                           .AddAzureKeyVaultWithManagedServiceIdentity($"https://{keyVaultName}.vault.azure.net");
+            })
+            .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+    }
+}
+```
+
 Our background job has to be configured in `ConfigureServices` method:
 
 ```csharp
@@ -29,20 +63,18 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        // An 'ISecretProvider' implementation (see: https://security.arcus-azure.net/) to access the Azure Service Bus Topic resource;
-        //     this will get the 'tokenSecretKey' string (configured below) and has to retrieve the connection token for the Databricks instance.
-        services.AddSingleton<ISecretProvider>(serviceProvider => ...);
-
         // Simplest registration of the scheduler job:
         services.AddDatabricksJobMetricsJob(
             baseUrl: "https://url.to.databricks.instance/"
             // Token secret key to connect to the Databricks token.
+            // Make sure that this key is available in the Arcus secret store.
             tokenSecretKey: "Databricks.Token");
 
         // Customized registration of the scheduler job:
         services.AddDatabricksJobMetricsJob(
             baseUrl: "https://url.to.databricks.instance/"
             // Token secret key to connect to the Databricks token.
+            // Make sure that this key is available in the Arcus secret store.
             tokenSecretKey: "Databricks.Token",
             options =>
             {
