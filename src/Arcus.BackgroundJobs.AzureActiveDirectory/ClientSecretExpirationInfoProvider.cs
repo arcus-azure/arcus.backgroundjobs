@@ -7,10 +7,10 @@ using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 
-namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
-    /// Provides dev-friendly access to the <see cref="ClientSecretExpiration" /> instance.
+    /// Provides dev-friendly access to the <see cref="ClientSecretExpirationInfoProvider" /> instance.
     /// </summary>
     public class ClientSecretExpirationInfoProvider
     {

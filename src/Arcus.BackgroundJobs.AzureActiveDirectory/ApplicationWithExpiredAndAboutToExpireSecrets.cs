@@ -1,7 +1,7 @@
 ﻿using System;
 using GuardNet;
 
-namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
     /// Represents an <see cref="ApplicationWithExpiredAndAboutToExpireSecrets"/> from Azure Active Directory.

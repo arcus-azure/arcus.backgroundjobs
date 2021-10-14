@@ -6,7 +6,7 @@ using Arcus.Security.Core;
 using CronScheduler.Extensions.Scheduler;
 using GuardNet;
 
-namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
     /// Options to configure how the <see cref="ClientSecretExpirationJob"/> scheduled job.

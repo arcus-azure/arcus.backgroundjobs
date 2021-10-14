@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration;
+using Arcus.BackgroundJobs.AzureActiveDirectory;
 using GuardNet;
 using Microsoft.Extensions.Logging;
 

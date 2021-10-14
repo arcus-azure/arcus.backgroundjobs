@@ -3,7 +3,7 @@ using Bogus;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Arcus.BackgroundJobs.Tests.Unit.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
 {
     // ReSharper disable once InconsistentNaming
     [Trait("Category", "Unit")]

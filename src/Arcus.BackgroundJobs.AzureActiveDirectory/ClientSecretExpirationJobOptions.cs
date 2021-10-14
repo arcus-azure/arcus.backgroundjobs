@@ -4,7 +4,7 @@ using CloudNative.CloudEvents;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
     /// Represents the additional options that the user can configure during the <see cref="IServiceCollectionExtensions.AddClientSecretExpirationJob"/> call.
@@ -83,7 +83,7 @@ namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="application"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="application"/> name is blank.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="eventUri"/> is blank.</exception>
-        public virtual CloudEvent CreateEvent(ApplicationWithExpiredAndAboutToExpireSecrets application, EventType type, Uri eventUri)
+        public virtual CloudEvent CreateEvent(ApplicationWithExpiredAndAboutToExpireSecrets application, ClientSecretExpirationEventType type, Uri eventUri)
         {
             Guard.NotNull(application, nameof(application));
             Guard.NotNullOrWhitespace(application.Name, nameof(application.Name));

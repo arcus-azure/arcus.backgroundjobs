@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration;
-using Arcus.BackgroundJobs.Tests.Integration.AzureAD.ClientSecretExpiration.Fixture;
+using Arcus.BackgroundJobs.AzureActiveDirectory;
+using Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
@@ -15,7 +15,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
 {
     [Trait(name: "Category", value: "Integration")]
     public class ClientSecretExpirationJobTests
@@ -33,7 +33,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureAD.ClientSecretExpiration
         }
 
         [Fact]
-        public async Task CheckExpiredOrAboutToExpireClientSecretsInAzureAD_PublishEvents()
+        public async Task CheckExpiredOrAboutToExpireClientSecretsInAzureActiveDirectory_PublishEvents()
         {
             // Arrange
             var topicEndpoint = _config.GetValue<string>("Arcus:Infra:EventGrid:TopicUri");
@@ -65,16 +65,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureAD.ClientSecretExpiration
                     Event @event = Assert.Single(eventBatch.Events);
                     CloudEvent cloudEvent = @event.AsCloudEvent();
                     Assert.NotNull(cloudEvent.Id);
-                    Assert.True(cloudEvent.Type == EventType.ClientSecretAboutToExpire.ToString() || cloudEvent.Type == EventType.ClientSecretExpired.ToString());
+                    Assert.True(cloudEvent.Type == ClientSecretExpirationEventType.ClientSecretAboutToExpire.ToString() || cloudEvent.Type == ClientSecretExpirationEventType.ClientSecretExpired.ToString());
 
                     var cloudEventData = cloudEvent.GetPayload<ApplicationWithExpiredAndAboutToExpireSecrets>();
                     Assert.IsType<Guid>(cloudEventData.KeyId);
                     
-                    if (cloudEvent.Type == EventType.ClientSecretAboutToExpire.ToString())
+                    if (cloudEvent.Type == ClientSecretExpirationEventType.ClientSecretAboutToExpire.ToString())
                     {
                         Assert.True(cloudEventData.RemainingValidDays > 0 && cloudEventData.RemainingValidDays < 14);
                     }
-                    else if (cloudEvent.Type == EventType.ClientSecretExpired.ToString())
+                    else if (cloudEvent.Type == ClientSecretExpirationEventType.ClientSecretExpired.ToString())
                     {
                         Assert.True(cloudEventData.RemainingValidDays < 0);
                     }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration;
+using Arcus.BackgroundJobs.AzureActiveDirectory;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace Arcus.BackgroundJobs.Tests.Integration.AzureAD.ClientSecretExpiration.Fixture
+namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture
 {
     /// <summary>
     /// Represents an event consumer which receives events from an Azure Service Bus.

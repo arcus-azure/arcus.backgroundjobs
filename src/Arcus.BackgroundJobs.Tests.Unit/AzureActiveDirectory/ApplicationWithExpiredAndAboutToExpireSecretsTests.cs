@@ -1,8 +1,8 @@
 ﻿using System;
-using Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration;
+using Arcus.BackgroundJobs.AzureActiveDirectory;
 using Xunit;
 
-namespace Arcus.BackgroundJobs.Tests.Unit.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
 {
     [Trait(name: "Category", value: "Unit")]
     public class ApplicationWithExpiredAndAboutToExpireSecretsTests

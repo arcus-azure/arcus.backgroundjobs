@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 
-namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
     /// Representing a background job that repeatedly queries Azure Active Directory for client secrets that are about to expire or have already expired.
@@ -88,10 +88,10 @@ namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
             IEventGridPublisher eventGridPublisher = await _options.CreateEventGridPublisherBuilderAsync(_secretProvider);
             foreach (var applicationWithExpiredAndAboutToExpireSecrets in applicationsWithExpiredAndAboutToExpireSecrets)
             {
-                EventType eventType = EventType.ClientSecretAboutToExpire;
+                ClientSecretExpirationEventType eventType = ClientSecretExpirationEventType.ClientSecretAboutToExpire;
                 if (applicationWithExpiredAndAboutToExpireSecrets.RemainingValidDays < 0)
                 {
-                    eventType = EventType.ClientSecretExpired;
+                    eventType = ClientSecretExpirationEventType.ClientSecretExpired;
                 }
 
                 CloudEvent @event = _options.UserOptions.CreateEvent(applicationWithExpiredAndAboutToExpireSecrets, eventType, _options.UserOptions.EventUri);

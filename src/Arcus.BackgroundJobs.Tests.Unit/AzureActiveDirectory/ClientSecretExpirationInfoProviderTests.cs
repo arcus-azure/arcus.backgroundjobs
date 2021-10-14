@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration;
+using Arcus.BackgroundJobs.AzureActiveDirectory;
 using Bogus;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Graph;
 using Xunit;
 
-namespace Arcus.BackgroundJobs.Tests.Unit.AzureAD.ClientSecretExpiration
+namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
 {
     [Trait(name: "Category", value: "Unit")]
     public class ClientSecretExpirationInfoProviderTests
