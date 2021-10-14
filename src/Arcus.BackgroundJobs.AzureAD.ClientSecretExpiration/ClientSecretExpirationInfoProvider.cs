@@ -40,7 +40,7 @@ namespace Arcus.BackgroundJobs.AzureAD.ClientSecretExpiration
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="expirationThreshold"/> is less than zero.</exception>
         public async Task<List<ApplicationWithExpiredAndAboutToExpireSecrets>> GetApplicationsWithExpiredAndAboutToExpireSecrets(int expirationThreshold)
         {
-            Guard.NotLessThan(expirationThreshold, 0, nameof(expirationThreshold));
+            Guard.NotLessThan(expirationThreshold, 0, nameof(expirationThreshold), "Requires an expiration threshold in maximum remaining days the secrets are allowed to stay active");
 
             List<ApplicationWithExpiredAndAboutToExpireSecrets> applicationsList = new List<ApplicationWithExpiredAndAboutToExpireSecrets>();
 
