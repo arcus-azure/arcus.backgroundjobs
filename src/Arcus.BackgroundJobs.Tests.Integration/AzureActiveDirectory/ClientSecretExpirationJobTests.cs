@@ -12,6 +12,7 @@ using Arcus.Testing.Logging;
 using CloudNative.CloudEvents;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -40,11 +41,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
             // Arrange
             var topicEndpoint = _config.GetValue<string>("Arcus:Infra:EventGrid:TopicUri");
             var topicEndpointSecret = _config.GetValue<string>("Arcus:Infra:EventGrid:AuthKey");
-            var topicEndpointSecretKey = "Infra.EventGrid.AuthKey";
-
-            var secretProvider = new Mock<ISecretProvider>();
-            secretProvider.Setup(p => p.GetRawSecretAsync(topicEndpointSecretKey))
-                          .ReturnsAsync(topicEndpointSecret);
 
             IEventGridPublisher eventGridPublisher = EventGridPublisherBuilder
                 .ForTopic(topicEndpoint)
@@ -53,7 +49,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
 
             var options = new WorkerOptions();
             options.ConfigureLogging(_logger)
-                   .AddSingleton<ISecretProvider>(secretProvider.Object)
                    .AddSingleton<IEventGridPublisher>(eventGridPublisher)
                    .AddClientSecretExpirationJob(
                         options => {

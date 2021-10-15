@@ -21,7 +21,6 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
     public class ClientSecretExpirationJob : IScheduledJob
     {
         private readonly ClientSecretExpirationJobSchedulerOptions _options;
-        private readonly ISecretProvider _secretProvider;
         private readonly IEventGridPublisher _eventGridPublisher;
         private readonly ILogger<ClientSecretExpirationJob> _logger;
 
@@ -29,21 +28,18 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// Initializes a new instance of the <see cref="ClientSecretExpirationJob"/> class.
         /// </summary>
         /// <param name="options">The options to configure the job to query Azure Active Directory.</param>
-        /// <param name="secretProvider">The instance to provide the information to authenticate with Azure Active Directory.</param>
         /// <param name="eventGridPublisher">The Event Grid Publisher which will be used to send the events to Azure Event Grid.</param>
         /// <param name="logger">The logger instance to to write telemetry to.</param>
         /// <exception cref="ArgumentNullException">
-        ///     Thrown when the <paramref name="options"/>, <paramref name="secretProvider"/>, <paramref name="eventGridPublisher"/>, <paramref name="logger"/> is <c>null</c>
+        ///     Thrown when the <paramref name="options"/>, <paramref name="eventGridPublisher"/>, <paramref name="logger"/> is <c>null</c>
         ///     or the <see cref="IOptionsMonitor{TOptions}.Get"/> on the  <paramref name="options"/> returns <c>null</c>.
         /// </exception>
         public ClientSecretExpirationJob(
             IOptionsMonitor<ClientSecretExpirationJobSchedulerOptions> options,
-            ISecretProvider secretProvider,
             IEventGridPublisher eventGridPublisher,
             ILogger<ClientSecretExpirationJob> logger)
         {
             Guard.NotNull(options, nameof(options));
-            Guard.NotNull(secretProvider, nameof(secretProvider));
             Guard.NotNull(eventGridPublisher, nameof(eventGridPublisher));
             Guard.NotNull(logger, nameof(logger));
 
@@ -51,7 +47,6 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
             Guard.NotNull(options, nameof(options), "Requires a registered options instance for this background job");
 
             _options = value;
-            _secretProvider = secretProvider;
             _eventGridPublisher = eventGridPublisher;
             _logger = logger;
         }
