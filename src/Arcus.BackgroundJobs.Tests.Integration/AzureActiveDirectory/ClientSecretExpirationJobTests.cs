@@ -5,6 +5,8 @@ using Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
+using Arcus.EventGrid.Publishing;
+using Arcus.EventGrid.Publishing.Interfaces;
 using Arcus.Security.Core;
 using Arcus.Testing.Logging;
 using CloudNative.CloudEvents;
@@ -44,11 +46,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
             secretProvider.Setup(p => p.GetRawSecretAsync(topicEndpointSecretKey))
                           .ReturnsAsync(topicEndpointSecret);
 
+            IEventGridPublisher eventGridPublisher = EventGridPublisherBuilder
+                .ForTopic(topicEndpoint)
+                .UsingAuthenticationKey(topicEndpointSecret)
+                .Build();
+
             var options = new WorkerOptions();
             options.ConfigureLogging(_logger)
                    .AddSingleton<ISecretProvider>(secretProvider.Object)
-                   .AddClientSecretExpirationJob(topicEndpoint,
-                        topicEndpointSecretKey,
+                   .AddSingleton<IEventGridPublisher>(eventGridPublisher)
+                   .AddClientSecretExpirationJob(
                         options => {
                             options.RunImmediately = true;
                             options.ExpirationThreshold = 14;
