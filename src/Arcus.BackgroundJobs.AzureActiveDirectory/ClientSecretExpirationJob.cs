@@ -91,9 +91,9 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
             foreach (var applicationWithExpiredAndAboutToExpireSecrets in applicationsWithExpiredAndAboutToExpireSecrets)
             {
                 var telemetryContext = new Dictionary<string, object>();
-                telemetryContext.Add("keyId", applicationWithExpiredAndAboutToExpireSecrets.KeyId);
-                telemetryContext.Add("applicationName", applicationWithExpiredAndAboutToExpireSecrets.Name);
-                telemetryContext.Add("remainingValidDays", applicationWithExpiredAndAboutToExpireSecrets.RemainingValidDays);
+                telemetryContext.Add("KeyId", applicationWithExpiredAndAboutToExpireSecrets.KeyId);
+                telemetryContext.Add("ApplicationName", applicationWithExpiredAndAboutToExpireSecrets.Name);
+                telemetryContext.Add("RemainingValidDays", applicationWithExpiredAndAboutToExpireSecrets.RemainingValidDays);
 
                 ClientSecretExpirationEventType eventType = ClientSecretExpirationEventType.ClientSecretAboutToExpire;
                 if (applicationWithExpiredAndAboutToExpireSecrets.RemainingValidDays < 0)
