@@ -64,7 +64,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
                         if (remainingValidDays <= expirationThreshold)
                         {
                             applicationsList.Add(new ApplicationWithExpiredAndAboutToExpireSecrets(applicationName, keyId, passwordCredential.EndDateTime.Value.UtcDateTime, remainingValidDays));
-                            _logger.LogTrace($"The secret {keyId} for application {applicationName} has an expired secret or a secret that will expire within {expirationThreshold} days.", telemetryContext);
+                            _logger.LogInformation("The secret {KeyId} for application {ApplicationName} has an expired secret or a secret that will expire within {ExpirationThresholdInDays} days", keyId, applicationName, expirationThreshold);
                         }
                         else
                         {
