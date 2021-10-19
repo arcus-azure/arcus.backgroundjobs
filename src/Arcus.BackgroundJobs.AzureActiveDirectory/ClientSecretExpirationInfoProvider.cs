@@ -68,7 +68,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
                         }
                         else
                         {
-                            _logger.LogTrace($"The secret {keyId} for application {applicationName} is still valid.", telemetryContext);
+                            _logger.LogTrace("The secret {KeyId} for application {ApplicationName} is still valid", keyId, applicationName);
                         }
                     }
                 }
