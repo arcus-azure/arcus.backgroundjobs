@@ -109,7 +109,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
                 CloudEvent @event = _options.UserOptions.CreateEvent(applicationWithExpiredAndAboutToExpireSecrets, eventType, _options.UserOptions.EventUri);                
                 await _eventGridPublisher.PublishAsync(@event);
             }
-            _logger.LogTrace("Executing ClientSecretExpiration job finished.");
+            _logger.LogTrace("Executing {Name} finished", nameof(ClientSecretExpirationJob));
         }
 
         private async Task<string> GetToken()
