@@ -74,7 +74,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
                 }
                 else
                 {
-                    _logger.LogTrace($"Application {application.DisplayName} has no secrets.");
+                    _logger.LogTrace("Application {ApplicationName} has no secrets", application.DisplayName);
                 }
             }
 
