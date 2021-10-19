@@ -70,7 +70,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// </returns>
         public async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogTrace("Executing ClientSecretExpiration job.");
+            _logger.LogTrace("Executing  {Name}", nameof(ClientSecretExpirationJob));
             string token = await GetToken();
             GraphServiceClient graphServiceClient = new GraphServiceClient(
                 new DelegateAuthenticationProvider((requestMessage) =>
