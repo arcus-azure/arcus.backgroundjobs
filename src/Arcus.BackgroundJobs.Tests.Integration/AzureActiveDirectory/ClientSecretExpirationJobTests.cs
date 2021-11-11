@@ -12,7 +12,6 @@ using Arcus.EventGrid.Publishing;
 using Arcus.EventGrid.Publishing.Interfaces;
 using Arcus.Testing.Logging;
 using CloudNative.CloudEvents;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -51,14 +50,12 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
                        opt.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
                    });
 
-            var tenantId = _config.GetValue<string>("Arcus:AzureActiveDirectory:TenantId");
-            var clientId = _config.GetValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientId");
-            var clientSecret = _config.GetValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientSecret");
+            AzureActiveDirectoryConfig activeDirectoryConfig = _config.GetActiveDirectoryConfig();
 
             // Act
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, tenantId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, clientId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, clientSecret))
+            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, activeDirectoryConfig.TenantId))
+            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, activeDirectoryConfig.ServicePrincipal.ClientId))
+            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, activeDirectoryConfig.ServicePrincipal.ClientSecret))
             await using (var worker = await Worker.StartNewAsync(options))
             {
                 await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(_config, _logger))
@@ -88,8 +85,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
 
         private IEventGridPublisher CreateEventGridPublisher()
         {
-            var topicEndpoint = _config.GetValue<string>("Arcus:Infra:EventGrid:TopicUri");
-            var topicEndpointSecret = _config.GetValue<string>("Arcus:Infra:EventGrid:AuthKey");
+            string topicEndpoint = _config.GetTestInfraEventGridTopicUri();
+            string topicEndpointSecret = _config.GetTestInfraEventGridAuthKey();
 
             IEventGridPublisher eventGridPublisher = 
                 EventGridPublisherBuilder
