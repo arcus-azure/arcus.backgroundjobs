@@ -136,7 +136,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 
                 Assert.True(expected == actual, $"Azure Service Bus topic subscription was not created/deleted as expected {expected} != {actual} when topic subscription '{topicSubscription}'");
             }
-            
         }
 
         private static SecretClient CreateKeyVaultClient(string tenantId, string keyVaultUri, string applicationId, string clientKey)
