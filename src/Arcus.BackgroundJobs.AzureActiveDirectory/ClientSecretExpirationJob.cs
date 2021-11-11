@@ -71,55 +71,35 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         public async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogTrace("Executing  {Name}", nameof(ClientSecretExpirationJob));
-            string token = await GetToken();
-            GraphServiceClient graphServiceClient = new GraphServiceClient(
-                new DelegateAuthenticationProvider((requestMessage) =>
-                {
-                    requestMessage
-                    .Headers
-                    .Authorization = new AuthenticationHeaderValue("bearer", token);
-
-                    return Task.CompletedTask;
-                })
-            );
-
+            var graphServiceClient = new GraphServiceClient(new DefaultAzureCredential());
             _logger.LogTrace("Token retrieved, getting a list of applications with expired or about to expire secrets.");
 
-            ClientSecretExpirationInfoProvider clientSecretExpirationInfoProvider = new ClientSecretExpirationInfoProvider(graphServiceClient, _logger);
-            List<ApplicationWithExpiredAndAboutToExpireSecrets> applicationsWithExpiredAndAboutToExpireSecrets = await clientSecretExpirationInfoProvider.GetApplicationsWithExpiredAndAboutToExpireSecrets(_options.UserOptions.ExpirationThreshold);
+            var clientSecretExpirationInfoProvider = new ClientSecretExpirationInfoProvider(graphServiceClient, _logger);
+            IEnumerable<AzureApplication> applications = 
+                await clientSecretExpirationInfoProvider.GetApplicationsWithPotentialExpiredSecrets(_options.UserOptions.ExpirationThreshold);
 
-            foreach (var applicationWithExpiredAndAboutToExpireSecrets in applicationsWithExpiredAndAboutToExpireSecrets)
+            foreach (AzureApplication application in applications)
             {
                 var telemetryContext = new Dictionary<string, object>();
-                telemetryContext.Add("KeyId", applicationWithExpiredAndAboutToExpireSecrets.KeyId);
-                telemetryContext.Add("ApplicationName", applicationWithExpiredAndAboutToExpireSecrets.Name);
-                telemetryContext.Add("RemainingValidDays", applicationWithExpiredAndAboutToExpireSecrets.RemainingValidDays);
+                telemetryContext.Add("KeyId", application.KeyId);
+                telemetryContext.Add("ApplicationName", application.Name);
+                telemetryContext.Add("RemainingValidDays", application.RemainingValidDays);
 
-                ClientSecretExpirationEventType eventType = ClientSecretExpirationEventType.ClientSecretAboutToExpire;
-                if (applicationWithExpiredAndAboutToExpireSecrets.RemainingValidDays < 0)
+                var eventType = ClientSecretExpirationEventType.ClientSecretAboutToExpire;
+                if (application.RemainingValidDays < 0)
                 {
                     eventType = ClientSecretExpirationEventType.ClientSecretExpired;
-                    _logger.LogEvent($"The secret {applicationWithExpiredAndAboutToExpireSecrets.KeyId} for Azure Active Directory application {applicationWithExpiredAndAboutToExpireSecrets.Name} has expired.", telemetryContext);
+                    _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} has expired.", telemetryContext);
                 }
                 else
                 {
-                    _logger.LogEvent($"The secret {applicationWithExpiredAndAboutToExpireSecrets.KeyId} for Azure Active Directory application {applicationWithExpiredAndAboutToExpireSecrets.Name} will expire within {applicationWithExpiredAndAboutToExpireSecrets.RemainingValidDays} days.", telemetryContext);
+                    _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} will expire within {application.RemainingValidDays} days.", telemetryContext);
                 }
 
-                CloudEvent @event = _options.UserOptions.CreateEvent(applicationWithExpiredAndAboutToExpireSecrets, eventType, _options.UserOptions.EventUri);                
+                CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType, _options.UserOptions.EventUri);                
                 await _eventGridPublisher.PublishAsync(@event);
             }
             _logger.LogTrace("Executing {Name} finished", nameof(ClientSecretExpirationJob));
-        }
-
-        private async Task<string> GetToken()
-        {
-            var credential = new DefaultAzureCredential();
-            var token = await credential.GetTokenAsync(
-                new Azure.Core.TokenRequestContext(
-                    new[] { "https://graph.microsoft.com/.default" }));
-
-            return token.Token;
         }
     }
 }

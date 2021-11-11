@@ -58,7 +58,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
             var provider = new ClientSecretExpirationInfoProvider(client, NullLogger.Instance);
 
             // Act / Assert
-            await Assert.ThrowsAnyAsync<ArgumentException>(() => provider.GetApplicationsWithExpiredAndAboutToExpireSecrets(expirationThreshold));
+            await Assert.ThrowsAnyAsync<ArgumentException>(() => provider.GetApplicationsWithPotentialExpiredSecrets(expirationThreshold));
         }
     }
 }

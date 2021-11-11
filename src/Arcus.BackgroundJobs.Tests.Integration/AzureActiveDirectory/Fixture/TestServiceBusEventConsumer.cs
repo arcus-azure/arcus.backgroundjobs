@@ -52,7 +52,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture
         public EventBatch<Event> Consume()
         {
             List<Event> eventList = new List<Event>();
-            Event receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent<ApplicationWithExpiredAndAboutToExpireSecrets>(
+            Event receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent<AzureApplication>(
                         data => !String.IsNullOrWhiteSpace(data.Name),
                         TimeSpan.FromSeconds(120));
             

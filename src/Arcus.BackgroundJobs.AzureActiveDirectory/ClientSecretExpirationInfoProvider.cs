@@ -38,32 +38,26 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// <param name="expirationThreshold">The threshold for the expiration, if the end datetime for a secret is lower than this value a <see cref="CloudEvent"/> will be published.</param>
         /// <returns>A list of applications that have expired secrets or secrets that are about to expire.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="expirationThreshold"/> is less than zero.</exception>
-        public async Task<List<ApplicationWithExpiredAndAboutToExpireSecrets>> GetApplicationsWithExpiredAndAboutToExpireSecrets(int expirationThreshold)
+        public async Task<IEnumerable<AzureApplication>> GetApplicationsWithPotentialExpiredSecrets(int expirationThreshold)
         {
             Guard.NotLessThan(expirationThreshold, 0, nameof(expirationThreshold), "Requires an expiration threshold in maximum remaining days the secrets are allowed to stay active");
 
-            List<ApplicationWithExpiredAndAboutToExpireSecrets> applicationsList = new List<ApplicationWithExpiredAndAboutToExpireSecrets>();
-
+            var applicationsList = new List<AzureApplication>();
             IGraphServiceApplicationsCollectionPage applications = await _graphServiceClient.Applications.Request().GetAsync();
 
             foreach (Application application in applications)
             {
-                if (application.PasswordCredentials != null && application.PasswordCredentials.Count() > 0)
+                if (application.PasswordCredentials != null && application.PasswordCredentials.Any())
                 {
                     foreach (PasswordCredential passwordCredential in application.PasswordCredentials)
                     {
                         string applicationName = application.DisplayName;
-                        Guid keyId = passwordCredential.KeyId.Value;
-                        double remainingValidDays = (passwordCredential.EndDateTime.Value - DateTime.UtcNow).TotalDays;
-
-                        var telemetryContext = new Dictionary<string, object>();
-                        telemetryContext.Add("keyId", keyId);
-                        telemetryContext.Add("applicationName", applicationName);
-                        telemetryContext.Add("remainingValidDays", remainingValidDays);
+                        Guid? keyId = passwordCredential.KeyId;
+                        double remainingValidDays = DetermineRemainingDaysBeforeExpiration(passwordCredential);
 
                         if (remainingValidDays <= expirationThreshold)
                         {
-                            applicationsList.Add(new ApplicationWithExpiredAndAboutToExpireSecrets(applicationName, keyId, passwordCredential.EndDateTime.Value.UtcDateTime, remainingValidDays));
+                            applicationsList.Add(new AzureApplication(applicationName, keyId, passwordCredential.EndDateTime, remainingValidDays));
                             _logger.LogInformation("The secret {KeyId} for application {ApplicationName} has an expired secret or a secret that will expire within {ExpirationThresholdInDays} days", keyId, applicationName, expirationThreshold);
                         }
                         else
@@ -72,13 +66,22 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
                         }
                     }
                 }
-                else
-                {
-                    _logger.LogTrace("Application {ApplicationName} has no secrets", application.DisplayName);
-                }
             }
 
             return applicationsList;
+        }
+
+        private static double DetermineRemainingDaysBeforeExpiration(PasswordCredential password)
+        {
+            DateTimeOffset? expirationDate = password.EndDateTime;
+            if (expirationDate is null)
+            {
+                return 0;
+            }
+            
+            TimeSpan remainingTime = expirationDate.Value - DateTimeOffset.UtcNow;
+
+            return remainingTime.TotalDays;
         }
     }
 }

@@ -77,13 +77,13 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// <summary>
         /// Creates a <see cref="CloudEvent"/> instance using the predefined values.
         /// </summary>
-        /// <param name="application">The <see cref="ApplicationWithExpiredAndAboutToExpireSecrets"/> containing the information regarding the application and its expiring or about to expire secret.</param>
+        /// <param name="application">The <see cref="AzureApplication"/> containing the information regarding the application and its expiring or about to expire secret.</param>
         /// <param name="type">The type used in the creation of the <see cref="CloudEvent"/>.</param>
         /// <param name="eventUri">The uri used in the creation of the <see cref="CloudEvent"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="application"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="application"/> name is blank.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="eventUri"/> is blank.</exception>
-        public virtual CloudEvent CreateEvent(ApplicationWithExpiredAndAboutToExpireSecrets application, ClientSecretExpirationEventType type, Uri eventUri)
+        public virtual CloudEvent CreateEvent(AzureApplication application, ClientSecretExpirationEventType type, Uri eventUri)
         {
             Guard.NotNull(application, nameof(application));
             Guard.NotNullOrWhitespace(application.Name, nameof(application.Name));
