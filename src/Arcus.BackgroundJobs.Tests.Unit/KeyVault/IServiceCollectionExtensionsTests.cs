@@ -153,5 +153,75 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
                     "<service-bus-connection-string-secret-key>",
                     messagePumpConnectionStringKey));
         }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJobOptions_WithoutJobId_Fails(string jobId)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(() =>
+                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                    jobId,
+                    "<topic-subscription-prefix>",
+                    "<service-bus-connection-string-secret-key>",
+                    "<message-pump-connection-string-key>",
+                    configureBackgroundJob: null));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJobOptions_WithoutTopicSubscriptionPrefix_Fails(string topicSubscriptionPrefix)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(() =>
+                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                    "<job-id>",
+                    topicSubscriptionPrefix,
+                    "<service-bus-connection-string-secret-key>",
+                    "<message-pump-connection-string-key>",
+                    configureBackgroundJob: null));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJobOptions_WithoutServiceBusConnectionStringSecretKey_Fails(
+            string serviceBusConnectionStringSecretKey)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(() =>
+                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                    "<job-id>",
+                    "<topic-subscription-prefix>",
+                    serviceBusConnectionStringSecretKey,
+                    "<message-pump-connection-string-key>",
+                    configureBackgroundJob: null));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJobOptions_WithoutMessagePumpConnectionStringKey_Fails(
+            string messagePumpConnectionStringKey)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(() =>
+                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                    "<job-id>",
+                    "<topic-subscription-prefix>",
+                    "<service-bus-connection-string-secret-key>",
+                    messagePumpConnectionStringKey,
+                    configureBackgroundJob: null));
+        }
     }
 }
