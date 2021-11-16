@@ -150,7 +150,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
             IEnumerable<PasswordCredential> credentials = CreateStubbedCredentials(expirationDate);
             IEnumerable<Application> applications = GetStubbedApplications(credentials);
             GraphServiceClient client = CreateStubbedGraphClient(applications);
-            int expirationThresholdInDays = BogusGenerator.Random.Int(min: 1, max: 2);
+            int expirationThresholdInDays = 2;
 
             var provider = new ClientSecretExpirationInfoProvider(client, NullLogger.Instance);
 
