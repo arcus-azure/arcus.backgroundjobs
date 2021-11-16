@@ -41,6 +41,12 @@ public class Startup
             // If a client secret has an EndDateTime within the `ExpirationThreshold` a `ClientSecretAboutToExpire` CloudEvent is used.
             // If a client secret has an EndDateTime that is in the past a `ClientSecretExpired` event is used.
             options.ExpirationThreshold = 14;
+
+            // The hour at which the job will during the day, the value can range from 0 to 23
+            options.RunAtHour = 0;
+
+            // The RunImmediately option can be used to indicate that the job should run immediately
+            options.RunImmediately = false;
             
             // The uri to use in the CloudEvent
             options.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
