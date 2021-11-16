@@ -145,7 +145,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
         public async Task GetApplicationsWithPotentialExpiredSecrets_WithStillValidSecrets_ReturnsEmpty()
         {
             // Arrange
-            DateTimeOffset expirationDate = BogusGenerator.Date.SoonOffset(days: 5);
+            DateTimeOffset expirationDate = BogusGenerator.Date.SoonOffset(refDate: DateTimeOffset.UtcNow.AddDays(5));
             
             IEnumerable<PasswordCredential> credentials = CreateStubbedCredentials(expirationDate);
             IEnumerable<Application> applications = GetStubbedApplications(credentials);
