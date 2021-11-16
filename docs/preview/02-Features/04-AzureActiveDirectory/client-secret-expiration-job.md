@@ -35,15 +35,16 @@ public class Startup
         // An `IEventGridPublisher` implementation where the CloudEvents are sent to
         services.AddSingleton<IEventGridPublisher>(eventGridPublisher);
     
-        services.AddClientSecretExpirationJob(
-            options => {
-                // The expiration threshold for the client secrets. 
-                // If a client secret has an EndDateTime within the `ExpirationThreshold` a `ClientSecretAboutToExpire` CloudEvent is used.
-                // If a client secret has an EndDateTime that is in the past a `ClientSecretExpired` event is used.
-                options.ExpirationThreshold = 14;
-                // The uri to use in the CloudEvent
-                options.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
-            });
+        services.AddClientSecretExpirationJob(options => 
+        {
+            // The expiration threshold for the client secrets. 
+            // If a client secret has an EndDateTime within the `ExpirationThreshold` a `ClientSecretAboutToExpire` CloudEvent is used.
+            // If a client secret has an EndDateTime that is in the past a `ClientSecretExpired` event is used.
+            options.ExpirationThreshold = 14;
+            
+            // The uri to use in the CloudEvent
+            options.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
+        });
     }
 }
 ```
