@@ -17,7 +17,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
             double remainingValidDays = 100;
 
             // Assert
-            Assert.ThrowsAny<ArgumentException>(() => new ApplicationWithExpiredAndAboutToExpireSecrets(name, keyId, endDateTime, remainingValidDays));
+            Assert.ThrowsAny<ArgumentException>(() => new AzureApplication(name, keyId, endDateTime, remainingValidDays));
         }
 
         [Fact]
@@ -30,7 +30,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
             double remainingValidDays = 100;
 
             // Act
-            var applicationWithExpiredAndAboutToExpireSecrets = new ApplicationWithExpiredAndAboutToExpireSecrets(name, keyId, endDateTime, remainingValidDays);
+            var applicationWithExpiredAndAboutToExpireSecrets = new AzureApplication(name, keyId, endDateTime, remainingValidDays);
 
             // Assert
             Assert.Equal(name, applicationWithExpiredAndAboutToExpireSecrets.Name);

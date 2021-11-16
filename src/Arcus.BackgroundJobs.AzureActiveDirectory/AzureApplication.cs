@@ -4,19 +4,19 @@ using GuardNet;
 namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
-    /// Represents an <see cref="ApplicationWithExpiredAndAboutToExpireSecrets"/> from Azure Active Directory.
+    /// Represents an <see cref="AzureApplication"/> from Azure Active Directory.
     /// </summary>
-    public class ApplicationWithExpiredAndAboutToExpireSecrets
+    public class AzureApplication
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationWithExpiredAndAboutToExpireSecrets"/> class.
+        /// Initializes a new instance of the <see cref="AzureApplication"/> class.
         /// </summary>
         /// <param name="name">The name of the application.</param>
         /// <param name="keyId">The id of the secret.</param>
         /// <param name="endDateTime">The datetime the secret will expire.</param>
         /// <param name="remainingValidDays">The remaining days before the secret will expire.</param>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="name"/> is blank.</exception>
-        public ApplicationWithExpiredAndAboutToExpireSecrets(string name, Guid keyId, DateTime endDateTime, double remainingValidDays)
+        public AzureApplication(string name, Guid? keyId, DateTimeOffset? endDateTime, double remainingValidDays)
         {
             Guard.NotNullOrWhitespace(name, nameof(name));
 
@@ -32,14 +32,14 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         public string Name { get; }
 
         /// <summary>
-        /// Gets the id of the clientsecret.
+        /// Gets the id of the client secret.
         /// </summary>
-        public Guid KeyId { get; }
+        public Guid? KeyId { get; }
 
         /// <summary>
-        /// Gets the end datetime of the clientsecret.
+        /// Gets the end datetime of the client secret.
         /// </summary>
-        public DateTime EndDateTime { get; }
+        public DateTimeOffset? EndDateTime { get; }
 
         /// <summary>
         /// Gets the number of days the secret is still valid.
