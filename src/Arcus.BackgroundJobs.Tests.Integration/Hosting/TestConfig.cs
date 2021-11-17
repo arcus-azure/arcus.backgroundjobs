@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
@@ -81,6 +83,18 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
                     _config.GetValue<string>("Arcus:KeyRotation:KeyVault:SecretNewVersionCreated:ServiceBusConnectionStringWithTopicEndpoint")));
 
             return new KeyRotationConfig(secret, servicePrincipal, azureEnv);
+        }
+
+        /// <summary>
+        /// Gets the configuration values to connect to the test Azure Active Directory used for integration testing.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown when one or more configuration values are missing from the loaded configuration.</exception>
+        public AzureActiveDirectoryConfig GetActiveDirectoryConfig()
+        {
+            return new AzureActiveDirectoryConfig(
+                _config.GetValue<string>("Arcus:AzureActiveDirectory:TenantId"),
+                _config.GetValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientId"),
+                _config.GetValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientSecret"));
         }
 
         /// <summary>
