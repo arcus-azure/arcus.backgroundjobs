@@ -83,7 +83,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="application"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="application"/> name is blank.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="eventUri"/> is blank.</exception>
-        public virtual CloudEvent CreateEvent(AzureApplication application, ClientSecretExpirationEventType type, Uri eventUri)
+        internal CloudEvent CreateEvent(AzureApplication application, ClientSecretExpirationEventType type, Uri eventUri)
         {
             Guard.NotNull(application, nameof(application));
             Guard.NotNullOrWhitespace(application.Name, nameof(application.Name));
