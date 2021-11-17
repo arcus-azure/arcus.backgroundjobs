@@ -52,10 +52,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture
         public EventBatch<Event> Consume()
         {
             List<Event> eventList = new List<Event>();
-            Event receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent<AzureApplication>(
-                        data => !String.IsNullOrWhiteSpace(data.Name),
+            Event receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent(
+                        data => data.Source == new Uri("https://github.com/arcus-azure/arcus.backgroundjobs"),
                         TimeSpan.FromSeconds(300));
-            
+
             eventList.Add(receivedEvent);
             EventBatch<Event> eventBatch = new EventBatch<Event>(receivedEvent.Id, eventList);
 
