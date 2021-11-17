@@ -54,7 +54,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture
             List<Event> eventList = new List<Event>();
             Event receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent<AzureApplication>(
                         data => !String.IsNullOrWhiteSpace(data.Name),
-                        TimeSpan.FromSeconds(120));
+                        TimeSpan.FromSeconds(300));
             
             eventList.Add(receivedEvent);
             EventBatch<Event> eventBatch = new EventBatch<Event>(receivedEvent.Id, eventList);
