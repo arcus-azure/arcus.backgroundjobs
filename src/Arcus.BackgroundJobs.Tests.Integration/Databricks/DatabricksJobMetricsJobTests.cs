@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph;
 using Moq;
 using Polly;
 using Xunit;
@@ -18,110 +19,93 @@ using Xunit.Sdk;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.Databricks
 {
-    public class DatabricksJobMetricsJobTests : IAsyncLifetime
+    public class DatabricksJobMetricsJobTests
     {
-        private readonly ITestOutputHelper _outputWriter;
-        private readonly TestHost _host;
+        private readonly ILogger _logger;
         private readonly TestConfig _config;
-        private readonly InMemoryLogger _spyLogger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabricksJobMetricsJobTests"/> class.
         /// </summary>
         public DatabricksJobMetricsJobTests(ITestOutputHelper outputWriter)
         {
-            _outputWriter = outputWriter;
+            _logger = new XunitTestLogger(outputWriter);
             _config = TestConfig.Create();
-            _spyLogger = new InMemoryLogger();
-            _host = new TestHost(_config, ConfigureServices);
-        }
-
-        private void ConfigureServices(IServiceCollection services)
-        {
-            var loggerProvider = new Mock<ILoggerProvider>();
-            loggerProvider.Setup(p => p.CreateLogger(It.IsAny<string>()))
-                          .Returns(_spyLogger);
-
-            services.AddLogging(builder => builder.AddProvider(loggerProvider.Object));
-
-            string baseUrl = GetDatabricksUrl();
-            string token = GetDatabricksToken();
-            string tokenSecretKey = "Databricks.Token";
-
-            var secretProvider = new Mock<ISecretProvider>();
-            secretProvider.Setup(p => p.GetRawSecretAsync(tokenSecretKey))
-                          .ReturnsAsync(token);
-
-            services.AddSingleton<ISecretProvider>(secretProvider.Object);
-            services.AddDatabricksJobMetricsJob(baseUrl, tokenSecretKey, options => options.IntervalInMinutes = 1);
-        }
-
-        /// <summary>
-        /// Called immediately after the class has been created, before it is used.
-        /// </summary>
-        public async Task InitializeAsync()
-        {
-            var host = _host.Services.GetService<IHost>();
-            await host.StartAsync();
         }
 
         [Fact]
         public async Task FinishedDatabricksJobRun_GetsNoticedByRepeatedlyDatabricksJob_ReportsAsMetric()
         {
             // Arrange
-            string baseUrl = GetDatabricksUrl();
-            string token = GetDatabricksToken();
-            int jobId = GetDatabricksJobId();
+            var baseUrl = _config.GetValue<string>("Arcus:Databricks:Url");
+            var token = _config.GetValue<string>("Arcus:Databricks:Token");
 
+            var spyLogger = new InMemoryLogger();
+            var tokenSecretKey = "Databricks.Token";
+            var options = new WorkerOptions();
+            options.ConfigureLogging(spyLogger);
+            options.ConfigureLogging(_logger);
+            options.AddSecretStore(stores => stores.AddInMemory(tokenSecretKey, token));
+            options.AddDatabricksJobMetricsJob(baseUrl, tokenSecretKey, opt => opt.IntervalInMinutes = 1);
+            
             using (var client = DatabricksClient.CreateClient(baseUrl, token))
             {
-                // Act
-                await client.Jobs.RunNow(jobId, RunParameters.CreateNotebookParams(Enumerable.Empty<KeyValuePair<string, string>>()));
+                JobSettings settings = CreateEmptyJobSettings();
+                long jobId = await client.Jobs.Create(settings);
+                
+                await using (var worker = await Worker.StartNewAsync(options))
+                {
+                    try
+                    {
+                        // Act
+                        await client.Jobs.RunNow(jobId, RunParameters.CreateNotebookParams(Enumerable.Empty<KeyValuePair<string, string>>()));
 
-                // Assert
-                RetryAssertion(
-                    () => Assert.Contains(_spyLogger.Messages, msg => msg.StartsWith("Metric Databricks Job Completed")),
-                    timeout: TimeSpan.FromMinutes(3),
-                    interval: TimeSpan.FromSeconds(1));
+                        // Assert
+                        RetryAssertion(
+                            () => Assert.Contains(spyLogger.Messages, msg => msg.StartsWith("Metric Databricks Job Completed")),
+                            timeout: TimeSpan.FromMinutes(5),
+                            interval: TimeSpan.FromSeconds(1));
+                    }
+                    finally
+                    {
+                        await client.Jobs.Delete(jobId);
+                    }
+                }
             }
         }
 
-        private string GetDatabricksUrl()
+        private static JobSettings CreateEmptyJobSettings()
         {
-            string baseUrl = _config.GetValue<string>("Arcus:Databricks:Url");
-            return baseUrl;
-        }
+            var settings = new JobSettings
+            {
+                Name = "(temp) Arcus Background Jobs - Integration Testing",
+                NewCluster = new ClusterInfo
+                {
+                    RuntimeVersion = "8.3.x-scala2.12",
+                    NodeTypeId = "Standard_DS3_v2",
+                    SparkEnvironmentVariables = new Dictionary<string, string>
+                    {
+                        ["PYSPARK_PYTHON"] = "/databricks/python3/bin/python3"
+                    },
+                    EnableElasticDisk = true,
+                    NumberOfWorkers = 8
+                },
+                MaxConcurrentRuns = 10,
+                NotebookTask = new NotebookTask
+                {
+                    NotebookPath = "/Arcus - Automation"
+                }
+            };
 
-        private string GetDatabricksToken()
-        {
-            string token = _config.GetValue<string>("Arcus:Databricks:Token");
-            return token;
-        }
-
-        private int GetDatabricksJobId()
-        {
-            int jobId = _config.GetValue<int>("Arcus:Databricks:JobId");
-            return jobId;
+            return settings;
         }
 
         private static void RetryAssertion(Action assertion, TimeSpan timeout, TimeSpan interval)
         {
             Policy.Timeout(timeout)
-                  .Wrap(Policy.Handle<ContainsException>()
+                  .Wrap(Policy.Handle<XunitException>()
                               .WaitAndRetryForever(_ => interval))
                   .Execute(assertion);
-        }
-
-        /// <summary>
-        /// Called when an object is no longer needed. Called just before <see cref="M:System.IDisposable.Dispose" />
-        /// if the class also implements that.
-        /// </summary>
-        public async Task DisposeAsync()
-        {
-            var host = _host.Services.GetService<IHost>();
-            await host.StopAsync();
-
-            _host?.Dispose();
         }
     }
 }
