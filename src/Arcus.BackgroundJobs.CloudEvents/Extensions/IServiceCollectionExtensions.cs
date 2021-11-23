@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddCloudEventBackgroundJob(services, topicName, subscriptionNamePrefix, serviceBusNamespaceConnectionStringSecretKey, configureBackgroundJob: null);
         }
-        
+
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to receive <see cref="CloudEvent"/>'s.
         /// </summary>
@@ -123,12 +123,53 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var options = new AzureServiceBusMessagePumpOptions();
                 configureBackgroundJob?.Invoke(options);
-                
+
                 var logger = serviceProvider.GetRequiredService<ILogger<CloudEventMessageRouter>>();
                 return new CloudEventMessageRouter(serviceProvider, options.Routing, logger);
             });
 
             return services.AddServiceBusTopicMessagePumpWithPrefix(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey, configureBackgroundJob);
+        }
+
+        /// <summary>
+        /// Adds a background job to the <see cref="IServiceCollection"/> to receive <see cref="CloudEvent"/>'s.
+        /// </summary>
+        /// <param name="services">The services collection to add the job to.</param>
+        /// <param name="serviceBusNamespace">The Service Bus namespace to connect to. This is likely to be similar to <c>{yournamespace}.servicebus.windows.net</c>.</param>
+        /// <param name="topicName">The name of the Azure Service Bus Topic to process.</param>
+        /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
+        /// <param name="clientId">
+        ///     The client ID to authenticate for a user assigned managed identity. More information on user assigned managed identities cam be found here:
+        ///     <see href="https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview#how-a-user-assigned-managed-identity-works-with-an-azure-vm" />.
+        /// </param>
+        /// <param name="configureBackgroundJob">The capability to configure additional options on how the CloudEvents background job should behave.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        ///     Thrown when the <paramref name="serviceBusNamespace"/>, the <paramref name="topicName"/>, or the <paramref name="subscriptionNamePrefix"/> is blank.
+        /// </exception>
+        public static ServiceBusMessageHandlerCollection AddCloudEventBackgroundJobUsingManagedIdentity(
+            this IServiceCollection services,
+            string serviceBusNamespace,
+            string topicName,
+            string subscriptionNamePrefix,
+            string clientId = null,
+            Action<IAzureServiceBusTopicMessagePumpOptions> configureBackgroundJob = null)
+        {
+            Guard.NotNull(services, nameof(services), "Requires a set of services to add the CloudEvents background job to");
+            Guard.NotNullOrWhitespace(serviceBusNamespace, nameof(serviceBusNamespace), "Requires a non-blank fully qualified namespace for the Azure Service Bus Topic");
+            Guard.NotNullOrWhitespace(topicName, nameof(topicName), "Requires a non-blank Azure Service Bus Topic name to identity the Azure Service Bus entity");
+            Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
+            
+            services.AddServiceBusMessageRouting(serviceProvider =>
+            {
+                var options = new AzureServiceBusMessagePumpOptions();
+                configureBackgroundJob?.Invoke(options);
+
+                var logger = serviceProvider.GetRequiredService<ILogger<CloudEventMessageRouter>>();
+                return new CloudEventMessageRouter(serviceProvider, options.Routing, logger);
+            });
+
+            return services.AddServiceBusTopicMessagePumpUsingManagedIdentityWithPrefix(topicName, subscriptionNamePrefix, serviceBusNamespace, clientId, configureBackgroundJob);
         }
     }
 }
