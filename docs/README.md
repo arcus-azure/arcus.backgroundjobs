@@ -16,6 +16,8 @@ cd docs
 npm install
 ```
 
+> You need at least version v7.21.0 of `npm`.
+
 ## Local Development
 
 ```console
