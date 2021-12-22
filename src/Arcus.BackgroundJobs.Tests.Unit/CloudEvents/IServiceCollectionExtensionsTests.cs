@@ -75,5 +75,47 @@ namespace Arcus.BackgroundJobs.Tests.Unit.CloudEvents
             Assert.ThrowsAny<ArgumentException>(
                 () => services.AddCloudEventBackgroundJob(subscriptionPrefix, topicConnectionStringSecretKey));
         }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void AddJob_WithManagedIdentity_WithoutNamespace_Fails(string serviceBusNamespace)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var topicName = "orders";
+            var subscriptionPrefix = "Test-";
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(
+                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(serviceBusNamespace, topicName, subscriptionPrefix));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void AddJob_WithManagedIdentity_WithoutTopicName_Fails(string topicName)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var subscriptionPrefix = "Test-";
+            var serviceBusNamespace = "Arcus:ServiceBus:ServiceBusNamespace";
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(
+                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(serviceBusNamespace, topicName, subscriptionPrefix));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void AddJob_WithManagedIdentity_WithoutSubscriptionPrefixBasedOnTopic_Fails(string subscriptionPrefix)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var topicName = "orders";
+            var serviceBusNamespace = "Arcus:ServiceBus:ServiceBusNamespace";
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(
+                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(serviceBusNamespace, topicName, subscriptionPrefix));
+        }
     }
 }
