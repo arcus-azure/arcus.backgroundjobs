@@ -84,7 +84,7 @@ When creating a new documentation website update these values within the `docusa
 }
 ```
 
-## Syntax higlighting
+## Syntax highlighting
 
 To have syntax highlighting within the codeblocks you have to use one of the prism supported languages:
 
