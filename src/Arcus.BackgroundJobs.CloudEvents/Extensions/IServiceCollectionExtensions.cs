@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription");
             Guard.NotNullOrWhitespace(serviceBusNamespaceConnectionStringSecretKey, nameof(serviceBusNamespaceConnectionStringSecretKey), "Requires a non-blank secret key that points to a Azure Service Bus namespace-scoped connection string");
 
-            services.AddServiceBusMessageRouting(ServiceBusImplementationFactory(configureBackgroundJob));
+            services.CreateServiceBusMessageRouter(configureBackgroundJob);
 
             return services.AddServiceBusTopicMessagePumpWithPrefix(topicName, subscriptionNamePrefix, serviceBusNamespaceConnectionStringSecretKey, configureBackgroundJob);
         }
@@ -112,7 +112,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
             Guard.NotNullOrWhitespace(serviceBusTopicConnectionStringSecretKey, nameof(serviceBusTopicConnectionStringSecretKey), "Requires a non-blank secret key that points to a Azure Service Bus Topic-scoped connection string");
 
-            services.AddServiceBusMessageRouting(ServiceBusImplementationFactory(configureBackgroundJob));
+            services.CreateServiceBusMessageRouter(configureBackgroundJob);
 
             return services.AddServiceBusTopicMessagePumpWithPrefix(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey, configureBackgroundJob);
         }
@@ -135,32 +135,33 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </exception>
         public static ServiceBusMessageHandlerCollection AddCloudEventBackgroundJobUsingManagedIdentity(
             this IServiceCollection services,
-            string serviceBusNamespace,
             string topicName,
             string subscriptionNamePrefix,
+            string serviceBusNamespace,
             string clientId = null,
             Action<IAzureServiceBusTopicMessagePumpOptions> configureBackgroundJob = null)
         {
             Guard.NotNull(services, nameof(services), "Requires a set of services to add the CloudEvents background job to");
-            Guard.NotNullOrWhitespace(serviceBusNamespace, nameof(serviceBusNamespace), "Requires a non-blank fully qualified namespace for the Azure Service Bus Topic");
             Guard.NotNullOrWhitespace(topicName, nameof(topicName), "Requires a non-blank Azure Service Bus Topic name to identity the Azure Service Bus entity");
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
+            Guard.NotNullOrWhitespace(serviceBusNamespace, nameof(serviceBusNamespace), "Requires a non-blank fully qualified namespace for the Azure Service Bus Topic");
             
-            services.AddServiceBusMessageRouting(ServiceBusImplementationFactory(configureBackgroundJob));
+            services.CreateServiceBusMessageRouter(configureBackgroundJob);
 
             return services.AddServiceBusTopicMessagePumpUsingManagedIdentityWithPrefix(topicName, subscriptionNamePrefix, serviceBusNamespace, clientId, configureBackgroundJob);
         }
 
-        private static Func<IServiceProvider, CloudEventMessageRouter> ServiceBusImplementationFactory(Action<IAzureServiceBusTopicMessagePumpOptions> configureBackgroundJob)
+        private static void CreateServiceBusMessageRouter(this IServiceCollection services, Action<IAzureServiceBusTopicMessagePumpOptions> configureBackgroundJob = null)
         {
-            return serviceProvider =>
+            services.AddServiceBusMessageRouting(serviceProvider =>
             {
                 var options = new AzureServiceBusMessagePumpOptions();
                 configureBackgroundJob?.Invoke(options);
 
                 var logger = serviceProvider.GetRequiredService<ILogger<CloudEventMessageRouter>>();
                 return new CloudEventMessageRouter(serviceProvider, options.Routing, logger);
-            };
+            });            
+
         }
     }
 }

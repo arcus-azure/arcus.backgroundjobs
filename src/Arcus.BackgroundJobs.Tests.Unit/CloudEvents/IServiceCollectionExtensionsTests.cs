@@ -87,7 +87,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.CloudEvents
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(
-                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(serviceBusNamespace, topicName, subscriptionPrefix));
+                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(topicName, subscriptionPrefix, serviceBusNamespace));
         }
 
         [Theory]
@@ -101,7 +101,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.CloudEvents
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(
-                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(serviceBusNamespace, topicName, subscriptionPrefix));
+                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(topicName, subscriptionPrefix, serviceBusNamespace));
         }
 
         [Theory]
@@ -115,7 +115,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.CloudEvents
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(
-                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(serviceBusNamespace, topicName, subscriptionPrefix));
+                () => services.AddCloudEventBackgroundJobUsingManagedIdentity(topicName, subscriptionPrefix, serviceBusNamespace));
         }
     }
 }

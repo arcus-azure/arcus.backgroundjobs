@@ -42,9 +42,9 @@ public class Startup
 
         // Add CloudEvent background job via Managed Identity
         services.AddCloudEventBackgroundJobUsingManagedIdentity(
-            serviceBusNamespace: "<your-namespace>.servicebus.windows.net",
             topicName: "<your-topic>",
             subscriptionNamePrefix: "Sub-",
+            serviceBusNamespace: "<your-namespace>.servicebus.windows.net",
             // The optional client id to authenticate for a user assigned managed identity. More information on user assigned managed identities cam be found here:
             // https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview#how-a-user-assigned-managed-identity-works-with-an-azure-vm
             clientId: "<your-client-id>"
