@@ -145,7 +145,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(topicName, nameof(topicName), "Requires a non-blank Azure Service Bus Topic name to identity the Azure Service Bus entity");
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
             Guard.NotNullOrWhitespace(serviceBusNamespace, nameof(serviceBusNamespace), "Requires a non-blank fully qualified namespace for the Azure Service Bus Topic");
-            
+
             services.CreateServiceBusMessageRouter(configureBackgroundJob);
 
             return services.AddServiceBusTopicMessagePumpUsingManagedIdentityWithPrefix(topicName, subscriptionNamePrefix, serviceBusNamespace, clientId, configureBackgroundJob);
@@ -160,8 +160,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 var logger = serviceProvider.GetRequiredService<ILogger<CloudEventMessageRouter>>();
                 return new CloudEventMessageRouter(serviceProvider, options.Routing, logger);
-            });            
-
+            });
         }
     }
 }
