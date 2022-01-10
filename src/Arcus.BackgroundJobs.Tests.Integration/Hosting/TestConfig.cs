@@ -50,7 +50,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         /// <summary>
         /// Gets the service principal that can authenticate with the Azure Service Bus used in these integration tests.
         /// </summary>
-        /// <returns></returns>
         public ServicePrincipal GetServiceBusServicePrincipal()
         {
             var servicePrincipal = new ServicePrincipal(

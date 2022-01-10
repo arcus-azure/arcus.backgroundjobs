@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Net.Mime;
-using System.Text;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.EventGrid;
@@ -8,10 +6,7 @@ using Arcus.EventGrid.Contracts;
 using Arcus.EventGrid.Parsers;
 using Arcus.EventGrid.Testing.Infrastructure.Hosts.ServiceBus;
 using Azure.Messaging.ServiceBus;
-using Bogus;
-using CloudNative.CloudEvents;
 using GuardNet;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -116,41 +111,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting.ServiceBus
         }
 
         /// <summary>
-        /// Simulate the message processing of the message pump using the Azure Service Bus.
-        /// </summary>
-        /// <param name="connectionString">The connection string used to send a Azure Service Bus message to the respectively running message pump.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="connectionString"/> is blank.</exception>
-        public async Task SimulateCloudEventMessageProcessingAsync(string connectionString)
-        {
-            Guard.NotNullOrWhitespace(connectionString, nameof(connectionString));
-
-            if (_serviceBusEventConsumerHost is null)
-            {
-                throw new InvalidOperationException(
-                    "Cannot simulate the message pump because the service is not yet started; please start this service before simulating");
-            }
-
-            CloudEvent expected = CreateCloudEvent();
-            ServiceBusMessage message = CreateServiceBusMessageFor(expected);
-            
-            await SendMessageToServiceBusAsync(connectionString, message);
-
-            string receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent(expected.Id, retryCount: 10);
-            Assert.NotEmpty(receivedEvent);
-
-            // Assert
-            EventBatch<Event> eventBatch = EventParser.Parse(receivedEvent);
-            Event @event = Assert.Single(eventBatch.Events);
-            CloudEvent actual = @event.AsCloudEvent();
-            Assert.Equal(expected.Id, actual.Id);
-
-            var expectedData = expected.GetPayload<StorageBlobCreatedEventData>();
-            var actualData = actual.GetPayload<StorageBlobCreatedEventData>();
-            Assert.Equal(expectedData.Api, actualData.Api);
-            Assert.Equal(expectedData.ClientRequestId, actualData.ClientRequestId);
-        }
-
-        /// <summary>
         /// Sends an Azure Service Bus message to the message pump.
         /// </summary>
         /// <param name="connectionString">The connection string to connect to the service bus.</param>
@@ -180,53 +140,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting.ServiceBus
             }
 
             return client.CreateReceiver(properties.EntityPath, subscriptionName);
-        }
-
-        private static CloudEvent CreateCloudEvent()
-        {
-            var cloudEvent = new CloudEvent(
-                specVersion: CloudEventsSpecVersion.V1_0,
-                type: "Microsoft.Storage.BlobCreated",
-                source: new Uri(
-                    "/subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.Storage/storageAccounts/{storage-account}#blobServices/default/containers/{storage-container}/blobs/{new-file}",
-                    UriKind.Relative),
-                id: "173d9985-401e-0075-2497-de268c06ff25",
-                time: DateTime.UtcNow)
-            {
-                Data = new StorageBlobCreatedEventData(
-                    api: "PutBlockList",
-                    clientRequestId: "6d79dbfb-0e37-4fc4-981f-442c9ca65760",
-                    requestId: "831e1650-001e-001b-66ab-eeb76e000000",
-                    eTag: "0x8D4BCC2E4835CD0",
-                    contentType: "application/octet-stream",
-                    contentLength: 524288,
-                    blobType: "BlockBlob",
-                    url: "https://oc2d2817345i60006.blob.core.windows.net/oc2d2817345i200097container/oc2d2817345i20002296blob",
-                    sequencer: "00000000000004420000000000028963",
-                    storageDiagnostics: new
-                    {
-                        batchId = "b68529f3-68cd-4744-baa4-3c0498ec19f0"
-                    })
-            };
-
-            return cloudEvent;
-        }
-
-        private static ServiceBusMessage CreateServiceBusMessageFor(CloudEvent cloudEvent)
-        {
-            var formatter = new JsonEventFormatter();
-            byte[] bytes = formatter.EncodeStructuredEvent(cloudEvent, out ContentType contentType);
-
-            var message = new ServiceBusMessage(bytes)
-            {
-                ApplicationProperties =
-                {
-                    {"Content-Type", "application/json"},
-                    {"Message-Encoding", Encoding.UTF8.WebName}
-                }
-            };
-
-            return message;
         }
 
         /// <summary>

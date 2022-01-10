@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
-using Arcus.BackgroundJobs.Tests.Integration.Hosting.ServiceBus;
 using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
 using Arcus.EventGrid.Publishing;
@@ -17,6 +18,7 @@ using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Bogus;
 using CloudNative.CloudEvents;
+using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,12 +71,28 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey)
                    .WithServiceBusMessageHandler<CloudEventToEventGridAzureServiceBusMessageHandler, CloudEvent>();
 
-            // Act
+            CloudEvent expected = CreateCloudEvent();
+            ServiceBusMessage message = CreateServiceBusMessageFor(expected);
+
             await using (var worker = await Worker.StartNewAsync(options))
-            await using (var service = await TestMessagePumpService.StartNewAsync(_configuration, _logger))
             {
-                // Assert
-                await service.SimulateCloudEventMessageProcessingAsync(topicConnectionString);
+                var producer = TestServiceBusEventProducer.Create(TopicConnectionStringSecretKey, _configuration);
+                await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(_configuration, _logger))
+                {
+                    // Act
+                    await producer.ProduceAsync(message);
+
+                    // Assert
+                    EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
+                    Event @event = Assert.Single(eventBatch.Events);
+                    CloudEvent actual = @event.AsCloudEvent();
+                    Assert.Equal(expected.Id, actual.Id);
+
+                    var expectedData = expected.GetPayload<StorageBlobCreatedEventData>();
+                    var actualData = actual.GetPayload<StorageBlobCreatedEventData>();
+                    Assert.Equal(expectedData.Api, actualData.Api);
+                    Assert.Equal(expectedData.ClientRequestId, actualData.ClientRequestId);
+                }
             }
         }
 
@@ -99,19 +117,35 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                         .ConfigureSecretStore((config, stores) => stores.AddConfiguration(config));
                 });
                 options.ConfigureLogging(_logger)
-                    .AddSingleton(eventGridPublisher)
-                    .AddCloudEventBackgroundJobUsingManagedIdentity(
-                        topicName: properties.EntityPath,
-                        subscriptionNamePrefix: "Test-",
-                        serviceBusNamespace: properties.FullyQualifiedNamespace)
-                    .WithServiceBusMessageHandler<CloudEventToEventGridAzureServiceBusMessageHandler, CloudEvent>();
+                       .AddSingleton(eventGridPublisher)
+                       .AddCloudEventBackgroundJobUsingManagedIdentity(
+                            topicName: properties.EntityPath,
+                            subscriptionNamePrefix: "Test-",
+                            serviceBusNamespace: properties.FullyQualifiedNamespace)
+                       .WithServiceBusMessageHandler<CloudEventToEventGridAzureServiceBusMessageHandler, CloudEvent>();
 
-                // Act
+                CloudEvent expected = CreateCloudEvent();
+                ServiceBusMessage message = CreateServiceBusMessageFor(expected);
+
                 await using (var worker = await Worker.StartNewAsync(options))
-                await using (var service = await TestMessagePumpService.StartNewAsync(_configuration, _logger))
                 {
-                    // Assert
-                    await service.SimulateCloudEventMessageProcessingAsync(topicConnectionString);
+                    var producer = TestServiceBusEventProducer.Create(TopicConnectionStringSecretKey, _configuration);
+                    await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(_configuration, _logger))
+                    {
+                        // Act
+                        await producer.ProduceAsync(message);
+
+                        // Assert
+                        EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
+                        Event @event = Assert.Single(eventBatch.Events);
+                        CloudEvent actual = @event.AsCloudEvent();
+                        Assert.Equal(expected.Id, actual.Id);
+
+                        var expectedData = expected.GetPayload<StorageBlobCreatedEventData>();
+                        var actualData = actual.GetPayload<StorageBlobCreatedEventData>();
+                        Assert.Equal(expectedData.Api, actualData.Api);
+                        Assert.Equal(expectedData.ClientRequestId, actualData.ClientRequestId);
+                    }
                 }
             }
         }
@@ -218,12 +252,28 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey)
                    .WithServiceBusMessageHandler<CloudEventToEventGridAzureServiceBusMessageHandler, CloudEvent>();
 
-            // Act
+            CloudEvent expected = CreateCloudEvent();
+            ServiceBusMessage message = CreateServiceBusMessageFor(expected);
+
             await using (var worker = await Worker.StartNewAsync(options))
-            await using (var service = await TestMessagePumpService.StartNewAsync(_configuration, _logger))
             {
-                // Assert
-                await service.SimulateCloudEventMessageProcessingAsync(topicConnectionString);
+                var producer = TestServiceBusEventProducer.Create(TopicConnectionStringSecretKey, _configuration);
+                await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(_configuration, _logger))
+                {
+                    // Act
+                    await producer.ProduceAsync(message);
+
+                    // Assert
+                    EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
+                    Event @event = Assert.Single(eventBatch.Events);
+                    CloudEvent actual = @event.AsCloudEvent();
+                    Assert.Equal(expected.Id, actual.Id);
+
+                    var expectedData = expected.GetPayload<StorageBlobCreatedEventData>();
+                    var actualData = actual.GetPayload<StorageBlobCreatedEventData>();
+                    Assert.Equal(expectedData.Api, actualData.Api);
+                    Assert.Equal(expectedData.ClientRequestId, actualData.ClientRequestId);
+                }
             }
         }
 
@@ -314,6 +364,53 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                 .Build();
 
             return eventGridPublisher;
+        }
+
+        private static CloudEvent CreateCloudEvent()
+        {
+            var cloudEvent = new CloudEvent(
+                specVersion: CloudEventsSpecVersion.V1_0,
+                type: "Microsoft.Storage.BlobCreated",
+                source: new Uri(
+                    "/subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.Storage/storageAccounts/{storage-account}#blobServices/default/containers/{storage-container}/blobs/{new-file}",
+                    UriKind.Relative),
+                id: "173d9985-401e-0075-2497-de268c06ff25",
+                time: DateTime.UtcNow)
+            {
+                Data = new StorageBlobCreatedEventData(
+                    api: "PutBlockList",
+                    clientRequestId: "6d79dbfb-0e37-4fc4-981f-442c9ca65760",
+                    requestId: "831e1650-001e-001b-66ab-eeb76e000000",
+                    eTag: "0x8D4BCC2E4835CD0",
+                    contentType: "application/octet-stream",
+                    contentLength: 524288,
+                    blobType: "BlockBlob",
+                    url: "https://oc2d2817345i60006.blob.core.windows.net/oc2d2817345i200097container/oc2d2817345i20002296blob",
+                    sequencer: "00000000000004420000000000028963",
+                    storageDiagnostics: new
+                    {
+                        batchId = "b68529f3-68cd-4744-baa4-3c0498ec19f0"
+                    })
+            };
+
+            return cloudEvent;
+        }
+
+        private static ServiceBusMessage CreateServiceBusMessageFor(CloudEvent cloudEvent)
+        {
+            var formatter = new JsonEventFormatter();
+            byte[] bytes = formatter.EncodeStructuredEvent(cloudEvent, out ContentType contentType);
+
+            var message = new ServiceBusMessage(bytes)
+            {
+                ApplicationProperties =
+                {
+                    {"Content-Type", "application/json"},
+                    {"Message-Encoding", Encoding.UTF8.WebName}
+                }
+            };
+
+            return message;
         }
 
         private static async Task<SubscriptionProperties> GetTopicSubscriptionFromPrefix(ServiceBusAdministrationClient client, string subscriptionPrefix, string topicName)
