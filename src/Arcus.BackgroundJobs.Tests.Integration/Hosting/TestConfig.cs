@@ -78,7 +78,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
             var secret = new KeyVaultConfig(
                 vaultUri: GetKeyVaultUri(),
                 secretNewVersionCreated: new KeyVaultEventEndpoint(
-                    _config.GetRequiredValue<string>("Arcus:KeyRotation:KeyVault:SecretNewVersionCreated:ServiceBusConnectionStringWithTopicEndpoint")));
+                    _config.GetRequiredValue<string>("Arcus:KeyVault:SecretNewVersionCreated:ServiceBus:ConnectionStringWithTopic")));
 
             return new KeyRotationConfig(secret, azureEnv);
         }
