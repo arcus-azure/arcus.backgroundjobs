@@ -41,7 +41,5 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
 
             return services;
         }
-
-
     }
 }

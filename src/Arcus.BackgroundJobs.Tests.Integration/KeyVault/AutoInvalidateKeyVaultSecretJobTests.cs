@@ -44,7 +44,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 
             var client = new SecretClient(new Uri(keyVaultUri), credential);
 
-            const string secretKey = "Arcus:CloudEvents:ServiceBus:ConnectionStringWithTopic";
+            const string secretKey = "Arcus:KeyRotation:KeyVault:SecretNewVersionCreated:ServiceBusConnectionStringWithTopicEndpoint";
             var cachedSecretProvider = new Mock<ICachedSecretProvider>();
             cachedSecretProvider
                 .Setup(p => p.GetRawSecretAsync(secretKey))
