@@ -8,8 +8,6 @@ using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
-using Arcus.EventGrid.Publishing;
-using Arcus.EventGrid.Publishing.Interfaces;
 using Arcus.Testing.Logging;
 using CloudNative.CloudEvents;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,15 +37,17 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
         {
             // Arrange
             int expirationThreshold = 14;
-            IEventGridPublisher eventGridPublisher = CreateEventGridPublisher();
             var options = new WorkerOptions();
             options.ConfigureLogging(_logger)
-                   .AddSingleton<IEventGridPublisher>(eventGridPublisher)
-                   .AddClientSecretExpirationJob(opt => 
+                   .ConfigureServices(services =>
                    {
-                       opt.RunImmediately = true;
-                       opt.ExpirationThreshold = expirationThreshold;
-                       opt.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
+                       services.AddEventGridPublisher(_config);
+                       services.AddClientSecretExpirationJob(opt =>
+                       {
+                           opt.RunImmediately = true;
+                           opt.ExpirationThreshold = expirationThreshold;
+                           opt.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
+                       });
                    });
 
             AzureActiveDirectoryConfig activeDirectoryConfig = _config.GetActiveDirectoryConfig();
@@ -81,20 +81,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
                     });
                 }
             }
-        }
-
-        private IEventGridPublisher CreateEventGridPublisher()
-        {
-            string topicEndpoint = _config.GetTestInfraEventGridTopicUri();
-            string topicEndpointSecret = _config.GetTestInfraEventGridAuthKey();
-
-            IEventGridPublisher eventGridPublisher = 
-                EventGridPublisherBuilder
-                    .ForTopic(topicEndpoint)
-                    .UsingAuthenticationKey(topicEndpointSecret)
-                    .Build();
-
-            return eventGridPublisher;
         }
     }
 }

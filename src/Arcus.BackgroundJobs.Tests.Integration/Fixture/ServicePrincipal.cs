@@ -1,6 +1,4 @@
 ﻿using System;
-using Arcus.Security.Providers.AzureKeyVault.Authentication;
-using Azure.Identity;
 using GuardNet;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
@@ -25,24 +23,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture
             ClientId = clientId;
             ClientSecret = clientSecret;
         }
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServicePrincipal"/> class.
-        /// </summary>
-        /// <param name="clientId">The ID of the client application.</param>
-        /// <param name="clientSecret">The secret of the client application.</param>
-        /// <param name="clientSecretKey">The key to the secret of the client application.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="clientId"/>, <paramref name="clientSecret"/> or <paramref name="clientSecretKey"/> is blank.</exception>
-        public ServicePrincipal(string clientId, string clientSecret, string clientSecretKey)
-        {
-            Guard.NotNullOrWhitespace(clientId, nameof(clientId), "Requires a non-blank Azure service principal client ID");
-            Guard.NotNullOrWhitespace(clientSecret, nameof(clientSecret), "Requires a non-blank Azure service principal client secret");
-            Guard.NotNullOrWhitespace(clientSecretKey, nameof(clientSecretKey), "Requires a non-blank secret Azure Key Vault key where the Azure service principal client secret is located");
-
-            ClientId = clientId;
-            ClientSecret = clientSecret;
-            ClientSecretKey = clientSecretKey;
-        }
 
         /// <summary>
         /// Gets the ID of the client application.
@@ -53,11 +33,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture
         /// Gets the secret of the client application.
         /// </summary>
         public string ClientSecret { get; }
-
-        /// <summary>
-        /// Gets the key to the client secret of the client application.
-        /// </summary>
-        public string ClientSecretKey { get; }
 
         /// <summary>
         /// Creates an instance that combines the service principal information into an <see cref="ClientCredential"/> instance.

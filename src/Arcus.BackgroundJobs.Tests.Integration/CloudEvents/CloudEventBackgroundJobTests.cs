@@ -7,8 +7,6 @@ using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
-using Arcus.EventGrid.Publishing;
-using Arcus.EventGrid.Publishing.Interfaces;
 using Arcus.Messaging.Abstractions.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Testing.Logging;
@@ -31,8 +29,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
    [Trait("Category", "Integration")]
     public class CloudEventBackgroundJobTests
     {
-        private const string TopicConnectionStringSecretKey = "Arcus:ServiceBus:ConnectionStringWithTopic",
-                             NamespaceConnectionStringSecretKey = "Arcus:ServiceBus:NamespaceConnectionString";
+        private const string TopicConnectionStringSecretKey = "Arcus:CloudEvents:ServiceBus:ConnectionStringWithTopic",
+                             NamespaceConnectionStringSecretKey = "Arcus:CloudEvents:ServiceBus:NamespaceConnectionString";
 
         private readonly TestConfig _configuration;
         private readonly ILogger _logger;
@@ -54,7 +52,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
             // Arrange
             var topicConnectionString = _configuration.GetValue<string>(TopicConnectionStringSecretKey);
             var properties = ServiceBusConnectionStringProperties.Parse(topicConnectionString);
-            IEventGridPublisher eventGridPublisher = CreateEventGridPublisher(_configuration);
             
             var options = new WorkerOptions();
             options.Configure(host =>
@@ -63,12 +60,15 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     .ConfigureSecretStore((config, stores) => stores.AddConfiguration(config)); 
             });
             options.ConfigureLogging(_logger)
-                   .AddSingleton(eventGridPublisher)
-                   .AddCloudEventBackgroundJob(
-                       topicName: properties.EntityPath,
-                       subscriptionNamePrefix: "Test-", 
-                       serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey)
-                   .WithServiceBusMessageHandler<CloudEventToEventGridAzureServiceBusMessageHandler, CloudEvent>();
+                   .ConfigureServices(services =>
+                   {
+                       services.AddEventGridPublisher(_configuration);
+                       services.AddCloudEventBackgroundJob(
+                                   topicName: properties.EntityPath,
+                                   subscriptionNamePrefix: "Test-",
+                                   serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey)
+                               .WithServiceBusMessageHandler<CloudEventToEventGridAzureServiceBusMessageHandler, CloudEvent>();
+                   });
 
             CloudEvent expected = CreateCloudEvent();
             ServiceBusMessage message = CreateServiceBusMessageFor(expected);
@@ -101,7 +101,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
             // Arrange
             var topicConnectionString = _configuration.GetValue<string>(TopicConnectionStringSecretKey);
             var properties = ServiceBusConnectionStringProperties.Parse(topicConnectionString);
-            IEventGridPublisher eventGridPublisher = CreateEventGridPublisher(_configuration);
             
             var options = new WorkerOptions();
             options.Configure(host =>
@@ -110,13 +109,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     .ConfigureSecretStore((config, stores) => stores.AddConfiguration(config)); 
             });
             options.ConfigureLogging(_logger)
-                   .AddSingleton(eventGridPublisher)
-                   .AddCloudEventBackgroundJob(
-                       topicName: properties.EntityPath,
-                       subscriptionNamePrefix: "Test-", 
-                       serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey,
-                       opt => opt.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
-                   .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
+                   .ConfigureServices(services =>
+                   {
+                       services.AddEventGridPublisher(_configuration);
+                       services.AddCloudEventBackgroundJob(
+                               topicName: properties.EntityPath,
+                               subscriptionNamePrefix: "Test-",
+                               serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey,
+                               opt => opt.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
+                           .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
+                   });
 
             var operationId = $"operation-{Guid.NewGuid()}";
             OrderV2 order = OrderGenerator.GenerateOrderV2();
@@ -151,18 +153,20 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
             // Arrange
             string topicConnectionString = _configuration.GetValue<string>(TopicConnectionStringSecretKey);
             var properties = ServiceBusConnectionStringProperties.Parse(topicConnectionString);
-            IEventGridPublisher eventGridPublisher = CreateEventGridPublisher(_configuration);
             
             var options = new WorkerOptions();
             string subscriptionPrefix = BogusGenerator.Name.Prefix();
-            options.AddSingleton(eventGridPublisher)
-                   .AddCloudEventBackgroundJob(
-                       topicName: properties.EntityPath,
-                       subscriptionNamePrefix: subscriptionPrefix, 
-                       serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey,
-                       opt => opt.TopicSubscription = TopicSubscription.None)
-                   .WithServiceBusMessageHandler<OrdersAzureServiceBusMessageHandler, Order>();
-            
+            options.ConfigureServices(services => 
+            {
+                services.AddEventGridPublisher(_configuration);
+                services.AddCloudEventBackgroundJob(
+                            topicName: properties.EntityPath,
+                            subscriptionNamePrefix: subscriptionPrefix,
+                            serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey,
+                            opt => opt.TopicSubscription = TopicSubscription.None)
+                        .WithServiceBusMessageHandler<OrdersAzureServiceBusMessageHandler, Order>();
+            });
+
             // Act
             await using (var worker = await Worker.StartNewAsync(options))
             {
@@ -182,19 +186,20 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
         public async Task CloudEventsBackgroundJobOnTopic_ReceivesCloudEvents_ProcessesCorrectly()
         {
             // Arrange
-            IEventGridPublisher eventGridPublisher = CreateEventGridPublisher(_configuration);
-            
             var options = new WorkerOptions();
             options.Configure(host =>
                    {
                        host.ConfigureAppConfiguration(context => context.AddConfiguration(_configuration))
                            .ConfigureSecretStore((config, stores) => stores.AddConfiguration(config));
                    }).ConfigureLogging(_logger)
-                   .AddSingleton(eventGridPublisher)
-                   .AddCloudEventBackgroundJob(
-                       subscriptionNamePrefix: "Test-",
-                       serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey)
-                   .WithServiceBusMessageHandler<CloudEventToEventGridAzureServiceBusMessageHandler, CloudEvent>();
+                   .ConfigureServices(services =>
+                   {
+                       services.AddEventGridPublisher(_configuration);
+                       services.AddCloudEventBackgroundJob(
+                               subscriptionNamePrefix: "Test-",
+                               serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey)
+                           .WithServiceBusMessageHandler<CloudEventToEventGridAzureServiceBusMessageHandler, CloudEvent>();
+                   });
 
             CloudEvent expected = CreateCloudEvent();
             ServiceBusMessage message = CreateServiceBusMessageFor(expected);
@@ -225,20 +230,21 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
         public async Task CloudEventsBackgroundJobWithIgnoringMissingMembersDeserialization_ReceivesCloudEvents_MessageGetsProcessedByDifferentMessageHandler()
         {
             // Arrange
-            IEventGridPublisher eventGridPublisher = CreateEventGridPublisher(_configuration);
-            
             var options = new WorkerOptions();
             options.Configure(host =>
                    {
                        host.ConfigureAppConfiguration(context => context.AddConfiguration(_configuration))
                            .ConfigureSecretStore((config, stores) => stores.AddConfiguration(config));
                    }).ConfigureLogging(_logger)
-                   .AddSingleton(eventGridPublisher)
-                   .AddCloudEventBackgroundJob(
-                       subscriptionNamePrefix: "Test-",
-                       serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
-                       opt => opt.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
-                   .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
+                   .ConfigureServices(services =>
+                   {
+                       services.AddEventGridPublisher(_configuration);
+                       services.AddCloudEventBackgroundJob(
+                                   subscriptionNamePrefix: "Test-",
+                                   serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
+                                   opt => opt.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
+                               .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
+                   });
 
             var operationId = $"operation-{Guid.NewGuid()}";
             OrderV2 order = OrderGenerator.GenerateOrderV2();
@@ -274,17 +280,19 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
             // Arrange
             string topicConnectionString = _configuration.GetValue<string>(TopicConnectionStringSecretKey);
             var properties = ServiceBusConnectionStringProperties.Parse(topicConnectionString);
-            IEventGridPublisher eventGridPublisher = CreateEventGridPublisher(_configuration);
             
             var options = new WorkerOptions();
             string subscriptionPrefix = BogusGenerator.Name.Prefix();
-            options.AddSingleton(eventGridPublisher)
-                   .AddCloudEventBackgroundJob(
-                       subscriptionNamePrefix: subscriptionPrefix,
-                       serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
-                       opt => opt.TopicSubscription = TopicSubscription.None)
-                   .WithServiceBusMessageHandler<OrdersAzureServiceBusMessageHandler, Order>();
-            
+            options.ConfigureServices(services => 
+            {
+                services.AddEventGridPublisher(_configuration);
+                services.AddCloudEventBackgroundJob(
+                            subscriptionNamePrefix: subscriptionPrefix,
+                            serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
+                            opt => opt.TopicSubscription = TopicSubscription.None)
+                        .WithServiceBusMessageHandler<OrdersAzureServiceBusMessageHandler, Order>();
+            });
+
             // Act
             await using (var worker = await Worker.StartNewAsync(options))
             {
@@ -298,16 +306,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                 
                 Assert.Null(subscription);
             }
-        }
-
-        private static IEventGridPublisher CreateEventGridPublisher(TestConfig configuration)
-        {
-            IEventGridPublisher eventGridPublisher = EventGridPublisherBuilder
-                .ForTopic(configuration.GetTestInfraEventGridTopicUri())
-                .UsingAuthenticationKey(configuration.GetTestInfraEventGridAuthKey())
-                .Build();
-            
-            return eventGridPublisher;
         }
 
         private static CloudEvent CreateCloudEvent()

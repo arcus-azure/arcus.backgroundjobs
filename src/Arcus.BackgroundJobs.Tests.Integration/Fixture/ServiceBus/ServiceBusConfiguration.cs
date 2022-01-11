@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
 using GuardNet;
 using Microsoft.Azure.Management.ServiceBus;
 using Microsoft.Azure.Management.ServiceBus.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 
@@ -15,38 +18,41 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
     /// </summary>
     public class ServiceBusConfiguration
     {
-        private readonly KeyRotationConfig _configuration;
+        private readonly AzureEnvironment _environment;
+        private readonly ServicePrincipal _servicePrincipal;
+        private readonly KeyRotationConfig _rotationConfig;
         private readonly ILogger _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceBusConfiguration"/> class.
-        /// </summary>
-        /// <param name="configuration">The configuration instance to provide the necessary information during authentication with the correct Azure Service Bus instance.</param>
-        /// <param name="logger">The instance to log diagnostic messages during the interaction with the Azure Service Bus instance.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configuration"/> or the <paramref name="logger"/> is <c>null</c>.</exception>
-        public ServiceBusConfiguration(KeyRotationConfig configuration, ILogger logger)
+        private ServiceBusConfiguration(
+            AzureEnvironment environment,
+            ServicePrincipal servicePrincipal,
+            KeyRotationConfig rotationConfig, 
+            ILogger logger)
         {
-            Guard.NotNull(configuration, nameof(configuration));
-            Guard.NotNull(logger, nameof(logger));
+            Guard.NotNull(rotationConfig, nameof(rotationConfig));
 
-            _configuration = configuration;
-            _logger = logger;
+            _environment = environment;
+            _servicePrincipal = servicePrincipal;
+            _rotationConfig = rotationConfig;
+            _logger = logger ?? NullLogger.Instance;
         }
 
         /// <summary>
-        /// Gets the connection string keys for the Azure Service Bus Topic tested in the integration test suite.
+        /// Creates an <see cref="ServiceBusConfiguration"/> instance based on the test configuration values of the current test run.
         /// </summary>
-        public async Task<AccessKeys> GetConnectionStringKeysForTopicAsync()
+        /// <param name="config">The current integration test configuration.</param>
+        /// <param name="logger">The logger instance to write diagnostic trace messages during the interaction with Azure Service Bus.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="config"/> is <c>null</c>.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown when one or more configuration values cannot be found in the given test <paramref name="config"/> instance.</exception>
+        public static ServiceBusConfiguration CreateFrom(TestConfig config, ILogger logger)
         {
-            using IServiceBusManagementClient client = await CreateServiceManagementClientAsync();
+            Guard.NotNull(config, nameof(config), "Requires a test configuration instance to retrieve the details to interact with Azure Service Bus");
 
-            AccessKeys accessKeys = await client.Topics.ListKeysAsync(
-                _configuration.ServiceBusNamespace.ResourceGroup,
-                _configuration.ServiceBusNamespace.Namespace,
-                _configuration.ServiceBusNamespace.TopicName,
-                _configuration.ServiceBusNamespace.AuthorizationRuleName);
+            AzureEnvironment environment = config.GetAzureEnvironment();
+            ServicePrincipal servicePrincipal = config.GetServicePrincipal();
+            KeyRotationConfig rotationConfig = config.GetKeyRotationConfig();
 
-            return accessKeys;
+            return new ServiceBusConfiguration(environment, servicePrincipal, rotationConfig, logger);
         }
 
         /// <summary>
@@ -56,7 +62,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
         /// <returns>
         ///     The new connection string according to the <paramref name="keyType"/>.
         /// </returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="keyType"/> is not within the bounds of the enumration.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="keyType"/> is not within the bounds of the enumeration.</exception>
         public async Task<string> RotateConnectionStringKeysForQueueAsync(KeyType keyType)
         {
             Guard.For<ArgumentOutOfRangeException>(
@@ -64,40 +70,36 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
                 $"Requires a KeyType that is either '{nameof(KeyType.PrimaryKey)}' or '{nameof(KeyType.SecondaryKey)}'");
 
             var parameters = new RegenerateAccessKeyParameters(keyType);
-            string queueName = _configuration.ServiceBusNamespace.QueueName;
+            string queueName = _rotationConfig.ServiceBusNamespace.QueueName;
             const ServiceBusEntityType entity = ServiceBusEntityType.Queue;
 
             try
             {
-                using IServiceBusManagementClient client = await CreateServiceManagementClientAsync();
-                
-                _logger.LogTrace(
-                    "Start rotating {KeyType} connection string of Azure Service Bus {EntityType} '{EntityName}'...",
-                    keyType, entity, queueName);
-
-                AccessKeys accessKeys = await client.Queues.RegenerateKeysAsync(
-                    _configuration.ServiceBusNamespace.ResourceGroup,
-                    _configuration.ServiceBusNamespace.Namespace,
-                    queueName,
-                    _configuration.ServiceBusNamespace.AuthorizationRuleName,
-                    parameters);
-
-                _logger.LogInformation(
-                        "Rotated {KeyType} connection string of Azure Service Bus {EntityType} '{EntityName}'",
-                        keyType, entity, queueName);
-
-                switch (keyType)
+                using (IServiceBusManagementClient client = await CreateServiceManagementClientAsync())
                 {
-                    case KeyType.PrimaryKey:   return accessKeys.PrimaryConnectionString;
-                    case KeyType.SecondaryKey: return accessKeys.SecondaryConnectionString;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(keyType), keyType, "Unknown key type");
+                    _logger.LogTrace("Start rotating {KeyType} connection string of Azure Service Bus {EntityType} '{EntityName}'...", keyType, entity, queueName);
+
+                    AccessKeys accessKeys = await client.Queues.RegenerateKeysAsync(
+                        _environment.ResourceGroupName,
+                        _rotationConfig.ServiceBusNamespace.NamespaceName,
+                        queueName,
+                        _rotationConfig.ServiceBusNamespace.AuthorizationRuleName,
+                        parameters);
+
+                    _logger.LogInformation("Rotated {KeyType} connection string of Azure Service Bus {EntityType} '{EntityName}'", keyType, entity, queueName);
+
+                    switch (keyType)
+                    {
+                        case KeyType.PrimaryKey: return accessKeys.PrimaryConnectionString;
+                        case KeyType.SecondaryKey: return accessKeys.SecondaryConnectionString;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(keyType), keyType, "Unknown key type");
+                    }
                 }
             }
             catch (Exception exception)
             {
-                _logger.LogError(
-                    exception, "Failed to rotate the {KeyType} connection string of the Azure Service Bus {EntityType} '{EntityName}'", keyType, entity, queueName);
+                _logger.LogError(exception, "Failed to rotate the {KeyType} connection string of the Azure Service Bus {EntityType} '{EntityName}'", keyType, entity, queueName);
                 
                 throw;
             }
@@ -105,17 +107,17 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
 
         private async Task<IServiceBusManagementClient> CreateServiceManagementClientAsync()
         {
-            string tenantId = _configuration.ServiceBusNamespace.TenantId;
+            string tenantId = _environment.TenantId;
             var context = new AuthenticationContext($"https://login.microsoftonline.com/{tenantId}");
 
-            ClientCredential clientCredentials = _configuration.ServicePrincipal.CreateCredentials();
+            ClientCredential clientCredentials = _servicePrincipal.CreateCredentials();
             AuthenticationResult result =
                 await context.AcquireTokenAsync(
                     "https://management.azure.com/",
                     clientCredentials);
 
             var tokenCredentials = new TokenCredentials(result.AccessToken);
-            string subscriptionId = _configuration.ServiceBusNamespace.SubscriptionId;
+            string subscriptionId = _environment.SubscriptionId;
 
             var client = new ServiceBusManagementClient(tokenCredentials) { SubscriptionId = subscriptionId };
             return client;
