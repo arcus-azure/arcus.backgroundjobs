@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription");
             Guard.NotNullOrWhitespace(serviceBusNamespaceConnectionStringSecretKey, nameof(serviceBusNamespaceConnectionStringSecretKey), "Requires a non-blank secret key that points to a Azure Service Bus namespace-scoped connection string");
 
-            services.CreateServiceBusMessageRouter(configureBackgroundJob);
+            services.UseServiceBusMessageRouter(configureBackgroundJob);
 
             return services.AddServiceBusTopicMessagePumpWithPrefix(topicName, subscriptionNamePrefix, serviceBusNamespaceConnectionStringSecretKey, configureBackgroundJob);
         }
@@ -112,7 +112,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
             Guard.NotNullOrWhitespace(serviceBusTopicConnectionStringSecretKey, nameof(serviceBusTopicConnectionStringSecretKey), "Requires a non-blank secret key that points to a Azure Service Bus Topic-scoped connection string");
 
-            services.CreateServiceBusMessageRouter(configureBackgroundJob);
+            services.UseServiceBusMessageRouter(configureBackgroundJob);
 
             return services.AddServiceBusTopicMessagePumpWithPrefix(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey, configureBackgroundJob);
         }
@@ -146,12 +146,12 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
             Guard.NotNullOrWhitespace(serviceBusNamespace, nameof(serviceBusNamespace), "Requires a non-blank fully qualified namespace for the Azure Service Bus Topic");
 
-            services.CreateServiceBusMessageRouter(configureBackgroundJob);
+            services.UseServiceBusMessageRouter(configureBackgroundJob);
 
             return services.AddServiceBusTopicMessagePumpUsingManagedIdentityWithPrefix(topicName, subscriptionNamePrefix, serviceBusNamespace, clientId, configureBackgroundJob);
         }
 
-        private static void CreateServiceBusMessageRouter(this IServiceCollection services, Action<IAzureServiceBusTopicMessagePumpOptions> configureBackgroundJob = null)
+        private static void UseServiceBusMessageRouter(this IServiceCollection services, Action<IAzureServiceBusTopicMessagePumpOptions> configureBackgroundJob = null)
         {
             services.AddServiceBusMessageRouting(serviceProvider =>
             {
