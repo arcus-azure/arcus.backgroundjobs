@@ -4,9 +4,9 @@ using Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
+using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
-using GuardNet;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
 {
@@ -16,7 +16,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
     public class TestConfig : IConfigurationRoot
     {
         private readonly IConfigurationRoot _config;
-        
+
         private TestConfig(IConfigurationRoot config)
         {
             _config = config;
