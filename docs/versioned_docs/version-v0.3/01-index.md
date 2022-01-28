@@ -6,14 +6,14 @@ slug: /
 sidebar_label: Welcome
 ---
 
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvents?includePreReleases=true)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/)
+[![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvents?packageVersion=0.3.0)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/0.3.0)
 
 # Installation
 
 The Arcus BackgroundJobs can be installed via NuGet:
 
 ```shell
-PM > Install-Package Arcus.BackgroundJobs.CloudEvents
+PM > Install-Package Arcus.BackgroundJobs.CloudEvents -Version 0.3.0
 ```
 
 For more granular packages we recommend reading the documentation.
@@ -22,15 +22,11 @@ For more granular packages we recommend reading the documentation.
 
 - **General**
     - [Securely Receive CloudEvents](features/general/receive-cloudevents-job)
-- **Azure Active Directory**
-    - [Check Applications in Azure Active Directory for client secrets that have expired or will expire in the near future](features/azureactivedirectory/client-secret-expiration-job)
-- **Azure App Configuration**
-    - [Automatically refresh configuration values from Azure App Configuration](features/appconfiguration/auto-refresh-app-configuration)
+- **Security**
+    - [Automatically invalidate cached secrets from Azure Key Vault](features/security/auto-invalidate-secrets)
 - **Databricks**
     - [Measure Databricks job run outcomes as metric](features/databricks/job-metrics)
     - [Interact with Databricks to gain insights](features/databricks/gain-insights)
-- **Security**
-    - [Automatically invalidate cached secrets from Azure Key Vault](features/security/auto-invalidate-secrets)
 
 # License
 This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.

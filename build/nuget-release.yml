@@ -16,10 +16,7 @@ resources:
 
 variables:
   - group: 'Arcus Background Jobs - Integration Testing'
-  - group: 'Arcus Security - Integration Testing'
-  - group: 'Arcus Messaging - Integration Testing'
   - group: 'Build Configuration'
-  - group: 'Arcus Background Jobs - .NET'
   - template: ./variables/build.yml
   - template: ./variables/test.yml
   - name: 'GitHub.Repository'

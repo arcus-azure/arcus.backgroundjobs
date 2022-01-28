@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Arcus.BackgroundJobs.Tests.Integration.AppConfiguration.Fixture;
+using Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
+using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
-using GuardNet;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
 {
@@ -15,7 +17,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
     public class TestConfig : IConfigurationRoot
     {
         private readonly IConfigurationRoot _config;
-        
+
         private TestConfig(IConfigurationRoot config)
         {
             _config = config;
@@ -33,7 +35,31 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
 
             return new TestConfig(config);
         }
-        
+
+        /// <summary>
+        /// Gets the ID of the current tenant where the Azure resources used in these integration tests are located.
+        /// </summary>
+        public string GetTenantId()
+        {
+            const string tenantIdKey = "Arcus:TenantId";
+            var tenantId = _config.GetValue<string>(tenantIdKey);
+            Guard.For<KeyNotFoundException>(() => tenantId is null, $"Requires a non-blank 'TenantId' at '{tenantIdKey}'");
+
+            return tenantId;
+        }
+
+        /// <summary>
+        /// Gets the service principal that can authenticate with the Azure Service Bus used in these integration tests.
+        /// </summary>
+        public ServicePrincipal GetServiceBusServicePrincipal()
+        {
+            var servicePrincipal = new ServicePrincipal(
+                clientId: _config.GetValue<string>("Arcus:ServicePrincipal:ApplicationId"),
+                clientSecret: _config.GetValue<string>("Arcus:ServicePrincipal:AccessKey"));
+
+            return servicePrincipal;
+        }
+
         /// <summary>
         /// Gets the EventGrid topic URI for the test infrastructure.
         /// </summary>
@@ -94,6 +120,18 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
             var serviceBusTopicConnectionString = GetRequiredValue<string>("Arcus:AppConfiguration:ServiceBus:ConnectionStringWithTopic");
 
             return new AppTestConfiguration(connectionString, serviceBusTopicConnectionString);
+        }
+
+        /// <summary>
+        /// Gets the configuration values to connect to the test Azure Active Directory used for integration testing.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown when one or more configuration values are missing from the loaded configuration.</exception>
+        public AzureActiveDirectoryConfig GetActiveDirectoryConfig()
+        {
+            return new AzureActiveDirectoryConfig(
+                _config.GetValue<string>("Arcus:AzureActiveDirectory:TenantId"),
+                _config.GetValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientId"),
+                _config.GetValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientSecret"));
         }
 
         /// <summary>

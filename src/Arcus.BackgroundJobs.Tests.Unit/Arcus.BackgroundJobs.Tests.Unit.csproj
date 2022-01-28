@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Arcus.BackgroundJobs.AppConfiguration\Arcus.BackgroundJobs.AppConfiguration.csproj" />
+    <ProjectReference Include="..\Arcus.BackgroundJobs.AzureActiveDirectory\Arcus.BackgroundJobs.AzureActiveDirectory.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.Databricks\Arcus.BackgroundJobs.Databricks.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.KeyVault\Arcus.BackgroundJobs.KeyVault.csproj" />
   </ItemGroup>

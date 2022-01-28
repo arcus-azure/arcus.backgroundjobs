@@ -10,6 +10,12 @@ Background job development in a breeze.
 # Installation
 Easy to install it via NuGet:
 
+- **Azure Active Directory background jobs**
+
+```shell
+PM > Install-Package Arcus.BackgroundJobs.AzureActiveDirectory
+```
+
 - **CloudEvents background jobs**
 
 ```shell

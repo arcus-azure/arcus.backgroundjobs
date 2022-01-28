@@ -6,7 +6,6 @@ using Arcus.EventGrid.Contracts;
 using Arcus.EventGrid.Parsers;
 using Arcus.EventGrid.Testing.Infrastructure.Hosts.ServiceBus;
 using Azure.Messaging.ServiceBus;
-using Bogus;
 using GuardNet;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;

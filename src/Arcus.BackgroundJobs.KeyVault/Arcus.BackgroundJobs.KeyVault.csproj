@@ -5,7 +5,7 @@
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Workers;Jobs</PackageTags>
+    <PackageTags>Azure;Key Vault;Secret;Caching;Auto invalidate;Jobs</PackageTags>
     <Description>Provides capabilities for running background jobs to automate workflows such as updating cached Azure Key Value secrets.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
     <PackageLicenseUrl>https://github.com/arcus-azure/arcus.backgroundjobs/blob/master/LICENSE</PackageLicenseUrl>
