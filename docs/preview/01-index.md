@@ -25,7 +25,7 @@ For more granular packages we recommend reading the documentation.
 - **Azure Active Directory**
     - [Check Applications in Azure Active Directory for client secrets that have expired or will expire in the near future](features/azureactivedirectory/client-secret-expiration-job)
 - **Azure App Configuration**
-    - [Automatically refresh configuration values from Azure App Configuration](features/appconfiguration/auto-refresh-app-configuration)
+    - [Automatically refresh configuration values from Azure App Configuration](features/azureappconfiguration/auto-refresh-app-configuration)
 - **Databricks**
     - [Measure Databricks job run outcomes as metric](features/databricks/job-metrics)
     - [Interact with Databricks to gain insights](features/databricks/gain-insights)

@@ -1,9 +1,8 @@
 ﻿using System;
-using Arcus.BackgroundJobs.AppConfiguration;
+using Arcus.BackgroundJobs.AzureAppConfiguration;
 using Arcus.Messaging.Pumps.ServiceBus.Configuration;
 using CloudNative.CloudEvents;
 using GuardNet;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Extensions.Configuration;
 
 // ReSharper disable once CheckNamespace

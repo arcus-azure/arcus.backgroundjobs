@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -6,7 +6,7 @@
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Azure;App Configuration;Workers;Jobs</PackageTags>
-    <Description>Provides capabilities for running background jobs to automate Databricks workflows.</Description>
+    <Description>Provides capabilities for running background jobs to automate operations on Azure App Configuration.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
     <PackageLicenseUrl>https://github.com/arcus-azure/arcus.backgroundjobs/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/arcus-azure/arcus.backgroundjobs</PackageProjectUrl>

@@ -11,7 +11,7 @@ using GuardNet;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Logging;
 
-namespace Arcus.BackgroundJobs.AppConfiguration
+namespace Arcus.BackgroundJobs.AzureAppConfiguration
 {
     /// <summary>
     /// Represents an Azure Service Bus message handler that refreshes Azure App Configuration resources based on received <see cref="CloudEvent"/>s

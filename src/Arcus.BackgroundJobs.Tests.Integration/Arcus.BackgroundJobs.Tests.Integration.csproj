@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arcus.BackgroundJobs.AppConfiguration\Arcus.BackgroundJobs.AppConfiguration.csproj" />
+    <ProjectReference Include="..\Arcus.BackgroundJobs.AzureAppConfiguration\Arcus.BackgroundJobs.AzureAppConfiguration.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.AzureActiveDirectory\Arcus.BackgroundJobs.AzureActiveDirectory.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.Databricks\Arcus.BackgroundJobs.Databricks.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.CloudEvents\Arcus.BackgroundJobs.CloudEvents.csproj" />

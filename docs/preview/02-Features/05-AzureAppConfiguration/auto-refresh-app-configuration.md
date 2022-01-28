@@ -10,7 +10,7 @@ The `Arcus.BackgroundJobs.AppConfiguration` library provides a background job to
 To use these features, you have to install the following package:
 
 ```shell
-PM > Install-Package Arcus.BackgroundJobs.AppConfiguration
+PM > Install-Package Arcus.BackgroundJobs.AzureAppConfiguration
 ```
 
 ## Setup
