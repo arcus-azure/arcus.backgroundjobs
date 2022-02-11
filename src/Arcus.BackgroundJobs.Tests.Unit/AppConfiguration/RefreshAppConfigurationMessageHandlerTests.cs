@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.AppConfiguration;
+using Arcus.BackgroundJobs.AzureAppConfiguration;
 using Arcus.Messaging.Abstractions;
 using Arcus.Messaging.Abstractions.ServiceBus;
 using Azure.Messaging.ServiceBus;
