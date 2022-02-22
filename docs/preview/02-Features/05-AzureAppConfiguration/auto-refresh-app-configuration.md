@@ -14,7 +14,7 @@ PM > Install-Package Arcus.BackgroundJobs.AzureAppConfiguration
 ```
 
 ## Setup
-To automtically notify your `IConfiguration` instance in your application for any change in the remote Azure App Configuration, you need some setup.
+To automatically notify your `IConfiguration` instance in your application for any change in the remote Azure App Configuration, you need some setup.
 We use the events from Azure App Configuration which will be send towards an Azure Service Bus Topic. The background job will look for those events on the topic, and will in turn refresh the `IConfiguration`.
 
 1. Create an Azure App Configuration resource
