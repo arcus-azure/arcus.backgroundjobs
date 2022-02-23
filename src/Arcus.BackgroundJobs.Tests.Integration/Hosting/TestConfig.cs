@@ -36,49 +36,33 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         }
 
         /// <summary>
-        /// Gets the ID of the current tenant where the Azure resources used in these integration tests are located.
+        /// Gets the current Azure environment where the test-related Azure resources are located.
         /// </summary>
-        public string GetTenantId()
+        /// <returns></returns>
+        public AzureEnvironment GetAzureEnvironment()
         {
-            const string tenantIdKey = "Arcus:TenantId";
-            var tenantId = _config.GetValue<string>(tenantIdKey);
-            Guard.For<KeyNotFoundException>(() => tenantId is null, $"Requires a non-blank 'TenantId' at '{tenantIdKey}'");
-
-            return tenantId;
+            return new AzureEnvironment(
+                _config.GetRequiredValue<string>("Arcus:SubscriptionId"),
+                _config.GetRequiredValue<string>("Arcus:TenantId"),
+                _config.GetRequiredValue<string>("Arcus:ResourceGroupName"));
         }
 
         /// <summary>
-        /// Gets the service principal that can authenticate with the Azure Service Bus used in these integration tests.
+        /// Gets the Arcus service principal to contact the related Azure resources.
         /// </summary>
-        public ServicePrincipal GetServiceBusServicePrincipal()
+        public ServicePrincipal GetServicePrincipal()
         {
-            var servicePrincipal = new ServicePrincipal(
-                clientId: _config.GetValue<string>("Arcus:ServicePrincipal:ApplicationId"),
-                clientSecret: _config.GetValue<string>("Arcus:ServicePrincipal:AccessKey"));
-
-            return servicePrincipal;
+            return new ServicePrincipal(
+                _config.GetRequiredValue<string>("Arcus:ServicePrincipal:ApplicationId"),
+                _config.GetRequiredValue<string>("Arcus:ServicePrincipal:AccessKey"));
         }
 
         /// <summary>
-        /// Gets the EventGrid topic URI for the test infrastructure.
+        /// Gets the URI to the Azure Key Vault resource used in these tests.
         /// </summary>
-        public string GetTestInfraEventGridTopicUri()
+        public string GetKeyVaultUri()
         {
-            var value = _config.GetValue<string>("Arcus:Infra:EventGrid:TopicUri");
-            Guard.NotNullOrWhitespace(value, "No non-blank EventGrid topic URI was found for the test infrastructure in the application configuration");
-
-            return value;
-        }
-
-        /// <summary>
-        /// Gets the EventGrid authentication key for the test infrastructure.
-        /// </summary>
-        public string GetTestInfraEventGridAuthKey()
-        {
-            var value = _config.GetValue<string>("Arcus:Infra:EventGrid:AuthKey");
-            Guard.NotNullOrWhitespace(value, "No non-blank EventGrid authentication key was found for the test infrastructure in the application configuration");
-
-            return value;
+            return _config.GetRequiredValue<string>("Arcus:KeyVault:Uri");
         }
 
         /// <summary>
@@ -87,26 +71,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         public KeyRotationConfig GetKeyRotationConfig()
         {
             var azureEnv = new ServiceBusNamespace(
-                tenantId: _config.GetValue<string>("Arcus:KeyRotation:ServiceBus:TenantId"),
-                azureSubscriptionId: _config.GetValue<string>("Arcus:KeyRotation:ServiceBus:SubscriptionId"),
-                resourceGroup: _config.GetValue<string>("Arcus:KeyRotation:ServiceBus:ResourceGroupName"),
-                @namespace: _config.GetValue<string>("Arcus:KeyRotation:ServiceBus:Namespace"),
-                queueName: _config.GetValue<string>("Arcus:KeyRotation:ServiceBus:QueueName"),
-                topicName: _config.GetValue<string>("Arcus:KeyRotation:ServiceBus:TopicName"),
-                authorizationRuleName: _config.GetValue<string>("Arcus:KeyRotation:ServiceBus:AuthorizationRuleName"));
-
-            var servicePrincipal = new ServicePrincipal(
-                clientId: _config.GetValue<string>("Arcus:KeyRotation:ServicePrincipal:ClientId"),
-                clientSecret: _config.GetValue<string>("Arcus:KeyRotation:ServicePrincipal:ClientSecret"),
-                clientSecretKey: _config.GetValue<string>("Arcus:KeyRotation:ServicePrincipal:ClientSecretKey"));
+                @namespace: _config.GetRequiredValue<string>("Arcus:KeyRotation:ServiceBus:Namespace"),
+                queueName: _config.GetRequiredValue<string>("Arcus:KeyRotation:ServiceBus:QueueName"),
+                authorizationRuleName: _config.GetRequiredValue<string>("Arcus:KeyRotation:ServiceBus:AuthorizationRuleName"));
 
             var secret = new KeyVaultConfig(
-                vaultUri: _config.GetValue<string>("Arcus:KeyRotation:KeyVault:VaultUri"),
-                secretName: _config.GetValue<string>("Arcus:KeyRotation:KeyVault:ConnectionStringSecretName"),
+                vaultUri: GetKeyVaultUri(),
                 secretNewVersionCreated: new KeyVaultEventEndpoint(
-                    _config.GetValue<string>("Arcus:KeyRotation:KeyVault:SecretNewVersionCreated:ServiceBusConnectionStringWithTopicEndpoint")));
+                    _config.GetRequiredValue<string>("Arcus:KeyVault:SecretNewVersionCreated:ServiceBus:ConnectionStringWithTopic")));
 
-            return new KeyRotationConfig(secret, servicePrincipal, azureEnv);
+            return new KeyRotationConfig(secret, azureEnv);
         }
 
         /// <summary>
@@ -116,9 +90,9 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         public AzureActiveDirectoryConfig GetActiveDirectoryConfig()
         {
             return new AzureActiveDirectoryConfig(
-                _config.GetValue<string>("Arcus:AzureActiveDirectory:TenantId"),
-                _config.GetValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientId"),
-                _config.GetValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientSecret"));
+                _config.GetRequiredValue<string>("Arcus:AzureActiveDirectory:TenantId"),
+                _config.GetRequiredValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientId"),
+                _config.GetRequiredValue<string>("Arcus:AzureActiveDirectory:ServicePrincipal:ClientSecret"));
         }
 
         /// <summary>
