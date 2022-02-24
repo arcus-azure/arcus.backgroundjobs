@@ -14,15 +14,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
     /// <summary>
     /// Represents the configurable options to influence the test <see cref="Worker"/>.
     /// </summary>
-    public class WorkerOptions : IServiceCollection
+    public class WorkerOptions
     {
+        private readonly ICollection<Action<IServiceCollection>> _additionalServices = new Collection<Action<IServiceCollection>>();
         private readonly ICollection<Action<IHostBuilder>> _additionalHostOptions = new Collection<Action<IHostBuilder>>();
         private readonly ICollection<Action<IConfigurationBuilder>> _additionalConfigures = new List<Action<IConfigurationBuilder>>();
         
         /// <summary>
         /// Gets the services that will be included in the test <see cref="Worker"/>.
         /// </summary>
-        public IServiceCollection Services { get; } = new ServiceCollection();
+        //public IServiceCollection Services { get; } = new ServiceCollection();
 
         /// <summary>
         /// Gets the configuration instance that will be included in the test <see cref="Worker"/> and which will result in an <see cref="IConfiguration"/> instance.
@@ -37,8 +38,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         public WorkerOptions Configure(Action<IHostBuilder> additionalHostOption)
         {
             Guard.NotNull(additionalHostOption, nameof(additionalHostOption), "Requires an custom action that will add the additional hosting option");
+            
             _additionalHostOptions.Add(additionalHostOption);
-
             return this;
         }
 
@@ -51,8 +52,20 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         public WorkerOptions ConfigureAppConfiguration(Action<IConfigurationBuilder> configure)
         {
             Guard.NotNull(configure, nameof(configure), "Requires an additional configure function to setup the application configuration of the test worker");
-            
+
             _additionalConfigures.Add(configure);
+            return this;
+        }
+
+        /// Adds additional service(s) to the available registered services on the to-be-created <see cref="Worker"/>.
+        /// </summary>
+        /// <param name="configureServices">The function to register the service(s).</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configureServices"/> is <c>null</c>.</exception>
+        public WorkerOptions ConfigureServices(Action<IServiceCollection> configureServices)
+        {
+            Guard.NotNull(configureServices, nameof(configureServices), "Requires a function to register the available application services");
+
+            _additionalServices.Add(configureServices);
             return this;
         }
 
@@ -96,9 +109,9 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
                        })
                        .ConfigureServices(services =>
                        {
-                           foreach (ServiceDescriptor service in Services)
+                           foreach (Action<IServiceCollection> configureServices in _additionalServices)
                            {
-                               services.Add(service);
+                               configureServices(services);
                            }
                        });
 
@@ -108,141 +121,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
             {
                 additionalHostOption(hostBuilder);
             }
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-        public IEnumerator<ServiceDescriptor> GetEnumerator()
-        {
-            return Services.GetEnumerator();
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a collection.
-        /// </summary>
-        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable) Services).GetEnumerator();
-        }
-
-        /// <summary>
-        /// Adds an item to the <see cref="T:System.Collections.Generic.ICollection`1" />.
-        /// </summary>
-        /// <param name="item">The object to add to the <see cref="T:System.Collections.Generic.ICollection`1" />.</param>
-        /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only.</exception>
-        public void Add(ServiceDescriptor item)
-        {
-            Services.Add(item);
-        }
-
-        /// <summary>
-        /// Removes all items from the <see cref="T:System.Collections.Generic.ICollection`1" />.
-        /// </summary>
-        /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only.</exception>
-        public void Clear()
-        {
-            Services.Clear();
-        }
-
-        /// <summary>
-        /// Determines whether the <see cref="T:System.Collections.Generic.ICollection`1" /> contains a specific value.
-        /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1" />.</param>
-        /// <returns>
-        /// <see langword="true" /> if <paramref name="item" /> is found in the <see cref="T:System.Collections.Generic.ICollection`1" />; otherwise, <see langword="false" />.</returns>
-        public bool Contains(ServiceDescriptor item)
-        {
-            return Services.Contains(item);
-        }
-
-        /// <summary>
-        /// Copies the elements of the <see cref="T:System.Collections.Generic.ICollection`1" /> to an <see cref="T:System.Array" />, starting at a particular <see cref="T:System.Array" /> index.
-        /// </summary>
-        /// <param name="array">The one-dimensional <see cref="T:System.Array" /> that is the destination of the elements copied from <see cref="T:System.Collections.Generic.ICollection`1" />. The <see cref="T:System.Array" /> must have zero-based indexing.</param>
-        /// <param name="arrayIndex">The zero-based index in <paramref name="array" /> at which copying begins.</param>
-        /// <exception cref="T:System.ArgumentNullException">
-        /// <paramref name="array" /> is <see langword="null" />.</exception>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
-        /// <paramref name="arrayIndex" /> is less than 0.</exception>
-        /// <exception cref="T:System.ArgumentException">The number of elements in the source <see cref="T:System.Collections.Generic.ICollection`1" /> is greater than the available space from <paramref name="arrayIndex" /> to the end of the destination <paramref name="array" />.</exception>
-        public void CopyTo(ServiceDescriptor[] array, int arrayIndex)
-        {
-            Services.CopyTo(array, arrayIndex);
-        }
-
-        /// <summary>Removes the first occurrence of a specific object from the <see cref="T:System.Collections.Generic.ICollection`1" />.</summary>
-        /// <param name="item">The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1" />.</param>
-        /// <returns>
-        /// <see langword="true" /> if <paramref name="item" /> was successfully removed from the <see cref="T:System.Collections.Generic.ICollection`1" />; otherwise, <see langword="false" />. This method also returns <see langword="false" /> if <paramref name="item" /> is not found in the original <see cref="T:System.Collections.Generic.ICollection`1" />.</returns>
-        /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only.</exception>
-        public bool Remove(ServiceDescriptor item)
-        {
-            return Services.Remove(item);
-        }
-
-        /// <summary>
-        /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" />.
-        /// </summary>
-        /// <returns>The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" />.</returns>
-        public int Count => Services.Count;
-
-        /// <summary>
-        /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only.
-        /// </summary>
-        /// <returns>
-        /// <see langword="true" /> if the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only; otherwise, <see langword="false" />.</returns>
-        public bool IsReadOnly => Services.IsReadOnly;
-
-        /// <summary>
-        /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1" />.
-        /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1" />.</param>
-        /// <returns>The index of <paramref name="item" /> if found in the list; otherwise, -1.</returns>
-        public int IndexOf(ServiceDescriptor item)
-        {
-            return Services.IndexOf(item);
-        }
-
-        /// <summary>
-        /// Inserts an item to the <see cref="T:System.Collections.Generic.IList`1" /> at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which <paramref name="item" /> should be inserted.</param>
-        /// <param name="item">The object to insert into the <see cref="T:System.Collections.Generic.IList`1" />.</param>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
-        /// <paramref name="index" /> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1" />.</exception>
-        /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IList`1" /> is read-only.</exception>
-        public void Insert(int index, ServiceDescriptor item)
-        {
-            Services.Insert(index, item);
-        }
-
-        /// <summary>
-        /// Removes the <see cref="T:System.Collections.Generic.IList`1" /> item at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-based index of the item to remove.</param>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
-        /// <paramref name="index" /> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1" />.</exception>
-        /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IList`1" /> is read-only.</exception>
-        public void RemoveAt(int index)
-        {
-            Services.RemoveAt(index);
-        }
-
-        /// <summary>
-        /// Gets or sets the element at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-based index of the element to get or set.</param>
-        /// <returns>The element at the specified index.</returns>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">
-        /// <paramref name="index" /> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1" />.</exception>
-        /// <exception cref="T:System.NotSupportedException">The property is set and the <see cref="T:System.Collections.Generic.IList`1" /> is read-only.</exception>
-        public ServiceDescriptor this[int index]
-        {
-            get => Services[index];
-            set => Services[index] = value;
         }
     }
 }

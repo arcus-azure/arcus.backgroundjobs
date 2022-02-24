@@ -23,7 +23,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture
         /// <summary>
         /// Creates an <see cref="TestServiceBusEventProducer"/> instance which sends events to an Azure Service Bus.
         /// </summary>
-        /// <param name="configurationKey">The Azure Service Bus entity-scoped connection string.</param>
+        /// <param name="configurationKey">The configuration key towards the Azure Service Bus entity-scoped connection string.</param>
         /// <param name="configuration">The test configuration used in this test suite.</param>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configurationKey" /> is blank.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configuration"/> is <c>null</c>.</exception>
@@ -33,7 +33,20 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture
             Guard.NotNull(configuration, nameof(configuration), "Requires a test configuration to retrieve the Azure Service Bus entity-scoped connection string");
 
             var connectionString = configuration.GetValue<string>(configurationKey);
-            return new TestServiceBusEventProducer(connectionString);
+            TestServiceBusEventProducer producer = Create(connectionString);
+
+            return producer;
+        }
+
+        /// <summary>
+        /// Creates an <see cref="TestServiceBusEventProducer"/> instance which sends events to an Azure Service Bus.
+        /// </summary>
+        /// <param name="entityScopedConnectionString">The Azure Service Bus entity-scoped connection string.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="entityScopedConnectionString" /> is blank.</exception>
+        public static TestServiceBusEventProducer Create(string entityScopedConnectionString)
+        {
+            Guard.NotNullOrWhitespace(entityScopedConnectionString, nameof(entityScopedConnectionString), "Requires a non-blank Azure Service Bus entity-scoped connection string");
+            return new TestServiceBusEventProducer(entityScopedConnectionString);
         }
 
         /// <summary>

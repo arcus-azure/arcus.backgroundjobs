@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
 using Arcus.Security.Core;
@@ -7,7 +8,6 @@ using Arcus.Security.Core.Caching;
 using Arcus.Testing.Logging;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -36,16 +36,15 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
         public async Task NewSecretVersion_TriggersKeyVaultJob_AutoInvalidatesSecret()
         {
             // Arrange
-            var tenantId = _config.GetValue<string>("Arcus:KeyRotation:ServiceBus:TenantId");
-            var applicationId = _config.GetValue<string>("Arcus:ServicePrincipal:ApplicationId");
-            var clientKey = _config.GetValue<string>("Arcus:ServicePrincipal:AccessKey");
-            var keyVaultUri = _config.GetValue<string>("Arcus:KeyVault:Uri");
-            var credential = new ClientSecretCredential(tenantId, applicationId, clientKey);
+            AzureEnvironment environment = _config.GetAzureEnvironment();
+            ServicePrincipal servicePrincipal = _config.GetServicePrincipal();
+            string keyVaultUri = _config.GetKeyVaultUri();
+            var credential = new ClientSecretCredential(environment.TenantId, servicePrincipal.ClientId, servicePrincipal.ClientSecret);
             var secretValue = Guid.NewGuid().ToString("N");
 
             var client = new SecretClient(new Uri(keyVaultUri), credential);
 
-            const string secretKey = "Arcus:ServiceBus:ConnectionStringWithTopic";
+            const string secretKey = "Arcus:KeyVault:SecretNewVersionCreated:ServiceBus:ConnectionStringWithTopic";
             var cachedSecretProvider = new Mock<ICachedSecretProvider>();
             cachedSecretProvider
                 .Setup(p => p.GetRawSecretAsync(secretKey))
@@ -57,12 +56,15 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
             
             var options = new WorkerOptions();
             options.ConfigureLogging(_logger)
-                   .AddSingleton<ISecretProvider>(cachedSecretProvider.Object)
-                   .AddSingleton<ICachedSecretProvider>(cachedSecretProvider.Object)
-                   .AddAutoInvalidateKeyVaultSecretBackgroundJob(
-                       subscriptionNamePrefix: "TestSub",
-                       serviceBusTopicConnectionStringSecretKey: secretKey);
-            
+                   .ConfigureServices(services =>
+                   {
+                       services.AddSingleton<ISecretProvider>(cachedSecretProvider.Object)
+                               .AddSingleton<ICachedSecretProvider>(cachedSecretProvider.Object)
+                               .AddAutoInvalidateKeyVaultSecretBackgroundJob(
+                                   subscriptionNamePrefix: "TestSub",
+                                   serviceBusTopicConnectionStringSecretKey: secretKey);
+                   });
+
             // Act
             await using (var worker = await Worker.StartNewAsync(options))
             await using (var tempSecret = await TemporaryAzureKeyVaultSecret.CreateNewAsync(client))
@@ -73,7 +75,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                 RetryAssertion(
                     // ReSharper disable once AccessToDisposedClosure - disposal happens after retry.
                     () => cachedSecretProvider.Verify(p => p.InvalidateSecretAsync(It.Is<string>(n => n == tempSecret.Name)), Times.Once), 
-                    timeout: TimeSpan.FromMinutes(5),
+                    timeout: TimeSpan.FromMinutes(6),
                     interval: TimeSpan.FromMilliseconds(500));
             }
         }
