@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.AppConfiguration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.Testing.Logging;
-using Azure;
 using Azure.Data.AppConfiguration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
-using Moq;
 using Polly;
 using Xunit;
 using Xunit.Abstractions;
@@ -57,8 +53,11 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
                        });
                    })
                    .ConfigureLogging(_logger)
-                   .AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, appConfiguration.ServiceBusTopicConnectionString))
-                   .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey);
+                   .ConfigureServices(services =>
+                   {
+                       services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, appConfiguration.ServiceBusTopicConnectionString))
+                               .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey);
+                   });
 
             await using (var worker = await Worker.StartNewAsync(options))
             {
@@ -95,8 +94,11 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
                        });
                    })
                    .ConfigureLogging(_logger)
-                   .AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, appConfiguration.ServiceBusTopicConnectionString))
-                   .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey);
+                   .ConfigureServices(services =>
+                   {
+                       services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, appConfiguration.ServiceBusTopicConnectionString))
+                               .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey);
+                   });
 
             await using (var worker = await Worker.StartNewAsync(options))
             {
@@ -134,9 +136,12 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
                        });
                    })
                    .ConfigureLogging(_logger)
-                   .AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, appConfiguration.ServiceBusTopicConnectionString))
-                   .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey)
-                   .AddFeatureManagement();
+                   .ConfigureServices(services =>
+                   {
+                       services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, appConfiguration.ServiceBusTopicConnectionString))
+                               .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey)
+                               .AddFeatureManagement();
+                   });
 
             await using (var worker = await Worker.StartNewAsync(options))
             {
@@ -178,9 +183,12 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
                        });
                    })
                    .ConfigureLogging(_logger)
-                   .AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, appConfiguration.ServiceBusTopicConnectionString))
-                   .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey)
-                   .AddFeatureManagement();
+                   .ConfigureServices(services =>
+                   {
+                       services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, appConfiguration.ServiceBusTopicConnectionString))
+                               .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey)
+                               .AddFeatureManagement();
+                   });
 
             await using (var worker = await Worker.StartNewAsync(options))
             {

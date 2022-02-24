@@ -57,6 +57,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
             return this;
         }
 
+        /// <summary>
         /// Adds additional service(s) to the available registered services on the to-be-created <see cref="Worker"/>.
         /// </summary>
         /// <param name="configureServices">The function to register the service(s).</param>
