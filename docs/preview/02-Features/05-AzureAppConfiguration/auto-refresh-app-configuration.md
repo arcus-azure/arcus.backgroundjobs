@@ -14,18 +14,19 @@ PM > Install-Package Arcus.BackgroundJobs.AzureAppConfiguration
 ```
 
 ## Setup
-To automtically notify your `IConfiguration` instance in your application for any change in the remote Azure App Configuration, you need some setup.
+To automatically notify your `IConfiguration` instance in your application for any change in the remote Azure App Configuration, you need some setup.
 We use the events from Azure App Configuration which will be send towards an Azure Service Bus Topic. The background job will look for those events on the topic, and will in turn refresh the `IConfiguration`.
 
 1. Create an Azure App Configuration resource
 2. Create an Azure Service Bus Topic resource
 3. Create an event subscription on the App Configuration resource to send events to the Service Bus Topic
 
+![Automatically refresh Azure App Configuration values](/media/Azure-App-Configuration-Job.png)
 
 Both the connection string of the Azure App Configuration and the Azure Service Bus Topic will be needed in the next section, so make sure you have those.
 
 ## Usage
-Our background job requries both the configuration of Azure App Configuration while setting up the `IConfiguration`, 
+Our background job requires both the configuration of Azure App Configuration while setting up the `IConfiguration`, 
 as well as the [Arcus secret store](https://security.arcus-azure.net/features/secret-store) which will retrieve the connection string of the Azure Service Bus Topic.
 
 ```csharp
@@ -40,7 +41,7 @@ public class Program
         hostBuilder.Build().Run();
     }
 
-    private static IHostBuilder CreatHostBuilder(string[] args)
+    private static IHostBuilder CreateHostBuilder(string[] args)
     {
         return Host.CreateDefaultBuilder(args)
                     // Make sure that you register the Arcus secret store so the background job has access to the Azure Service Bus Topic connection string,
