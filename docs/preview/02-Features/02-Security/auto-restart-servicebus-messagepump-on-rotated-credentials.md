@@ -6,7 +6,7 @@ layout: default
 # Automatic Azure Key Vault credentials rotation
 
 The library `Arcus.BackgroundJobs.KeyVault` provides an extension on the message pump to restart the pump automatically when the credentials of the pump stored in Azure Key Vault are changed.
-This feature allows more reliable restarting instead of relying on authentication exceptions that may be throwed during the lifetime of the message pump.
+This feature allows more reliable restarting instead of relying on authentication exceptions that may be thrown during the lifetime of the message pump.
 
 ## How does this work?
 

@@ -21,14 +21,14 @@ For more granular packages we recommend reading the documentation.
 # Features
 
 - **General**
-    - [Securely Receive CloudEvents](features/general/receive-cloudevents-job)
+    - [Securely Receive CloudEvents](./features/general/receive-cloudevents-job.mg)
 - **Security**
-    - [Automatically invalidate cached secrets from Azure Key Vault](features/security/auto-invalidate-secrets)
+    - [Automatically invalidate cached secrets from Azure Key Vault](./features/security/auto-invalidate-secrets.md)
 - **Databricks**
-    - [Measure Databricks job run outcomes as metric](features/databricks/job-metrics)
-    - [Interact with Databricks to gain insights](features/databricks/gain-insights)
+    - [Measure Databricks job run outcomes as metric](./features/databricks/job-metrics.md)
+    - [Interact with Databricks to gain insights](./features/databricks/gain-insights.md)
 - **Azure Active Directory**
-    - [Check Applications in Azure Active Directory for client secrets that have expired or will expire in the near future](features/azureactivedirectory/client-secret-expiration-job)
+    - [Check Applications in Azure Active Directory for client secrets that have expired or will expire in the near future](./features/azureactivedirectory/client-secret-expiration-job.md)
 
 # License
 This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.

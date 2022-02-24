@@ -18,7 +18,7 @@ PM > Install-Package Arcus.BackgroundJobs.Databricks -Version 0.3.0
 ## Usage
 We provide a  `DatabricksInfoProvider` which allows you to interact with Databricks clusters to gain insights on your workloads, such as measuring job run outcomes.
 
-It can be easily setup and used anywhere such as .NET Core workers, Azure Functions and more. We are using this ourselves for our [job metrics](./job-metrics).
+It can be easily setup and used anywhere such as .NET Core workers, Azure Functions and more. We are using this ourselves for our [job metrics](./job-metrics.md).
 
 ```csharp
 using Arcus.BackgroundJobs.Databricks;
@@ -43,7 +43,7 @@ var endOfWindow = DateTimeOffset.UtcNow;
 IEnumerable<JobRun> finishedJobRuns = await provider.GetFinishedJobRunsAsync(startOfWindow, endOfWindow);
 ```
 
-It provides following information about the job that was executated, such as name & id, along with [details about a single job run](https://github.com/Azure/azure-databricks-client/blob/master/csharp/Microsoft.Azure.Databricks.Client/Run.cs).
+It provides following information about the job that was executed, such as name & id, along with [details about a single job run](https://github.com/Azure/azure-databricks-client/blob/master/csharp/Microsoft.Azure.Databricks.Client/Run.cs).
 
 ### Measure finished job outcomes
 Measures the finished job runs by reporting the results as (multi-dimensional) metrics.
