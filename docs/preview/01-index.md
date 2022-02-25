@@ -21,7 +21,7 @@ For more granular packages we recommend reading the documentation.
 # Features
 
 - **General**
-    - [Securely Receive CloudEvents](./features/general/receive-cloudevents-job.mg)
+    - [Securely Receive CloudEvents](./features/general/receive-cloudevents-job.md)
 - **Security**
     - [Automatically invalidate cached secrets from Azure Key Vault](./features/security/auto-invalidate-secrets.md)
 - **Databricks**
