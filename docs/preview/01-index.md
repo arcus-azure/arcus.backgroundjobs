@@ -21,9 +21,9 @@ For more granular packages we recommend reading the documentation.
 # Features
 
 - **General**
-    - [Securely Receive CloudEvents](./02-Features/01-General/receive-cloudevents-job)
+    - [Securely Receive CloudEvents](./02-Features/01-General/receive-cloudevents-job.md)
 - **Azure Active Directory**
-    - [Check Applications in Azure Active Directory for client secrets that have expired or will expire in the near future](./02-Features/04-AzureActiveDirectory/client-secret-expiration-job.md/client-secret-expiration-job)
+    - [Check Applications in Azure Active Directory for client secrets that have expired or will expire in the near future](./02-Features/04-AzureActiveDirectory/client-secret-expiration-job.md)
 - **Azure App Configuration**
     - [Automatically refresh configuration values from Azure App Configuration](./02-Features/05-AzureAppConfiguration/auto-refresh-app-configuration.md)
 - **Databricks**
