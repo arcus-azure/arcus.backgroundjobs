@@ -18,6 +18,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
     {
         private readonly ICollection<Action<IServiceCollection>> _additionalServices = new Collection<Action<IServiceCollection>>();
         private readonly ICollection<Action<IHostBuilder>> _additionalHostOptions = new Collection<Action<IHostBuilder>>();
+        private readonly ICollection<Action<IConfigurationBuilder>> _additionalConfigures = new List<Action<IConfigurationBuilder>>();
         
         /// <summary>
         /// Gets the services that will be included in the test <see cref="Worker"/>.
@@ -37,8 +38,22 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         public WorkerOptions Configure(Action<IHostBuilder> additionalHostOption)
         {
             Guard.NotNull(additionalHostOption, nameof(additionalHostOption), "Requires an custom action that will add the additional hosting option");
+            
             _additionalHostOptions.Add(additionalHostOption);
+            return this;
+        }
 
+        /// <summary>
+        /// Adds a configuration function to setup the <see cref="IConfiguration"/> of the test worker.
+        /// </summary>
+        /// <param name="configure">The addition function to setup up the application configuration.</param>
+        /// <remarks>Multiple calls will be aggregated.</remarks>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configure"/> is <c>null</c>.</exception>
+        public WorkerOptions ConfigureAppConfiguration(Action<IConfigurationBuilder> configure)
+        {
+            Guard.NotNull(configure, nameof(configure), "Requires an additional configure function to setup the application configuration of the test worker");
+
+            _additionalConfigures.Add(configure);
             return this;
         }
 
@@ -50,8 +65,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         public WorkerOptions ConfigureServices(Action<IServiceCollection> configureServices)
         {
             Guard.NotNull(configureServices, nameof(configureServices), "Requires a function to register the available application services");
+
             _additionalServices.Add(configureServices);
-            
             return this;
         }
 
@@ -85,7 +100,14 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         {
             Guard.NotNull(hostBuilder, nameof(hostBuilder), "Requires a host builder instance to apply the worker options to");
             
-            hostBuilder.ConfigureAppConfiguration(config => config.AddInMemoryCollection(Configuration))
+            hostBuilder.ConfigureAppConfiguration(configBuilder =>
+                       {
+                           configBuilder.AddInMemoryCollection(Configuration);
+                           foreach (Action<IConfigurationBuilder> configure in _additionalConfigures)
+                           {
+                               configure(configBuilder);
+                           }
+                       })
                        .ConfigureServices(services =>
                        {
                            foreach (Action<IServiceCollection> configureServices in _additionalServices)

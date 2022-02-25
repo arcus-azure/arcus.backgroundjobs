@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29409.12
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.CloudEvents", "Arcus.BackgroundJobs.CloudEvents\Arcus.BackgroundJobs.CloudEvents.csproj", "{91C392A2-96C2-40FF-884A-237A1922B82F}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{940B9B9D-3960-40D7-B062-BD7E8B5E967D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.Databricks", "Arcus.BackgroundJobs.Databricks\Arcus.BackgroundJobs.Databricks.csproj", "{D38D2F5E-A151-4016-8D09-EDA6845E27C6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.AzureAppConfiguration", "Arcus.BackgroundJobs.AzureAppConfiguration\Arcus.BackgroundJobs.AzureAppConfiguration.csproj", "{611AE2C2-355A-4F61-9A22-2AAB0961829B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.BackgroundJobs.AzureActiveDirectory", "Arcus.BackgroundJobs.AzureActiveDirectory\Arcus.BackgroundJobs.AzureActiveDirectory.csproj", "{57F4B5A4-6DC8-4463-81A8-C12B259CDF69}"
 EndProject
@@ -43,6 +45,10 @@ Global
 		{D38D2F5E-A151-4016-8D09-EDA6845E27C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D38D2F5E-A151-4016-8D09-EDA6845E27C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D38D2F5E-A151-4016-8D09-EDA6845E27C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{611AE2C2-355A-4F61-9A22-2AAB0961829B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{611AE2C2-355A-4F61-9A22-2AAB0961829B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{611AE2C2-355A-4F61-9A22-2AAB0961829B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{611AE2C2-355A-4F61-9A22-2AAB0961829B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{57F4B5A4-6DC8-4463-81A8-C12B259CDF69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{57F4B5A4-6DC8-4463-81A8-C12B259CDF69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57F4B5A4-6DC8-4463-81A8-C12B259CDF69}.Release|Any CPU.ActiveCfg = Release|Any CPU
