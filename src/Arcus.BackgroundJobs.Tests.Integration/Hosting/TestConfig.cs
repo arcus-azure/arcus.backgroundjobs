@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Arcus.BackgroundJobs.Tests.Integration.AppConfiguration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
@@ -84,6 +85,18 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         }
 
         /// <summary>
+        /// Gets the test configuration to interact with the Azure App Configuration resource.
+        /// </summary>
+        /// <exception cref="KeyNotFoundException">Thrown when a value in the test configuration cannot be found.</exception>
+        public AppTestConfiguration GetAppConfiguration()
+        {
+            var connectionString = GetRequiredValue<string>("Arcus:AppConfiguration:ConnectionString");
+            var serviceBusTopicConnectionString = GetRequiredValue<string>("Arcus:AppConfiguration:ServiceBus:ConnectionStringWithTopic");
+
+            return new AppTestConfiguration(connectionString, serviceBusTopicConnectionString);
+        }
+
+        /// <summary>
         /// Gets the configuration values to connect to the test Azure Active Directory used for integration testing.
         /// </summary>
         /// <exception cref="ArgumentException">Thrown when one or more configuration values are missing from the loaded configuration.</exception>
@@ -148,5 +161,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         /// The <see cref="T:Microsoft.Extensions.Configuration.IConfigurationProvider" />s for this configuration.
         /// </summary>
         public IEnumerable<IConfigurationProvider> Providers => _config.Providers;
+
+        private TValue GetRequiredValue<TValue>(string key)
+        {
+            var value = _config.GetValue<TValue>(key);
+            if (value is null)
+            {
+                throw new KeyNotFoundException($"Could not found configuration key '{key}' in test configuration");
+            }
+
+            return value;
+        }
     }
 }
