@@ -28,6 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentException">
         ///     Thrown when the <paramref name="subscriptionNamePrefix"/> or <paramref name="serviceBusTopicConnectionStringSecretKey"/> is blank.
         /// </exception>
+        [Obsolete("Consider using the " + nameof(Arcus.BackgroundJobs.KeyVault.Extensions.ServiceBusMessageHandlerCollectionExtensions.WithAutoRestartOnRotatedCredentials) + " extension instead when configuring the message pump/router/handlers")]
         public static IServiceCollection AddAutoInvalidateKeyVaultSecretBackgroundJob(
             this IServiceCollection services,
             string subscriptionNamePrefix,
@@ -49,6 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentException">
         ///     Thrown when the <paramref name="subscriptionNamePrefix"/> or <paramref name="serviceBusTopicConnectionStringSecretKey"/> is blank.
         /// </exception>
+        [Obsolete("Consider using the " + nameof(Arcus.BackgroundJobs.KeyVault.Extensions.ServiceBusMessageHandlerCollectionExtensions.WithAutoRestartOnRotatedCredentials) + " extension instead when configuring the message pump/router/handlers")]
         public static IServiceCollection AddAutoInvalidateKeyVaultSecretBackgroundJob(
             this IServiceCollection services,
             string subscriptionNamePrefix,
