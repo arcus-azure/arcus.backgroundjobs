@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
+#pragma warning disable CS0618
 
 namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
 {
