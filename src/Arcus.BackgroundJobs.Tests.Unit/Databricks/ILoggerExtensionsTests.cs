@@ -75,7 +75,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
 
             // Assert
             Assert.Single(spyLogger.Messages, msg => msg.Contains(resultState.ToString(), StringComparison.OrdinalIgnoreCase));
-            Assert.Single(spyLogger.Messages, msg => msg.StartsWith("Metric " + metricName));
+            Assert.Single(spyLogger.Messages, msg => msg.Contains(metricName));
         }
 
         [Fact]
