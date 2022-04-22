@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
-using Arcus.Security.Core;
 using Arcus.Testing.Logging;
 using Microsoft.Azure.Databricks.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph;
-using Moq;
 using Polly;
 using Xunit;
 using Xunit.Abstractions;
@@ -45,9 +42,12 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Databricks
             var options = new WorkerOptions();
             options.ConfigureLogging(spyLogger);
             options.ConfigureLogging(_logger);
-            options.AddSecretStore(stores => stores.AddInMemory(tokenSecretKey, token));
-            options.AddDatabricksJobMetricsJob(baseUrl, tokenSecretKey, opt => opt.IntervalInMinutes = 1);
-            
+            options.ConfigureServices(services =>
+            {
+                services.AddSecretStore(stores => stores.AddInMemory(tokenSecretKey, token));
+                services.AddDatabricksJobMetricsJob(baseUrl, tokenSecretKey, opt => opt.IntervalInMinutes = 1);
+            });
+
             using (var client = DatabricksClient.CreateClient(baseUrl, token))
             {
                 JobSettings settings = CreateEmptyJobSettings();

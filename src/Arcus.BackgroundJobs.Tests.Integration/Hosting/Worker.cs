@@ -22,6 +22,11 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
         }
 
         /// <summary>
+        /// Gets the provider to retrieve the registered services used within the test worker.
+        /// </summary>
+        public IServiceProvider ServiceProvider => _host.Services;
+
+        /// <summary>
         /// Spawns a new test worker configurable with <paramref name="options"/>.
         /// </summary>
         /// <param name="options">The configurable options to influence the content of the test worker.</param>

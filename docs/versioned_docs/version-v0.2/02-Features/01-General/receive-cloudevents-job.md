@@ -19,7 +19,7 @@ You can write your own background job(s) by deriving from `CloudEventBackgroundJ
 
 ## Usage
 
-You can easily implement your own job by implementing the `ProcessMessageAsync` method to prcocess new CloudEvents.
+You can easily implement your own job by implementing the `ProcessMessageAsync` method to process new CloudEvents.
 
 
 ```csharp

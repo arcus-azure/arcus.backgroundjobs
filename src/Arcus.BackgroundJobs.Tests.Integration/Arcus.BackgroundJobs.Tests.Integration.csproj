@@ -11,12 +11,14 @@
     <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="2.0.0" />
      <PackageReference Include="Arcus.Testing.Logging" Version="0.3.0" />
     <PackageReference Include="Arcus.Testing.Security.Providers.InMemory" Version="0.3.0" />
+    <PackageReference Include="Azure.Data.AppConfiguration" Version="1.1.0" />
     <PackageReference Include="Bogus" Version="29.0.2" />
     <PackageReference Include="Guard.Net" Version="1.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.8" />
+    <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="2.4.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="Moq" Version="4.13.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
@@ -26,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Arcus.BackgroundJobs.AzureAppConfiguration\Arcus.BackgroundJobs.AzureAppConfiguration.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.AzureActiveDirectory\Arcus.BackgroundJobs.AzureActiveDirectory.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.Databricks\Arcus.BackgroundJobs.Databricks.csproj" />
     <ProjectReference Include="..\Arcus.BackgroundJobs.CloudEvents\Arcus.BackgroundJobs.CloudEvents.csproj" />
