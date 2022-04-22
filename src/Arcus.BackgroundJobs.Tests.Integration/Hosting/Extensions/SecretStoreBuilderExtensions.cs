@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
+using Arcus.Security.Core.Caching.Configuration;
 using GuardNet;
 
 // ReSharper disable once CheckNamespace
@@ -34,7 +35,8 @@ namespace Microsoft.Extensions.Hosting
                 keyVaultUri,
                 environment.TenantId,
                 servicePrincipal.ClientId,
-                servicePrincipal.ClientSecret);
+                servicePrincipal.ClientSecret,
+                CacheConfiguration.Default);
         }
     }
 }
