@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.AzureActiveDirectory;
 using Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
-using Arcus.EventGrid;
-using Arcus.EventGrid.Contracts;
 using Arcus.Testing.Logging;
 using CloudNative.CloudEvents;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +14,7 @@ using Xunit.Abstractions;
 namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
 {
     [Trait(name: "Category", value: "Integration")]
+    [Collection(TestCollections.Integration)]
     public class ClientSecretExpirationJobTests
     {
         private readonly ILogger _logger;

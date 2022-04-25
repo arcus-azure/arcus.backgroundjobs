@@ -18,6 +18,7 @@ using Xunit.Abstractions;
 namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 {
     [Trait(name: "Category", value: "Integration")]
+    [Collection(TestCollections.Integration)]
     public class AutoInvalidateKeyVaultSecretJobTests
     {
         private readonly ILogger _logger;
