@@ -17,6 +17,7 @@ using Xunit.Sdk;
 namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
 {
     [Trait("Category", "Integration")]
+    [Collection(TestCollections.Integration)]
     public class AutoRefreshAppConfigurationBackgroundJobTests
     {
         private readonly ILogger _logger;
