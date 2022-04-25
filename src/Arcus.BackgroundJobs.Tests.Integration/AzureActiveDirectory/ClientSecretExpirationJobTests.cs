@@ -61,24 +61,19 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
                 await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(_config, _logger))
                 {
                     // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume();
-                    Assert.NotEmpty(eventBatch.Events);
-                    IEnumerable<CloudEvent> cloudEvents = eventBatch.Events.Select(ev => ev.AsCloudEvent());
-                    Assert.All(cloudEvents, ev =>
-                    {
-                        Assert.NotNull(ev.Id);
-                        Assert.True(Enum.TryParse(ev.Type, out ClientSecretExpirationEventType eventType), 
-                            $"Event should have either '{ClientSecretExpirationEventType.ClientSecretAboutToExpire}' or '{ClientSecretExpirationEventType.ClientSecretExpired}' as event type");
+                   CloudEvent cloudEvent = consumer.Consume();
+                   Assert.NotNull(cloudEvent.Id);
+                   Assert.True(Enum.TryParse(cloudEvent.Type, out ClientSecretExpirationEventType eventType),
+                       $"Event should have either '{ClientSecretExpirationEventType.ClientSecretAboutToExpire}' or '{ClientSecretExpirationEventType.ClientSecretExpired}' as event type");
 
-                        var data = ev.GetPayload<AzureApplication>();
-                        Assert.IsType<Guid>(data.KeyId);
+                   var data = cloudEvent.GetPayload<AzureApplication>();
+                   Assert.IsType<Guid>(data.KeyId);
 
-                        bool isAboutToExpire = eventType == ClientSecretExpirationEventType.ClientSecretAboutToExpire;
-                        bool isExpired = eventType == ClientSecretExpirationEventType.ClientSecretExpired;
-                        
-                        Assert.True(isAboutToExpire == (data.RemainingValidDays > 0 && data.RemainingValidDays < expirationThreshold), $"Remaining days should be between 1-{expirationThreshold - 1} when the secret is about to expire");
-                        Assert.True(isExpired == data.RemainingValidDays < 0, "Remaining days should be negative when the secret is expired");
-                    });
+                   bool isAboutToExpire = eventType == ClientSecretExpirationEventType.ClientSecretAboutToExpire;
+                   bool isExpired = eventType == ClientSecretExpirationEventType.ClientSecretExpired;
+
+                   Assert.True(isAboutToExpire == (data.RemainingValidDays > 0 && data.RemainingValidDays < expirationThreshold), $"Remaining days should be between 1-{expirationThreshold - 1} when the secret is about to expire");
+                   Assert.True(isExpired == data.RemainingValidDays < 0, "Remaining days should be negative when the secret is expired");
                 }
             }
         }
