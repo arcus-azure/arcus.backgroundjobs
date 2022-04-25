@@ -25,6 +25,7 @@ using Xunit.Abstractions;
 namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 {
     [Trait("Category", "Integration")]
+    [Collection(TestCollections.Integration)]
     public class AutoRestartServiceBusMessagePumpOnRotatedCredentialsJobTests
     {
         private const string ConnectionStringSecretKey = "ARCUS_KEYVAULT_SECRETNEWVERSIONCREATED_CONNECTIONSTRING",

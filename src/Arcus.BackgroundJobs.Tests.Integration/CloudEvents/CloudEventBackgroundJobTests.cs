@@ -28,6 +28,7 @@ using Xunit.Abstractions;
 namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
 {
     [Trait("Category", "Integration")]
+    [Collection(TestCollections.Integration)]
     public class CloudEventBackgroundJobTests
     {
         private const string TopicConnectionStringSecretKey = "Arcus:CloudEvents:ServiceBus:ConnectionStringWithTopic",

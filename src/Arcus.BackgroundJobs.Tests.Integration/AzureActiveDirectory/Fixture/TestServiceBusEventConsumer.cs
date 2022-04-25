@@ -6,6 +6,7 @@ using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
 using Arcus.EventGrid.Testing.Infrastructure.Hosts.ServiceBus;
+using CloudNative.CloudEvents;
 using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -49,17 +50,13 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture
         /// <summary>
         /// Receives an event produced on the Azure Service Bus.
         /// </summary>
-        public EventBatch<Event> Consume()
+        public CloudEvent Consume()
         {
-            List<Event> eventList = new List<Event>();
-            Event receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent(
+            CloudEvent receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent(
                         data => data.Source == new Uri("https://github.com/arcus-azure/arcus.backgroundjobs"),
-                        TimeSpan.FromSeconds(300));
+                        TimeSpan.FromMinutes(8));
 
-            eventList.Add(receivedEvent);
-            EventBatch<Event> eventBatch = new EventBatch<Event>(receivedEvent.Id, eventList);
-
-            return eventBatch;
+            return receivedEvent;
         }
 
         /// <summary>

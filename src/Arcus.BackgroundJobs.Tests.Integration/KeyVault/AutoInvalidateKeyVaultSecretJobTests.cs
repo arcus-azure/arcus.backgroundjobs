@@ -18,6 +18,7 @@ using Xunit.Abstractions;
 namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 {
     [Trait(name: "Category", value: "Integration")]
+    [Collection(TestCollections.Integration)]
     public class AutoInvalidateKeyVaultSecretJobTests
     {
         private readonly ILogger _logger;
@@ -75,7 +76,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                 RetryAssertion(
                     // ReSharper disable once AccessToDisposedClosure - disposal happens after retry.
                     () => cachedSecretProvider.Verify(p => p.InvalidateSecretAsync(It.Is<string>(n => n == tempSecret.Name)), Times.Once), 
-                    timeout: TimeSpan.FromMinutes(6),
+                    timeout: TimeSpan.FromMinutes(8),
                     interval: TimeSpan.FromMilliseconds(500));
             }
         }

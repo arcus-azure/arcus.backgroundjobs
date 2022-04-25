@@ -52,7 +52,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.Databricks
             Assert.NotEmpty(spyLogger.Messages);
             Assert.Equal(
                 runs.Count(),
-                spyLogger.Messages.Count(m => m.StartsWith("Metric Databricks Job Completed")));
+                spyLogger.Messages.Count(m => m.StartsWith("Databricks Job Completed")));
         }
 
         private static IEnumerable<Run> CreateRandomRuns(DateTimeOffset startWindow, DateTimeOffset endWindow)
