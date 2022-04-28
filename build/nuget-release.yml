@@ -107,8 +107,18 @@ stages:
             parameters:
               repositoryName: '$(GitHub.Repository)'
               releaseNotes: |
-                Install new version via [NuGet](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/$(Build.BuildNumber))
+                Install the $(Project) packages that you need via NuGet, for instance [$(Project).KeyVault](https://www.nuget.org/packages/$(Project).KeyVault/$(Build.BuildNumber)):
                 ```shell
-                PM > Install-Package Arcus.BackgroundJobs.CloudEvents --Version $(Build.BuildNumber)
+                PM > Install-Package $(Project).KeyVault --Version $(Build.BuildNumber)
                 ```
+                For a complete list of all $(Project) packages see the [documentation](https://background-jobs.arcus-azure.net/).
+                ## What's new?
+                ### Features
+                * Provide the capability to do something (#123)
+                ### Fixes / Changes
+                None.
+                ### Breaking Changes
+                None.
+                ### Removal
+                None.
           - template: nuget/publish-official-package.yml@templates
