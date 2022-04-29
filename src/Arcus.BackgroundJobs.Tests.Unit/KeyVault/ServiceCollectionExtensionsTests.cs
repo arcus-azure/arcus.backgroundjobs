@@ -13,48 +13,18 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
-#pragma warning disable CS0618
 
 namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
 {
     [Trait("Category", "Unit")]
-    // ReSharper disable once InconsistentNaming
-    public class IServiceCollectionExtensionsTests
+    public class ServiceCollectionExtensionsTests
     {
-        [Theory]
-        [ClassData(typeof(Blanks))]
-        public void AddAutoInvalidateKeyVaultSecretBackgroundJob_WithoutTopisSubscriptionPrefix_Fails(string subscriptionPrefix)
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            
-            // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
-                    subscriptionPrefix,
-                    "<service-bus-topic-connection-string-secret-key>"));
-        }
-
-        [Theory]
-        [ClassData(typeof(Blanks))]
-        public void AddAutoInvalidateKeyVaultSecretBackgroundJob_WithoutServiceBusTopicConnectionStringSecretKey_Fails(
-            string serviceBusTopicConnectionStringSecretKey)
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            
-            // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(
-                () => services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
-                    "<topic-subscription-prefix>",
-                    serviceBusTopicConnectionStringSecretKey));
-        }
-
         [Fact]
         public void AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob_WithoutReferencingMessagePump_Fails()
         {
             // Arrange
             var services = new ServiceCollection();
+            var collection = new ServiceBusMessageHandlerCollection(services);
             services.AddSingleton(Mock.Of<IConfiguration>());
             services.AddLogging();
             services.AddSingleton<IHostedService>(serviceProvider =>
@@ -65,9 +35,9 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
                     ServiceBusEntityType.Queue,
                     "<service-bus-namespace>",
                     new DefaultAzureCredential(),
-                    new AzureServiceBusMessagePumpOptions {JobId = "No-the-same-job-id"},
+                    new AzureServiceBusMessagePumpOptions { JobId = "No-the-same-job-id" },
                     serviceProvider);
-                
+
                 return new AzureServiceBusMessagePump(
                     settings,
                     Mock.Of<IConfiguration>(),
@@ -75,14 +45,14 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
                     Mock.Of<IAzureServiceBusMessageRouter>(),
                     NullLogger<AzureServiceBusMessagePump>.Instance);
             });
-            
+
             // Act
-            services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+            collection.WithAutoRestartOnRotatedCredentials(
                 "<non-existing-job-id>",
                 "<topic-subscription-prefix>",
                 "<service-bus-topic-connection-string-secret-key>",
                 "<message-pump-connection-string-key>");
-            
+
             // Assert
             IServiceProvider provider = services.BuildServiceProvider();
             Assert.ThrowsAny<InvalidOperationException>(
@@ -95,10 +65,11 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
         {
             // Arrange
             var services = new ServiceCollection();
-            
+            var collection = new ServiceBusMessageHandlerCollection(services);
+
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                collection.WithAutoRestartOnRotatedCredentials(
                     jobId,
                     "<topic-subscription-prefix>",
                     "<service-bus-connection-string-secret-key>",
@@ -111,10 +82,11 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
         {
             // Arrange
             var services = new ServiceCollection();
-            
+            var collection = new ServiceBusMessageHandlerCollection(services);
+
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                collection.WithAutoRestartOnRotatedCredentials(
                     "<job-id>",
                     topicSubscriptionPrefix,
                     "<service-bus-connection-string-secret-key>",
@@ -128,10 +100,11 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
         {
             // Arrange
             var services = new ServiceCollection();
-            
+            var collection = new ServiceBusMessageHandlerCollection(services);
+
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                collection.WithAutoRestartOnRotatedCredentials(
                     "<job-id>",
                     "<topic-subscription-prefix>",
                     serviceBusConnectionStringSecretKey,
@@ -145,10 +118,11 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
         {
             // Arrange
             var services = new ServiceCollection();
-            
+            var collection = new ServiceBusMessageHandlerCollection(services);
+
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                collection.WithAutoRestartOnRotatedCredentials(
                     "<job-id>",
                     "<topic-subscription-prefix>",
                     "<service-bus-connection-string-secret-key>",
@@ -161,10 +135,11 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
         {
             // Arrange
             var services = new ServiceCollection();
+            var collection = new ServiceBusMessageHandlerCollection(services);
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                collection.WithAutoRestartOnRotatedCredentials(
                     jobId,
                     "<topic-subscription-prefix>",
                     "<service-bus-connection-string-secret-key>",
@@ -178,10 +153,11 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
         {
             // Arrange
             var services = new ServiceCollection();
+            var collection = new ServiceBusMessageHandlerCollection(services);
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                collection.WithAutoRestartOnRotatedCredentials(
                     "<job-id>",
                     topicSubscriptionPrefix,
                     "<service-bus-connection-string-secret-key>",
@@ -196,10 +172,11 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
         {
             // Arrange
             var services = new ServiceCollection();
+            var collection = new ServiceBusMessageHandlerCollection(services);
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                collection.WithAutoRestartOnRotatedCredentials(
                     "<job-id>",
                     "<topic-subscription-prefix>",
                     serviceBusConnectionStringSecretKey,
@@ -214,10 +191,11 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
         {
             // Arrange
             var services = new ServiceCollection();
+            var collection = new ServiceBusMessageHandlerCollection(services);
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                collection.WithAutoRestartOnRotatedCredentials(
                     "<job-id>",
                     "<topic-subscription-prefix>",
                     "<service-bus-connection-string-secret-key>",

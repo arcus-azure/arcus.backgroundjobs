@@ -88,6 +88,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentException">
         ///     Thrown when the <paramref name="subscriptionNamePrefix"/> or <paramref name="serviceBusTopicConnectionStringSecretKey"/> is blank.
         /// </exception>
+#pragma warning disable CS0436 // Type conflicts with imported type
+        [Obsolete("Consider using the " + nameof(ServiceBusMessageHandlerCollectionExtensions.WithAutoRestartOnRotatedCredentials) + " extension instead when configuring the message pump/router/handlers")]
+#pragma warning restore CS0436 // Type conflicts with imported type
         public static IServiceCollection AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
             this IServiceCollection services,
             string jobId,
@@ -109,7 +112,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 messagePumpConnectionStringKey,
                 configureBackgroundJob: null);
         }
-        
+
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically restart a <see cref="AzureServiceBusMessagePump"/> with a specific <paramref name="jobId"/>
         /// when the Azure Key Vault secret that holds the Azure Service Bus connection string was updated.
@@ -131,6 +134,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentException">
         ///     Thrown when the <paramref name="subscriptionNamePrefix"/> or <paramref name="serviceBusTopicConnectionStringSecretKey"/> is blank.
         /// </exception>
+#pragma warning disable CS0436 // Type conflicts with imported type
+        [Obsolete("Consider using the " + nameof(Microsoft.Extensions.DependencyInjection.ServiceBusMessageHandlerCollectionExtensions.WithAutoRestartOnRotatedCredentials) + " extension instead when configuring the message pump/router/handlers")]
+#pragma warning restore CS0436 // Type conflicts with imported type
         public static IServiceCollection AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
             this IServiceCollection services,
             string jobId,

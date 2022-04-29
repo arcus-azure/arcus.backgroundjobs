@@ -7,6 +7,7 @@ using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
 using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
+using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Testing.Logging;
 using Azure;
@@ -68,9 +69,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                            opt.JobId = jobId;
                            // Unrealistic big maximum exception count so that we're certain that the message pump gets restarted based on the notification and not the unauthorized exception.
                            opt.MaximumUnauthorizedExceptionsBeforeRestart = 1000;
-                       }).WithServiceBusMessageHandler<OrdersAzureServiceBusMessageHandler, Order>();
-                       
-                       services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                       }).WithServiceBusMessageHandler<OrdersAzureServiceBusMessageHandler, Order>()
+                         .WithAutoRestartOnRotatedCredentials(
                            jobId: jobId,
                            subscriptionNamePrefix: "TestSub",
                            serviceBusTopicConnectionStringSecretKey: ConnectionStringSecretKey,
@@ -122,7 +122,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                     stores.AddInMemory(ConnectionStringSecretKey, rotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString)
                           .AddAzureKeyVaultWithServicePrincipal(config);
                 });
-                services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
+                var collection = new ServiceBusMessageHandlerCollection(services);
+                collection.WithAutoRestartOnRotatedCredentials(
                     jobId: Guid.NewGuid().ToString(),
                     subscriptionNamePrefix: subscriptionPrefix,
                     serviceBusTopicConnectionStringSecretKey: ConnectionStringSecretKey,
