@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Databricks;
 using GuardNet;
-using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -45,17 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     options.TokenSecretKey = tokenSecretKey;
                     options.SetUserOptions(additionalOptions);
                 });
-                builder.UnobservedTaskExceptionHandler = (sender, args) =>  UnobservedExceptionHandler(args, services);
             });
-        }
-
-        private static void UnobservedExceptionHandler(UnobservedTaskExceptionEventArgs eventArgs, IServiceCollection services)
-        {
-            ServiceDescriptor logger = services.FirstOrDefault(service => service.ServiceType == typeof(ILogger));
-            var loggerInstance = (ILogger) logger?.ImplementationInstance;
-
-            loggerInstance?.LogCritical(eventArgs.Exception, "Unhandled exception in job {JobName}", nameof(DatabricksJobMetricsJob));
-            eventArgs.SetObserved();
         }
     }
 }
