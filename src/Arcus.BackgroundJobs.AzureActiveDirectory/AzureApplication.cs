@@ -4,7 +4,11 @@ using GuardNet;
 namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
-    /// Represents an <see cref="AzureApplication"/> from Azure Active Directory.
+    /// Represents an application running on Azure, in an Azure Active Directory.
+    /// <remarks>
+    ///     This model is used to publicly represent the client applications and is used during event tracking.
+    ///     Therefore, new values added here should be carefully considered as all data represented here is made public in the configured logging system.
+    /// </remarks>
     /// </summary>
     public class AzureApplication
     {
@@ -18,7 +22,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// <exception cref="ArgumentException">Thrown when the <paramref name="name"/> is blank.</exception>
         public AzureApplication(string name, Guid? keyId, DateTimeOffset? endDateTime, double remainingValidDays)
         {
-            Guard.NotNullOrWhitespace(name, nameof(name));
+            Guard.NotNullOrWhitespace(name, nameof(name), "Requires a name to describe the application running on Azure");
 
             Name = name;
             KeyId = keyId;
