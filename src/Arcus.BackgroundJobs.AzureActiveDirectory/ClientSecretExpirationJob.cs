@@ -72,7 +72,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         {
             _logger.LogTrace("Executing  {Name}", nameof(ClientSecretExpirationJob));
             var graphServiceClient = new GraphServiceClient(new DefaultAzureCredential());
-            _logger.LogTrace("Token retrieved, getting a list of applications with expired or about to expire secrets.");
+            _logger.LogTrace("Token retrieved, getting a list of applications with expired or about to expire secrets");
 
             var clientSecretExpirationInfoProvider = new ClientSecretExpirationInfoProvider(graphServiceClient, _logger);
             IEnumerable<AzureApplication> applications = 
@@ -89,14 +89,14 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
                 if (application.RemainingValidDays < 0)
                 {
                     eventType = ClientSecretExpirationEventType.ClientSecretExpired;
-                    _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} has expired.", telemetryContext);
+                    _logger.LogSecurityEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} has expired", telemetryContext);
                 }
                 else
                 {
-                    _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} will expire within {application.RemainingValidDays} days.", telemetryContext);
+                    _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} will expire within {application.RemainingValidDays} days", telemetryContext);
                 }
 
-                CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType, _options.UserOptions.EventUri);                
+                CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType, _options.UserOptions.EventUri);
                 await _eventGridPublisher.PublishAsync(@event);
             }
             _logger.LogTrace("Executing {Name} finished", nameof(ClientSecretExpirationJob));
