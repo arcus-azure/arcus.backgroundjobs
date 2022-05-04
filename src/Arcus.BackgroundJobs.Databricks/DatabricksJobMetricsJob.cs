@@ -65,17 +65,24 @@ namespace Arcus.BackgroundJobs.Databricks
         /// </returns>
         public async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using (DatabricksClient client = await _options.CreateDatabricksClientAsync(_secretProvider))
-            using (var databricksInfoProvider = new DatabricksInfoProvider(client, _logger))
+            try
             {
-                (DateTimeOffset start, DateTimeOffset end) = _options.DetermineNextTimeWindow();
+                using (DatabricksClient client = await _options.CreateDatabricksClientAsync(_secretProvider))
+                using (var databricksInfoProvider = new DatabricksInfoProvider(client, _logger))
+                {
+                    (DateTimeOffset start, DateTimeOffset end) = _options.DetermineNextTimeWindow();
 
-                _logger.LogInformation(
-                    "Job monitor for Databricks is starting at {TriggerTime} for time windows {WindowStart} - {WindowEnd}",
-                    DateTimeOffset.UtcNow, start, end);
+                    _logger.LogInformation(
+                        "Job monitor for Databricks is starting at {TriggerTime} for time windows {WindowStart} - {WindowEnd}",
+                        DateTimeOffset.UtcNow, start, end);
 
-                string metricName = _options.UserOptions.MetricName;
-                await databricksInfoProvider.MeasureJobOutcomesAsync(metricName, start, end);
+                    string metricName = _options.UserOptions.MetricName;
+                    await databricksInfoProvider.MeasureJobOutcomesAsync(metricName, start, end);
+                }
+            }
+            catch (Exception exception)
+            {
+                _logger.LogCritical(exception, "Could not measure the finished Databricks jobs due to an exception");
             }
         }
     }
