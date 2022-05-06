@@ -8,14 +8,14 @@ Background job development in a breeze.
 ![Arcus](https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png)
 
 # Installation
-Easy to install it via NuGet:
+The background jobs packages are easy to install via NuGet.
 
-### General
+## General
   - [CloudEvents background jobs](https://background-jobs.arcus-azure.net/Features/General/receive-cloudevents-job): securely receive CloudEvents which allows workloads to asynchronously process events from other components without exposing a public endpoint.
     ```shell
     PM > Install-Package Arcus.BackgroundJobs.CloudEvents
     ```
-### Security
+## Security
   - Azure Active Directory background jobs notifies event subscriptions on expired client secrets in an Azure Active Directory.
     ```shell
     PM > Install-Package Arcus.BackgroundJobs.AzureActiveDirectory
@@ -24,7 +24,7 @@ Easy to install it via NuGet:
     ```shell
     PM > Install-Package Arcus.BackgroundJobs.KeyVault
     ```
-### Other
+## Other
   - [Databricks background jobs](https://background-jobs.arcus-azure.net/Features/Databricks/gain-insights) allows interaction with run Databricks jobs to gain insights at the resutls.
     ```shell
     PM > Install-Package Arcus.BackgroundJobs.Databricks
