@@ -70,36 +70,52 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// </returns>
         public async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogTrace("Executing  {Name}", nameof(ClientSecretExpirationJob));
-            var graphServiceClient = new GraphServiceClient(new DefaultAzureCredential());
-            _logger.LogTrace("Token retrieved, getting a list of applications with expired or about to expire secrets.");
-
-            var clientSecretExpirationInfoProvider = new ClientSecretExpirationInfoProvider(graphServiceClient, _logger);
-            IEnumerable<AzureApplication> applications = 
-                await clientSecretExpirationInfoProvider.GetApplicationsWithPotentialExpiredSecrets(_options.UserOptions.ExpirationThreshold);
-
-            foreach (AzureApplication application in applications)
+            try
             {
-                var telemetryContext = new Dictionary<string, object>();
-                telemetryContext.Add("KeyId", application.KeyId);
-                telemetryContext.Add("ApplicationName", application.Name);
-                telemetryContext.Add("RemainingValidDays", application.RemainingValidDays);
+                _logger.LogTrace("Executing {Name}", nameof(ClientSecretExpirationJob));
+                var graphServiceClient = new GraphServiceClient(new DefaultAzureCredential());
+                _logger.LogTrace("Token retrieved, getting a list of applications with expired or about to expire secrets");
 
-                var eventType = ClientSecretExpirationEventType.ClientSecretAboutToExpire;
-                if (application.RemainingValidDays < 0)
-                {
-                    eventType = ClientSecretExpirationEventType.ClientSecretExpired;
-                    _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} has expired.", telemetryContext);
-                }
-                else
-                {
-                    _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} will expire within {application.RemainingValidDays} days.", telemetryContext);
-                }
+                var clientSecretExpirationInfoProvider = new ClientSecretExpirationInfoProvider(graphServiceClient, _logger);
+                IEnumerable<AzureApplication> applications =
+                    await clientSecretExpirationInfoProvider.GetApplicationsWithPotentialExpiredSecrets(_options.UserOptions.ExpirationThreshold);
 
-                CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType, _options.UserOptions.EventUri);                
-                await _eventGridPublisher.PublishAsync(@event);
+                foreach (AzureApplication application in applications)
+                {
+                    ClientSecretExpirationEventType eventType = DetermineExpirationEventType(application);
+
+                    CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType, _options.UserOptions.EventUri);
+                    await _eventGridPublisher.PublishAsync(@event);
+                }
+                _logger.LogTrace("Executing {Name} finished", nameof(ClientSecretExpirationJob));
             }
-            _logger.LogTrace("Executing {Name} finished", nameof(ClientSecretExpirationJob));
+            catch (Exception exception)
+            {
+                _logger.LogCritical(exception, "Could not correctly publish Azure EventGrid events for potential expired client secrets in the Azure Active Directory due to an exception");
+            }
+        }
+
+        private ClientSecretExpirationEventType DetermineExpirationEventType(AzureApplication application)
+        {
+            var telemetryContext = new Dictionary<string, object>
+            {
+                { "KeyId", application.KeyId },
+                { "ApplicationName", application.Name },
+                { "RemainingValidDays", application.RemainingValidDays }
+            };
+
+            var eventType = ClientSecretExpirationEventType.ClientSecretAboutToExpire;
+            if (application.RemainingValidDays < 0)
+            {
+                eventType = ClientSecretExpirationEventType.ClientSecretExpired;
+                _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} has expired.", telemetryContext);
+            }
+            else
+            {
+                _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} will expire within {application.RemainingValidDays} days.", telemetryContext);
+            }
+
+            return eventType;
         }
     }
 }
