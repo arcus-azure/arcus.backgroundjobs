@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Arcus.EventGrid.Publishing.Interfaces;
-using Arcus.Security.Core;
 using Azure.Identity;
 using CloudNative.CloudEvents;
 using CronScheduler.Extensions.Scheduler;
@@ -72,22 +70,18 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         {
             try
             {
-                _logger.LogTrace("Executing {Name}", nameof(ClientSecretExpirationJob));
-                var graphServiceClient = new GraphServiceClient(new DefaultAzureCredential());
-                _logger.LogTrace("Token retrieved, getting a list of applications with expired or about to expire secrets");
-
-                var clientSecretExpirationInfoProvider = new ClientSecretExpirationInfoProvider(graphServiceClient, _logger);
-                IEnumerable<AzureApplication> applications =
-                    await clientSecretExpirationInfoProvider.GetApplicationsWithPotentialExpiredSecrets(_options.UserOptions.ExpirationThreshold);
+                _logger.LogTrace("Executing {Name}", Name);
+                IEnumerable<AzureApplication> applications = await GetAzureApplicationsWithPotentialExpiredSecretsAsync();
 
                 foreach (AzureApplication application in applications)
                 {
                     ClientSecretExpirationEventType eventType = DetermineExpirationEventType(application);
+                    
+                    LogPotentialSecretEvent(application, eventType);
 
-                    CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType, _options.UserOptions.EventUri);
-                    await _eventGridPublisher.PublishAsync(@event);
+                    await PublishPotentialSecretEventAsync(application, eventType);
                 }
-                _logger.LogTrace("Executing {Name} finished", nameof(ClientSecretExpirationJob));
+                _logger.LogTrace("Executing {Name} finished", Name);
             }
             catch (Exception exception)
             {
@@ -95,7 +89,30 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
             }
         }
 
-        private ClientSecretExpirationEventType DetermineExpirationEventType(AzureApplication application)
+        private async Task<IEnumerable<AzureApplication>> GetAzureApplicationsWithPotentialExpiredSecretsAsync()
+        {
+            var graphServiceClient = new GraphServiceClient(new DefaultAzureCredential());
+            _logger.LogTrace("Token retrieved, getting a list of applications with expired or about to expire secrets");
+
+            var clientSecretExpirationInfoProvider = new ClientSecretExpirationInfoProvider(graphServiceClient, _logger);
+            
+            IEnumerable<AzureApplication> applications =
+                await clientSecretExpirationInfoProvider.GetApplicationsWithPotentialExpiredSecrets(_options.UserOptions.ExpirationThreshold);
+            
+            return applications;
+        }
+
+        private static ClientSecretExpirationEventType DetermineExpirationEventType(AzureApplication application)
+        {
+            if (application.RemainingValidDays < 0)
+            {
+                return ClientSecretExpirationEventType.ClientSecretExpired;
+            }
+
+            return ClientSecretExpirationEventType.ClientSecretAboutToExpire;
+        }
+
+        private void LogPotentialSecretEvent(AzureApplication application, ClientSecretExpirationEventType eventType)
         {
             var telemetryContext = new Dictionary<string, object>
             {
@@ -104,18 +121,27 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
                 { "RemainingValidDays", application.RemainingValidDays }
             };
 
-            var eventType = ClientSecretExpirationEventType.ClientSecretAboutToExpire;
-            if (application.RemainingValidDays < 0)
+            switch (eventType)
             {
-                eventType = ClientSecretExpirationEventType.ClientSecretExpired;
-                _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} has expired.", telemetryContext);
+                case ClientSecretExpirationEventType.ClientSecretExpired:
+                    telemetryContext["Description"] = $"The secret {application.KeyId} for Azure Active Directory application {application.Name} has expired.";
+                    _logger.LogEvent("Expired Azure Active Directory application secret", telemetryContext);
+                    break;
+                
+                case ClientSecretExpirationEventType.ClientSecretAboutToExpire:
+                    telemetryContext["Description"] = $"The secret {application.KeyId} for Azure Active Directory application {application.Name} will expire within {application.RemainingValidDays} days.";
+                    _logger.LogEvent("Soon expired Azure Active Directory application secret", telemetryContext);
+                    break;
+                
+                default: 
+                    throw new ArgumentOutOfRangeException(nameof(eventType), eventType, "Could not determine event type for potential expired Azure Application secret");
             }
-            else
-            {
-                _logger.LogEvent($"The secret {application.KeyId} for Azure Active Directory application {application.Name} will expire within {application.RemainingValidDays} days.", telemetryContext);
-            }
+        }
 
-            return eventType;
+        private async Task PublishPotentialSecretEventAsync(AzureApplication application, ClientSecretExpirationEventType eventType)
+        {
+            CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType);
+            await _eventGridPublisher.PublishAsync(@event);
         }
     }
 }

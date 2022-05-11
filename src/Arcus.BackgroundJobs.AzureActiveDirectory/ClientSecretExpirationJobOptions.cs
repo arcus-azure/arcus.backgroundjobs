@@ -7,13 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
-    /// Represents the additional options that the user can configure during the <see cref="IServiceCollectionExtensions.AddClientSecretExpirationJob"/> call.
+    /// Represents the additional options that the user can configure during the <see cref="IServiceCollectionExtensions.AddClientSecretExpirationJob(IServiceCollection, Action{ClientSecretExpirationJobOptions})"/> call.
     /// </summary>
     public class ClientSecretExpirationJobOptions
     {
         private int _runAtHour = 0;
         private bool _runImmediately = false;
-        private Uri _eventUri = null;
+        private Uri _eventUri = new Uri("https://azure.net/");
         private int _expirationThreshold = 14;
 
         /// <summary>
@@ -79,25 +79,22 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// </summary>
         /// <param name="application">The <see cref="AzureApplication"/> containing the information regarding the application and its expiring or about to expire secret.</param>
         /// <param name="type">The type used in the creation of the <see cref="CloudEvent"/>.</param>
-        /// <param name="eventUri">The uri used in the creation of the <see cref="CloudEvent"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="application"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="application"/> name is blank.</exception>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="eventUri"/> is blank.</exception>
-        internal CloudEvent CreateEvent(AzureApplication application, ClientSecretExpirationEventType type, Uri eventUri)
+        internal CloudEvent CreateEvent(AzureApplication application, ClientSecretExpirationEventType type)
         {
             Guard.NotNull(application, nameof(application));
             Guard.NotNullOrWhitespace(application.Name, nameof(application.Name));
-            Guard.NotNullOrWhitespace(eventUri.OriginalString, nameof(eventUri));
 
             string eventSubject = $"/appregistrations/clientsecrets/{application.KeyId}";
             string eventId = Guid.NewGuid().ToString();
 
             CloudEvent @event = new CloudEvent(
-                                    CloudEventsSpecVersion.V1_0,
-                                    type.ToString(),
-                                    eventUri,
-                                    eventSubject,
-                                    eventId)
+                                     CloudEventsSpecVersion.V1_0,
+                                     type.ToString(),
+                                     _eventUri,
+                                     eventSubject,
+                                     eventId)
             {
                 Data = application,
                 DataContentType = new ContentType("application/json")
