@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
     /// <summary>
-    /// Represents the additional options that the user can configure during the <see cref="IServiceCollectionExtensions.AddClientSecretExpirationJob"/> call.
+    /// Represents the additional options that the user can configure during the <see cref="IServiceCollectionExtensions.AddClientSecretExpirationJob(IServiceCollection,Action{ClientSecretExpirationJobOptions})"/> call.
     /// </summary>
     public class ClientSecretExpirationJobOptions
     {
