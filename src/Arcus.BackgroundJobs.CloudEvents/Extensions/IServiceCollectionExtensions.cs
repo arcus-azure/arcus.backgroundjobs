@@ -18,6 +18,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to receive <see cref="CloudEvent"/>'s.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The services collection to add the job to.</param>
         /// <param name="topicName"></param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
@@ -43,6 +47,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to receive <see cref="CloudEvent"/>'s.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The services collection to add the job to.</param>
         /// <param name="topicName"></param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
@@ -72,6 +80,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to receive <see cref="CloudEvent"/>'s.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The services collection to add the job to.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
         /// <param name="serviceBusTopicConnectionStringSecretKey">The secret key that points to the Azure Service Bus Topic-scoped connection string.</param>
@@ -94,6 +106,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to receive <see cref="CloudEvent"/>'s.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The services collection to add the job to.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
         /// <param name="serviceBusTopicConnectionStringSecretKey">The secret key that points to the Azure Service Bus Topic-scoped connection string.</param>
