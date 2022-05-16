@@ -30,8 +30,12 @@ namespace Arcus.BackgroundJobs.Databricks
         }
 
         /// <summary>
-        /// Gets or sets the secret key to retrieve the token from the registered <see cref="ISecretProvider"/>.
+        /// Gets or sets the secret key to retrieve the token from the registered Arcus secret store.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <exception cref="ArgumentException">Thrown when <paramref name="value"/> is blank.</exception>
         public string TokenSecretKey
         {
@@ -64,6 +68,10 @@ namespace Arcus.BackgroundJobs.Databricks
         /// <summary>
         /// Creates an <see cref="DatabricksClient"/> instance using the predefined values.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="secretProvider">The provider to retrieve the token during the creation of the instance.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="secretProvider"/> is <c>null</c>.</exception>
         public virtual async Task<DatabricksClient> CreateDatabricksClientAsync(ISecretProvider secretProvider)

@@ -9,6 +9,7 @@ using CloudNative.CloudEvents;
 using GuardNet;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -22,6 +23,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically invalidate cached Azure Key Vault secrets.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The services collection to add the job to.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive Key Vault events.</param>
         /// <param name="serviceBusTopicConnectionStringSecretKey">The configuration key that points to the Azure Service Bus Topic connection string.</param>
@@ -38,10 +43,14 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddAutoInvalidateKeyVaultSecretBackgroundJob(services, subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey, configureBackgroundJob: null);
         }
-        
+
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically invalidate cached Azure Key Vault secrets.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The services collection to add the job to.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive Key Vault events.</param>
         /// <param name="serviceBusTopicConnectionStringSecretKey">The configuration key that points to the Azure Service Bus Topic connection string.</param>
@@ -63,8 +72,20 @@ namespace Microsoft.Extensions.DependencyInjection
                         messageBodyFilter: cloudEvent => cloudEvent?.GetPayload<SecretNewVersionCreated>() != null,
                         implementationFactory: serviceProvider =>
                         {
-                            var cachedSecretProvider = serviceProvider.GetRequiredService<ICachedSecretProvider>();
-                            var logger = serviceProvider.GetRequiredService<ILogger<InvalidateKeyVaultSecretHandler>>();
+                            var cachedSecretProvider = serviceProvider.GetService<ICachedSecretProvider>();
+                            if (cachedSecretProvider is null)
+                            {
+                                throw new InvalidOperationException(
+                                    "Could not handle CloudEvents that notifies on new Azure Key Vault secret versions because no Arcus secret store was registered to invalidate the cached secrets," 
+                                    + $"please configure the Arcus secret store with '{nameof(IHostBuilderExtensions.ConfigureSecretStore)}' on the application '{nameof(IHost)}' " 
+                                    + $"or during the service collection registration 'AddSecretStore' on the application '{nameof(IServiceCollection)}'." 
+                                    + "For more information on the Arcus secret store, see: https://security.arcus-azure.net/features/secret-store");
+                            }
+
+                            var logger = 
+                                serviceProvider.GetService<ILogger<InvalidateKeyVaultSecretHandler>>() 
+                                ?? NullLogger<InvalidateKeyVaultSecretHandler>.Instance;
+                            
                             return new InvalidateKeyVaultSecretHandler(cachedSecretProvider, logger);
                         });
 
@@ -75,6 +96,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically restart a <see cref="AzureServiceBusMessagePump"/> with a specific <paramref name="jobId"/>
         /// when the Azure Key Vault secret that holds the Azure Service Bus connection string was updated.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The collection of services to add the job to.</param>
         /// <param name="jobId">The unique background job ID to identify which message pump to restart.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
@@ -117,6 +142,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically restart a <see cref="AzureServiceBusMessagePump"/> with a specific <paramref name="jobId"/>
         /// when the Azure Key Vault secret that holds the Azure Service Bus connection string was updated.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The collection of services to add the job to.</param>
         /// <param name="jobId">The unique background job ID to identify which message pump to restart.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
