@@ -125,12 +125,12 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
             {
                 case ClientSecretExpirationEventType.ClientSecretExpired:
                     telemetryContext["Description"] = $"The secret {application.KeyId} for Azure Active Directory application {application.Name} has expired.";
-                    _logger.LogEvent("Expired Azure Active Directory application secret", telemetryContext);
+                    _logger.LogSecurityEvent("Expired Azure Active Directory application secret", telemetryContext);
                     break;
                 
                 case ClientSecretExpirationEventType.ClientSecretAboutToExpire:
                     telemetryContext["Description"] = $"The secret {application.KeyId} for Azure Active Directory application {application.Name} will expire within {application.RemainingValidDays} days.";
-                    _logger.LogEvent("Soon expired Azure Active Directory application secret", telemetryContext);
+                    _logger.LogSecurityEvent("Soon expired Azure Active Directory application secret", telemetryContext);
                     break;
                 
                 default: 
