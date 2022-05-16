@@ -1,8 +1,12 @@
-﻿namespace Arcus.BackgroundJobs.CloudEvents
+﻿using System;
+using Arcus.Messaging.Pumps.ServiceBus.Configuration;
+
+namespace Arcus.BackgroundJobs.CloudEvents
 {
     /// <summary>
     /// Represents the options to configure the <see cref="CloudEventBackgroundJob"/>.
     /// </summary>
+    [Obsolete("Configuring the CloudEvents background job now happens with a dedicated Azure Service Bus topic set of options '" + nameof(IAzureServiceBusTopicMessagePumpOptions) + "' when registering the job")]
     public class CloudEventBackgroundJobOptions
     {
         /// <summary>

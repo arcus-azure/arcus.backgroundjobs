@@ -17,6 +17,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically restart a <see cref="AzureServiceBusMessagePump"/> with a specific <paramref name="jobId"/>
         /// when the Azure Key Vault secret that holds the Azure Service Bus connection string was updated.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The collection of services to add the job to.</param>
         /// <param name="jobId">The unique background job ID to identify which message pump to restart.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
@@ -45,6 +49,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically restart a <see cref="AzureServiceBusMessagePump"/> with a specific <paramref name="jobId"/>
         /// when the Azure Key Vault secret that holds the Azure Service Bus connection string was updated.
         /// </summary>
+        /// <remarks>
+        ///     Make sure that the application has the Arcus secret store configured correctly.
+        ///     For on the Arcus secret store: <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="services">The collection of services to add the job to.</param>
         /// <param name="jobId">The unique background job ID to identify which message pump to restart.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
