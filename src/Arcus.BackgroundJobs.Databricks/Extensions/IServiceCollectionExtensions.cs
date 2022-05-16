@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         if (secretProvider is null)
                         {
                             throw new InvalidOperationException(
-                                "Could register the Databricks background job to measure finished job runs because no Arcus secret store was registered to retrieve the access token to interact with the Databricks instance,"
+                                "Could not register the Databricks background job to measure finished job runs because no Arcus secret store was registered to retrieve the access token to interact with the Databricks instance,"
                                 + $"please configure the Arcus secret store with '{nameof(IHostBuilderExtensions.ConfigureSecretStore)}' on the application '{nameof(IHost)}' "
                                 + $"or during the service collection registration 'AddSecretStore' on the application '{nameof(IServiceCollection)}'."
                                 + "For more information on the Arcus secret store, see: https://security.arcus-azure.net/features/secret-store");
