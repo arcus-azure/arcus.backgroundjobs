@@ -101,7 +101,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
         /// <param name="secretName">The name of the secret that should be removed from the cache.</param>
         public Task InvalidateSecretAsync(string secretName)
         {
-            IsSecretInvalidated = secretName == _staticSecretName;
+            IsSecretInvalidated = true;
             return Task.CompletedTask;
         }
     }
