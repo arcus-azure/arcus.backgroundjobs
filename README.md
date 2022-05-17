@@ -16,7 +16,7 @@ The background jobs packages are easy to install via NuGet.
     PM > Install-Package Arcus.BackgroundJobs.CloudEvents
     ```
 ## Security
-  - Azure Active Directory background jobs notifies event subscriptions on expired client secrets in an Azure Active Directory.
+  - Azure Active Directory background jobs [notifies event subscriptions on expired client secrets in an Azure Active Directory](https://background-jobs.arcus-azure.net/Features/azureactivedirectory/client-secret-expiration-job/).
     ```shell
     PM > Install-Package Arcus.BackgroundJobs.AzureActiveDirectory
     ```
