@@ -14,6 +14,7 @@ using Moq;
 using Polly;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 {
@@ -46,21 +47,14 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
             var client = new SecretClient(new Uri(keyVaultUri), credential);
 
             const string secretKey = "Arcus:KeyVault:SecretNewVersionCreated:ServiceBus:ConnectionStringWithTopic";
-            var cachedSecretProvider = new Mock<ICachedSecretProvider>();
-            cachedSecretProvider
-                .Setup(p => p.GetRawSecretAsync(secretKey))
-                .ReturnsAsync(() => _config[secretKey]);
-
-            cachedSecretProvider
-                .Setup(p => p.InvalidateSecretAsync(It.IsAny<string>()))
-                .Returns(Task.CompletedTask);
+            var spySecretProvider = new SpyCachedSecretProvider(secretKey, _config[secretKey]);
             
             var options = new WorkerOptions();
             options.ConfigureLogging(_logger)
                    .ConfigureServices(services =>
                    {
-                       services.AddSingleton<ISecretProvider>(cachedSecretProvider.Object)
-                               .AddSingleton<ICachedSecretProvider>(cachedSecretProvider.Object)
+                       services.AddSingleton<ISecretProvider>(spySecretProvider)
+                               .AddSingleton<ICachedSecretProvider>(spySecretProvider)
                                .AddAutoInvalidateKeyVaultSecretBackgroundJob(
                                    subscriptionNamePrefix: "TestSub",
                                    serviceBusTopicConnectionStringSecretKey: secretKey);
@@ -75,7 +69,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                 // Assert
                 RetryAssertion(
                     // ReSharper disable once AccessToDisposedClosure - disposal happens after retry.
-                    () => cachedSecretProvider.Verify(p => p.InvalidateSecretAsync(It.Is<string>(n => n == tempSecret.Name)), Times.Once), 
+                    () => Assert.True(spySecretProvider.IsSecretInvalidated), 
                     timeout: TimeSpan.FromMinutes(8),
                     interval: TimeSpan.FromMilliseconds(500));
             }
@@ -84,7 +78,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
         private static void RetryAssertion(Action assertion, TimeSpan timeout, TimeSpan interval)
         {
             Policy.Timeout(timeout)
-                  .Wrap(Policy.Handle<MockException>()
+                  .Wrap(Policy.Handle<XunitException>()
                               .WaitAndRetryForever(_ => interval))
                   .Execute(assertion);
         }
