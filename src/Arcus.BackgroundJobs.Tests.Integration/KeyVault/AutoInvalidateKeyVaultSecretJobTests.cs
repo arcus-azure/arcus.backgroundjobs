@@ -47,7 +47,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
             var client = new SecretClient(new Uri(keyVaultUri), credential);
 
             const string secretKey = "Arcus:KeyVault:SecretNewVersionCreated:ServiceBus:ConnectionStringWithTopic";
-            var spySecretProvider = new SpyCachedSecretProvider(_config[secretKey]);
+            var spySecretProvider = new SpyCachedSecretProvider(secretKey, _config[secretKey]);
             
             var options = new WorkerOptions();
             options.ConfigureLogging(_logger)

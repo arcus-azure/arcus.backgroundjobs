@@ -15,14 +15,17 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
     /// </summary>
     public class SpyCachedSecretProvider : ICachedSecretProvider
     {
+        private readonly string _staticSecretName;
         private readonly string _staticSecretValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SpyCachedSecretProvider" /> class.
         /// </summary>
-        public SpyCachedSecretProvider(string staticSecretValue)
+        public SpyCachedSecretProvider(string staticSecretName, string staticSecretValue)
         {
+            Guard.NotNull(staticSecretName, nameof(staticSecretName));
             Guard.NotNull(staticSecretValue, nameof(staticSecretValue));
+            _staticSecretName = staticSecretName;
             _staticSecretValue = staticSecretValue;
         }
 
@@ -36,28 +39,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
 
         /// <summary>Retrieves the secret value, based on the given name</summary>
         /// <param name="secretName">The name of the secret key</param>
-        /// <returns>Returns the secret key.</returns>
-        /// <exception cref="T:System.ArgumentException">The <paramref name="secretName" /> must not be empty</exception>
-        /// <exception cref="T:System.ArgumentNullException">The <paramref name="secretName" /> must not be null</exception>
-        /// <exception cref="T:Arcus.Security.Core.SecretNotFoundException">The secret was not found, using the given name</exception>
-        public Task<string> GetRawSecretAsync(string secretName)
-        {
-            return Task.FromResult(_staticSecretValue);
-        }
-
-        /// <summary>Retrieves the secret value, based on the given name</summary>
-        /// <param name="secretName">The name of the secret key</param>
-        /// <returns>Returns a <see cref="T:Arcus.Security.Core.Secret" /> that contains the secret key</returns>
-        /// <exception cref="T:System.ArgumentException">The <paramref name="secretName" /> must not be empty</exception>
-        /// <exception cref="T:System.ArgumentNullException">The <paramref name="secretName" /> must not be null</exception>
-        /// <exception cref="T:Arcus.Security.Core.SecretNotFoundException">The secret was not found, using the given name</exception>
-        public Task<Secret> GetSecretAsync(string secretName)
-        {
-            return Task.FromResult(new Secret(_staticSecretValue));
-        }
-
-        /// <summary>Retrieves the secret value, based on the given name</summary>
-        /// <param name="secretName">The name of the secret key</param>
         /// <param name="ignoreCache">Indicates if the cache should be used or skipped</param>
         /// <returns>Returns a <see cref="T:System.Threading.Tasks.Task`1" /> that contains the secret key</returns>
         /// <exception cref="T:System.ArgumentException">The name must not be empty</exception>
@@ -65,7 +46,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
         /// <exception cref="T:Arcus.Security.Core.SecretNotFoundException">The secret was not found, using the given name</exception>
         public Task<string> GetRawSecretAsync(string secretName, bool ignoreCache)
         {
-            return Task.FromResult(_staticSecretValue);
+            return GetRawSecretAsync(secretName);
         }
 
         /// <summary>Retrieves the secret value, based on the given name</summary>
@@ -77,7 +58,40 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
         /// <exception cref="T:Arcus.Security.Core.SecretNotFoundException">The secret was not found, using the given name</exception>
         public Task<Secret> GetSecretAsync(string secretName, bool ignoreCache)
         {
-            return Task.FromResult(new Secret(_staticSecretValue));
+            return GetSecretAsync(secretName);
+        }
+
+        /// <summary>Retrieves the secret value, based on the given name</summary>
+        /// <param name="secretName">The name of the secret key</param>
+        /// <returns>Returns a <see cref="T:Arcus.Security.Core.Secret" /> that contains the secret key</returns>
+        /// <exception cref="T:System.ArgumentException">The <paramref name="secretName" /> must not be empty</exception>
+        /// <exception cref="T:System.ArgumentNullException">The <paramref name="secretName" /> must not be null</exception>
+        /// <exception cref="T:Arcus.Security.Core.SecretNotFoundException">The secret was not found, using the given name</exception>
+        public async Task<Secret> GetSecretAsync(string secretName)
+        {
+            string secretValue = await GetRawSecretAsync(secretName);
+            if (secretValue is null)
+            {
+                return null;
+            }
+
+            return new Secret(secretValue);
+        }
+
+        /// <summary>Retrieves the secret value, based on the given name</summary>
+        /// <param name="secretName">The name of the secret key</param>
+        /// <returns>Returns the secret key.</returns>
+        /// <exception cref="T:System.ArgumentException">The <paramref name="secretName" /> must not be empty</exception>
+        /// <exception cref="T:System.ArgumentNullException">The <paramref name="secretName" /> must not be null</exception>
+        /// <exception cref="T:Arcus.Security.Core.SecretNotFoundException">The secret was not found, using the given name</exception>
+        public Task<string> GetRawSecretAsync(string secretName)
+        {
+            if (secretName == _staticSecretName)
+            {
+                return Task.FromResult(_staticSecretValue);
+            }
+
+            return Task.FromResult<string>(null);
         }
 
         /// <summary>
@@ -87,7 +101,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture
         /// <param name="secretName">The name of the secret that should be removed from the cache.</param>
         public Task InvalidateSecretAsync(string secretName)
         {
-            IsSecretInvalidated = secretName == _staticSecretValue;
+            IsSecretInvalidated = secretName == _staticSecretName;
             return Task.CompletedTask;
         }
     }
