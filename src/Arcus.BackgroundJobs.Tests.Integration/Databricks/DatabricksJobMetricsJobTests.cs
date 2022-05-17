@@ -30,7 +30,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Databricks
             _config = TestConfig.Create();
         }
 
-        [Fact]
+        [Fact(Skip = "Azure Databricks not initialized")]
         public async Task FinishedDatabricksJobRun_GetsNoticedByRepeatedlyDatabricksJob_ReportsAsMetric()
         {
             // Arrange
