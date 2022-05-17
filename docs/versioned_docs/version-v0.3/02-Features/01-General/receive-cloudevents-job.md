@@ -59,7 +59,7 @@ public class Startup
 }
 ```
 
-Such an custom implementation could look like this:
+Such a custom implementation could look like this:
 
 ```csharp
 using Arcus.Messaging.Abstractions;
