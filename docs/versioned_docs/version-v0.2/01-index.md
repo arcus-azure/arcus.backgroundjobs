@@ -6,17 +6,13 @@ slug: /
 sidebar_label: Welcome
 ---
 
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvents?includePreReleases=true)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/)
-
 # Installation
 
-The Arcus BackgroundJobs can be installed via NuGet:
+The Arcus BackgroundJobs can be installed via NuGet, for example:
 
 ```shell
 PM > Install-Package Arcus.BackgroundJobs.CloudEvents
 ```
-
-For more granular packages we recommend reading the documentation.
 
 # Features
 
