@@ -35,7 +35,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         // Make sure that the application has an Arcus EventGrid publisher configured to where the CloudEvents are sent to.
-        // For on the Arcus secret store: https://eventgrid.arcus-azure.net/Features/publishing-events.
+        // For on the Arcus EventGrid publisher: https://eventgrid.arcus-azure.net/Features/publishing-events.
         services.AddSingleton<IEventGridPublisher>(serviceProvider =>
         {
             IEventGridPublisher publisher =
