@@ -21,6 +21,8 @@ We use the events from Azure App Configuration which will be send towards an Azu
 2. Create an Azure Service Bus Topic resource
 3. Create an event subscription on the App Configuration resource to send events to the Service Bus Topic
 
+
+
 ![Automatically refresh Azure App Configuration values](/media/Azure-App-Configuration-Job.png)
 
 Both the connection string of the Azure App Configuration and the Azure Service Bus Topic will be needed in the next section, so make sure you have those.
@@ -55,7 +57,7 @@ public class Program
     {
         configBuilder.AddAzureAppConfiguration(appConfigOptions =>
         {
-            appConfigOptions.Connect("<your-azure-app-configuration-connection-string>")
+            appConfigOptions.Connect("<your-azure-app-configuration-endpoint>", new ManagedIdentityCredential())
                             // Specifies which Azure App Configuration key you want to automatically updated.
                             .Register("<your-azure-app-configuration-key>");
         });
