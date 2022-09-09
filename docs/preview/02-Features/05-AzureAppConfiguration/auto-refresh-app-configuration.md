@@ -26,7 +26,7 @@ We use the events from Azure App Configuration which will be send towards an Azu
 Both the connection string of the Azure App Configuration and the Azure Service Bus Topic will be needed in the next section, so make sure you have those.
 
 ## Usage with managed identity
-When connecting to Azure App Configuration using managed identity, you only need to provide the Azure Service Bus topic name and namespace where the the Azure App Configuration events are placed:
+When connecting to Azure App Configuration using managed identity, you only need to provide the Azure Service Bus topic name and namespace where the Azure App Configuration events are placed:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
