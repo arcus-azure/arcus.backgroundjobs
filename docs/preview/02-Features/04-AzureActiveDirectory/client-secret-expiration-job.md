@@ -23,30 +23,26 @@ If this is the case either a `ClientSecretAboutToExpire` or `ClientSecretExpired
 
 ## Usage
 
-Our background job has to be configured in `ConfigureServices` method:
+The background job can easily be added to any .NET hosted application. It is recommanded, though, to create a dedicated background application to run background jobs.
 
 ```csharp
-using Arcus.EventGrid.Publishing;
-using Arcus.EventGrid.Publishing.Interfaces;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 
-public class Startup
+public class Program
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        // Make sure that the application has an Arcus EventGrid publisher configured to where the CloudEvents are sent to.
+        // Make sure that the application has a Microsoft EventGrid publisher client configured to where the CloudEvents are sent to.
         // For more information on the Arcus EventGrid publisher: https://eventgrid.arcus-azure.net/Features/publishing-events.
-        services.AddSingleton<IEventGridPublisher>(serviceProvider =>
+        services.AddAzureClients(clients =>
         {
-            IEventGridPublisher publisher =
-                EventGridPublisherBuilder
-                    .ForTopic("<topic-endpoint>")
-                    .UsingAuthenticationKey("<key>")
-                    .Build();
-
-            return publisher;
+            // Arcus provides an additional extension overload that lets us pass-in a secret name instead of the authentication key directly.
+            // This secret name will be used to contact the Arcus secret store to retrieve the authentication key. (more info: https://security.arcus-azure.net/features/secret-store)
+            // Note that this Arcus extension needs an correlation system to configure service-to-service correlation. This is by default available in Arcus HTTP middleware and Messaging components (more info: https://observability.arcus-azure.net/Features/correlation).
+            clients.AddEventGridPublisherClient("https://az-eventgrid-topic-endpoint", "Authentication.Key.Secret.Name");
         });
-    
+
         services.AddClientSecretExpirationJob(options => 
         {
             // The expiration threshold for the client secrets. 
@@ -66,5 +62,3 @@ public class Startup
     }
 }
 ```
-
-[&larr; back](/)

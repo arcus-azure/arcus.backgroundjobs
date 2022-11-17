@@ -6,7 +6,10 @@ using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.Testing.Logging;
 using CloudNative.CloudEvents;
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,15 +33,44 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
         }
 
         [Fact]
-        public async Task CheckExpiredOrAboutToExpireClientSecretsInAzureActiveDirectory_PublishEvents()
+        public async Task CheckPotentialExpiredClientSecretsInAzureActiveDirectory_WithExpiredSecrets_PublishEventsViaMicrosoftEventGridPublisherClient()
         {
             // Arrange
+            var authKeyName = "EventGrid.AuthKey";
+            var topicEndpoint = _config.GetRequiredValue<string>("Arcus:Infra:EventGrid:TopicUri");
+            var topicEndpointSecret = _config.GetRequiredValue<string>("Arcus:Infra:EventGrid:AuthKey");
+
+            // Act / Assert
+            await TestEventPublishingOfPotentialExpiredClientSecretsAsync(services =>
+            {
+                services.AddCorrelation();
+                services.AddSecretStore(stores => stores.AddInMemory(authKeyName, topicEndpointSecret));
+                services.AddAzureClients(clients =>
+                {
+                    clients.AddEventGridPublisherClient(topicEndpoint, authKeyName);
+                });
+            });
+        }
+
+        [Fact]
+        public async Task CheckPotentialExpiredClientSecretsInAzureActiveDirectory_WithExpiredSecrets_PublishEventsViaArcusEventGridPublisher()
+        {
+            await TestEventPublishingOfPotentialExpiredClientSecretsAsync(services =>
+            {
+                services.AddEventGridPublisher(_config);
+            });
+        }
+
+        private async Task TestEventPublishingOfPotentialExpiredClientSecretsAsync(
+            Action<IServiceCollection> configureServices)
+        {
+             // Arrange
             int expirationThreshold = 14;
             var options = new WorkerOptions();
             options.ConfigureLogging(_logger)
                    .ConfigureServices(services =>
                    {
-                       services.AddEventGridPublisher(_config);
+                       configureServices(services);
                        services.AddClientSecretExpirationJob(opt =>
                        {
                            opt.RunImmediately = true;
