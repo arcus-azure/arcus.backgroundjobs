@@ -2,7 +2,7 @@
 using Arcus.BackgroundJobs.AzureAppConfiguration;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus.Configuration;
-using CloudNative.CloudEvents;
+using Azure.Messaging;
 using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;

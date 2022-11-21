@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Text;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
-using CloudNative.CloudEvents;
+using Azure.Messaging;
 using GuardNet;
 using Microsoft.Extensions.Logging;
 
@@ -12,8 +11,6 @@ namespace Arcus.BackgroundJobs.CloudEvents
     /// </summary>
     public class CloudEventMessageRouter : AzureServiceBusMessageRouter
     {
-        private static readonly JsonEventFormatter JsonEventFormatter = new JsonEventFormatter();
-        
         /// <inheritdoc />
         public CloudEventMessageRouter(
             IServiceProvider serviceProvider, 
@@ -32,7 +29,7 @@ namespace Arcus.BackgroundJobs.CloudEvents
             {
                 if (messageType == typeof(CloudEvent))
                 {
-                    CloudEvent cloudEvent = JsonEventFormatter.DecodeStructuredEvent(Encoding.UTF8.GetBytes(message));
+                    CloudEvent cloudEvent = CloudEvent.Parse(BinaryData.FromString(message));
                     
                     result = cloudEvent; 
                     return true;
@@ -40,7 +37,7 @@ namespace Arcus.BackgroundJobs.CloudEvents
             }
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "Unable to deserialize the CloudEvent");
+                Logger.LogWarning(exception, "Unable to deserialize the CloudEvent due to an exception: {Message}", exception.Message);
             }
             
             return base.TryDeserializeToMessageFormat(message, messageType, out result);

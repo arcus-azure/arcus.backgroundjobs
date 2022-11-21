@@ -5,7 +5,7 @@ using Arcus.BackgroundJobs.KeyVault.Events;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Messaging.Pumps.ServiceBus.Configuration;
 using Arcus.Security.Core.Caching;
-using CloudNative.CloudEvents;
+using Azure.Messaging;
 using GuardNet;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,6 +20,8 @@ namespace Microsoft.Extensions.DependencyInjection
     // ReSharper disable once InconsistentNaming
     public static class IServiceCollectionExtensions
     {
+        private const string SecretNewVersionCreatedEventType = "Microsoft.KeyVault.SecretNewVersionCreated";
+
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically invalidate cached Azure Key Vault secrets.
         /// </summary>
@@ -69,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddCloudEventBackgroundJob(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey, configureBackgroundJob)
                     .WithServiceBusMessageHandler<InvalidateKeyVaultSecretHandler, CloudEvent>(
-                        messageBodyFilter: cloudEvent => cloudEvent?.GetPayload<SecretNewVersionCreated>() != null,
+                        messageBodyFilter: cloudEvent => cloudEvent?.Type == SecretNewVersionCreatedEventType,
                         implementationFactory: serviceProvider =>
                         {
                             var cachedSecretProvider = serviceProvider.GetService<ICachedSecretProvider>();
@@ -182,7 +184,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddCloudEventBackgroundJob(subscriptionNamePrefix, serviceBusTopicConnectionStringSecretKey, configureBackgroundJob)
                     .WithServiceBusMessageHandler<ReAuthenticateOnRotatedCredentialsMessageHandler, CloudEvent>(
-                        messageBodyFilter: cloudEvent => cloudEvent?.GetPayload<SecretNewVersionCreated>() != null,
+                        messageBodyFilter: cloudEvent => cloudEvent?.Type == SecretNewVersionCreatedEventType,
                         implementationFactory: serviceProvider =>
                         {
                             AzureServiceBusMessagePump messagePump =
