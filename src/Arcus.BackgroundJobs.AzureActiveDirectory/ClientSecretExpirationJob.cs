@@ -167,14 +167,16 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
                 Azure.Messaging.CloudEvent @event = _options.UserOptions.CreateCloudEvent(application, eventType);
                 await _publisherClient.SendEventAsync(@event);
             } 
-            if (_eventGridPublisher != null)
+            else if (_eventGridPublisher != null)
             {
                 CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType);
                 await _eventGridPublisher.PublishAsync(@event);
             }
-
-            throw new InvalidOperationException(
-                $"Cannot determine EventGrid publisher instance, either use the Microsoft {nameof(EventGridPublisherClient)} or the deprecated Arcus {nameof(IEventGridPublisher)} when initializing this background job");
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Cannot determine EventGrid publisher instance, either use the Microsoft {nameof(EventGridPublisherClient)} or the deprecated Arcus {nameof(IEventGridPublisher)} when initializing this background job");
+            }
         }
     }
 }
