@@ -1,8 +1,11 @@
 ﻿using System;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
-using Azure.Messaging;
+using CloudNative.CloudEvents;
 using GuardNet;
 using Microsoft.Extensions.Logging;
+using OldCloudEvent = CloudNative.CloudEvents.CloudEvent;
+using CloudEvent = Azure.Messaging.CloudEvent;
+using System.Text;
 
 namespace Arcus.BackgroundJobs.CloudEvents
 {
@@ -11,6 +14,8 @@ namespace Arcus.BackgroundJobs.CloudEvents
     /// </summary>
     public class CloudEventMessageRouter : AzureServiceBusMessageRouter
     {
+        private static readonly JsonEventFormatter JsonEventFormatter = new JsonEventFormatter();
+
         /// <inheritdoc />
         public CloudEventMessageRouter(
             IServiceProvider serviceProvider, 
@@ -29,9 +34,23 @@ namespace Arcus.BackgroundJobs.CloudEvents
             {
                 if (messageType == typeof(CloudEvent))
                 {
+                    Logger.LogTrace("Deserialize incoming message as 'CloudEvent'...");
                     CloudEvent cloudEvent = CloudEvent.Parse(BinaryData.FromString(message));
-                    
+                    Logger.LogTrace("Deserialized incoming message as 'CloudEvent'");
+
                     result = cloudEvent; 
+                    return true;
+                }
+
+                if (messageType == typeof(OldCloudEvent))
+                {
+                    Logger.LogWarning("Message handler uses old 'CloudNative.CloudEvents.CloudEvent' message type, please use the 'Azure.Messaging.CloudEvent' message type instead");
+
+                    Logger.LogTrace("Deserialize incoming message as 'CloudEvent'...");
+                    OldCloudEvent cloudEvent = JsonEventFormatter.DecodeStructuredEvent(Encoding.UTF8.GetBytes(message));
+                    Logger.LogTrace("Deserialized incoming message as 'CloudEvent'");
+
+                    result = cloudEvent;
                     return true;
                 }
             }
