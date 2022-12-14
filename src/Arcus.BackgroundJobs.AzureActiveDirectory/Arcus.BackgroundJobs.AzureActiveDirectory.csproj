@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/arcus-azure/arcus.backgroundjobs</RepositoryUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5125;NU5048</NoWarn>
@@ -25,7 +25,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <PackageReference Include="Arcus.EventGrid.Publishing" Version="[3.2.0, 4.0.0)" />
-    <PackageReference Include="Arcus.EventGrid.Core" Version="[3.3.0-preview-1,4.0.0)" />
+    <PackageReference Include="Arcus.EventGrid.Core" Version="[3.3.0,4.0.0)" />
     <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="[2.5.0, 3.0.0)" />
     <PackageReference Include="Arcus.Security.Core" Version="[1.7.0, 2.0.0)" />
     <PackageReference Include="Guard.Net" Version="2.0.0" />
