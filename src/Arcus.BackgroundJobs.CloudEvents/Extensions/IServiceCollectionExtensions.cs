@@ -2,9 +2,13 @@
 using Arcus.BackgroundJobs.CloudEvents;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus.Configuration;
-using Azure.Messaging;
 using GuardNet;
 using Microsoft.Extensions.Logging;
+#if NET6_0
+using CloudEvent = Azure.Messaging.CloudEvent;
+#else
+using CloudEvent = CloudNative.CloudEvents.CloudEvent;
+#endif
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
