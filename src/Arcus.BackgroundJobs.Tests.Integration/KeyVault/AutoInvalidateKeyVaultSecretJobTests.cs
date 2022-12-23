@@ -7,10 +7,10 @@ using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Arcus.Testing.Logging;
 using Azure.Identity;
+using Azure.Messaging.ServiceBus;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Polly;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,6 +22,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
     [Collection(TestCollections.Integration)]
     public class AutoInvalidateKeyVaultSecretJobTests
     {
+        private const string ServiceBusTopicConnectionStringKey = "Arcus:KeyVault:SecretNewVersionCreated:ServiceBus:ConnectionStringWithTopic";
+
         private readonly ILogger _logger;
         private readonly TestConfig _config;
 
@@ -32,6 +34,42 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
         {
             _logger = new XunitTestLogger(outputWriter);
             _config = TestConfig.Create();
+        }
+
+        [Fact]
+        public async Task NewSecretVersion_TriggersKeyVaultJobUsingManagedIdentity_AutoValidatesSecret()
+        {
+            // Arrange
+            string vaultUri = _config.GetKeyVaultUri();
+            const string secretKey = "Arcus:TestSecret";
+
+            using (TemporaryManagedIdentityConnection.Create(_config))
+            {
+                var client = new SecretClient(new Uri(vaultUri), new DefaultAzureCredential());
+                string connectionString = _config[ServiceBusTopicConnectionStringKey];
+                var spySecretProvider = new SpyCachedSecretProvider(secretKey, connectionString);
+                var properties = ServiceBusConnectionStringProperties.Parse(connectionString);
+
+                var options = new WorkerOptions();
+                options.ConfigureLogging(_logger)
+                       .ConfigureServices(services =>
+                       {
+                           services.AddSecretStore(stores => stores.AddProvider(spySecretProvider, configureOptions: null));
+                           services.AddAutoInvalidateKeyVaultSecretUsingManagedIdentityBackgroundJob(properties.EntityPath, "TestSub", properties.FullyQualifiedNamespace);
+                       });
+
+                await using (var worker = await Worker.StartNewAsync(options))
+                await using (var tempSecret = await TemporaryAzureKeyVaultSecret.CreateNewAsync(client))
+                {
+                    await tempSecret.UpdateSecretAsync(Guid.NewGuid().ToString());
+
+                    RetryAssertion(
+                        // ReSharper disable once AccessToDisposedClosure - disposal happens after retry.
+                        () => Assert.True(spySecretProvider.IsSecretInvalidated), 
+                        timeout: TimeSpan.FromMinutes(8),
+                        interval: TimeSpan.FromMilliseconds(500));
+                }
+            }
         }
 
         [Fact]
@@ -46,8 +84,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 
             var client = new SecretClient(new Uri(keyVaultUri), credential);
 
-            const string secretKey = "Arcus:KeyVault:SecretNewVersionCreated:ServiceBus:ConnectionStringWithTopic";
-            var spySecretProvider = new SpyCachedSecretProvider(secretKey, _config[secretKey]);
+            const string secretKey = "Arcus:TestSecret";
+            var spySecretProvider = new SpyCachedSecretProvider(secretKey, _config[ServiceBusTopicConnectionStringKey]);
             
             var options = new WorkerOptions();
             options.ConfigureLogging(_logger)

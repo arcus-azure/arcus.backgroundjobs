@@ -1,4 +1,4 @@
----
+﻿---
 title: "Automatically Invalidate Azure Key Vault Secrets"
 layout: default
 ---
@@ -40,11 +40,6 @@ public class Program
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((context, config) => 
-                {
-                    config.AddJsonFile("appsettings.json")
-                          .AddJsonFile("appsettings.Development.json");
-                })
                 .ConfigureSecretStore((context, config, builder) =>
                 {
 #if DEBUG
@@ -53,33 +48,41 @@ public class Program
                     var keyVaultName = config["KeyVault_Name"];
                     builder.AddEnvironmentVariables()
                            .AddAzureKeyVaultWithManagedServiceIdentity($"https://{keyVaultName}.vault.azure.net");
-                })
-                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+                });
     }
 }
 ```
 
-Our background job has to be configured in `ConfigureServices` method:
+With an Arcus secret store configured, you can safely add the background job to your application.
+
+🥇 [Managed Identity authentication](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) is the recommended approach to interact with Azure Service Bus, which the background job will run against.
 
 ```csharp
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Microsoft.Extensions.DependencyInjection;
 
-public class Startup
-{
-    public void ConfigureServices(IServiceCollection services)
+Host.CreateDefaultBuilder(args)
+    .ConfigureServices(services =>
     {
+        // Register background job via managed identity authentication.
+        services.AddAutoInvalidateKeyVaultSecretUsingManagedIdentityBackgroundJob(
+            // Azure Service Bus topic name where the Azure Key Vault events will be placed.
+            "<topic-name>",
+            // Prefix of the Azure Service Bus topic subscription;
+            //    this allows the background jobs to support applications that are running multiple instances, processing the same type of events, without conflicting subscription names.
+            subscriptionNamePrefix: "MyPrefix",
+            // Azure Service Bus namespace where the topic is located.
+            "<servicebus-namespace>");
+
+        // Register background job via connection string which is stored in the Arcus secret store.
         services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
             // Prefix of the Azure Service Bus Topic subscription;
             //    this allows the background jobs to support applications that are running multiple instances, processing the same type of events, without conflicting subscription names.
-            subscriptionNamePrefix: "MyPrefix"
+            subscriptionNamePrefix: "MyPrefix",
 
-            // Connection string secret key to a Azure Service Bus Topic.
+            // Connection string secret key to a Azure Service Bus topic.
             // Make sure that this key is available in the Arcus secret store.
             serviceBusTopicConnectionStringSecretKey: "MySecretKeyToServiceBusTopicConnectionString");
-    }
-}
+    })
 ```
-
-[&larr; back](/)

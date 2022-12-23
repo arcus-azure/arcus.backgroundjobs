@@ -66,43 +66,45 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
         {
              // Arrange
             int expirationThreshold = 14;
-            var options = new WorkerOptions();
-            options.ConfigureLogging(_logger)
-                   .ConfigureServices(services =>
-                   {
-                       configureServices(services);
-                       services.AddClientSecretExpirationJob(opt =>
-                       {
-                           opt.RunImmediately = true;
-                           opt.ExpirationThreshold = expirationThreshold;
-                           opt.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
-                       });
-                   });
-
             AzureActiveDirectoryConfig activeDirectoryConfig = _config.GetActiveDirectoryConfig();
 
             // Act
             using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, activeDirectoryConfig.TenantId))
             using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, activeDirectoryConfig.ServicePrincipal.ClientId))
             using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, activeDirectoryConfig.ServicePrincipal.ClientSecret))
-            await using (var worker = await Worker.StartNewAsync(options))
             {
-                await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(_config, _logger))
+                var options = new WorkerOptions();
+                options.ConfigureLogging(_logger)
+                       .ConfigureServices(services =>
+                       {
+                           services.AddEventGridPublisher(_config);
+                           services.AddClientSecretExpirationJob(opt =>
+                           {
+                               opt.RunImmediately = true;
+                               opt.ExpirationThreshold = expirationThreshold;
+                               opt.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
+                           });
+                       });
+
+                await using (var worker = await Worker.StartNewAsync(options))
                 {
-                    // Assert
-                   CloudEvent cloudEvent = consumer.Consume();
-                   Assert.NotNull(cloudEvent.Id);
-                   Assert.True(Enum.TryParse(cloudEvent.Type, out ClientSecretExpirationEventType eventType),
-                       $"Event should have either '{ClientSecretExpirationEventType.ClientSecretAboutToExpire}' or '{ClientSecretExpirationEventType.ClientSecretExpired}' as event type");
+                    await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(_config, _logger))
+                    {
+                        // Assert
+                        CloudEvent cloudEvent = consumer.Consume();
+                        Assert.NotNull(cloudEvent.Id);
+                        Assert.True(Enum.TryParse(cloudEvent.Type, out ClientSecretExpirationEventType eventType),
+                            $"Event should have either '{ClientSecretExpirationEventType.ClientSecretAboutToExpire}' or '{ClientSecretExpirationEventType.ClientSecretExpired}' as event type");
 
-                   var data = cloudEvent.GetPayload<AzureApplication>();
-                   Assert.IsType<Guid>(data.KeyId);
+                        var data = cloudEvent.GetPayload<AzureApplication>();
+                        Assert.IsType<Guid>(data.KeyId);
 
-                   bool isAboutToExpire = eventType == ClientSecretExpirationEventType.ClientSecretAboutToExpire;
-                   bool isExpired = eventType == ClientSecretExpirationEventType.ClientSecretExpired;
+                        bool isAboutToExpire = eventType == ClientSecretExpirationEventType.ClientSecretAboutToExpire;
+                        bool isExpired = eventType == ClientSecretExpirationEventType.ClientSecretExpired;
 
-                   Assert.True(isAboutToExpire == (data.RemainingValidDays > 0 && data.RemainingValidDays < expirationThreshold), $"Remaining days should be between 1-{expirationThreshold - 1} when the secret is about to expire");
-                   Assert.True(isExpired == data.RemainingValidDays < 0, "Remaining days should be negative when the secret is expired");
+                        Assert.True(isAboutToExpire == (data.RemainingValidDays > 0 && data.RemainingValidDays < expirationThreshold), $"Remaining days should be between 1-{expirationThreshold - 1} when the secret is about to expire");
+                        Assert.True(isExpired == data.RemainingValidDays < 0, "Remaining days should be negative when the secret is expired");
+                    }
                 }
             }
         }
