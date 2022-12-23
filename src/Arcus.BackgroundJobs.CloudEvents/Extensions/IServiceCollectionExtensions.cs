@@ -138,7 +138,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The services collection to add the job to.</param>
         /// <param name="serviceBusNamespace">The Service Bus namespace to connect to. This is likely to be similar to <c>{yournamespace}.servicebus.windows.net</c>.</param>
-        /// <param name="topicName">The name of the Azure Service Bus Topic to process.</param>
+        /// <param name="topicName">The name of the Azure Service Bus Topic that contains the messages that must be processed.</param>
         /// <param name="subscriptionNamePrefix">The name of the Azure Service Bus subscription that will be created to receive <see cref="CloudEvent"/>'s.</param>
         /// <param name="clientId">
         ///     The client ID to authenticate for a user assigned managed identity. More information on user assigned managed identities cam be found here:
