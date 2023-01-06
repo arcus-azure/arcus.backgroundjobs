@@ -7,7 +7,7 @@ sidebar_label: Welcome
 ---
 
 # Introduction
-Arcus BackgroundJobs provides common repeated tasks background tasks that strengthens an application. This goes from automatic secret invalidation upon Azure Key Vault secrets to publish an event on Azure EventGrid upon a potential expired client secret in Azure. This collection of background tasks has grown from real-life application builder that wanted to re-use existing functionality in a safe and trusted manner.
+Arcus BackgroundJobs provides common repeated background tasks that strengthen an application. This goes from automatic secret invalidation of Azure Key Vault secrets to publish an event on Azure EventGrid upon a potential expired client secret in Azure. This collection of background tasks has grown from real-life application builders that wanted to re-use existing functionality in a safe and trusted manner.
 
 # Installation
 The Arcus BackgroundJobs can be installed via NuGet, for example:
