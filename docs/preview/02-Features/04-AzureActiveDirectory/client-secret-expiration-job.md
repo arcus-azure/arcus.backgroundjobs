@@ -23,7 +23,7 @@ If this is the case either a `ClientSecretAboutToExpire` or `ClientSecretExpired
 
 ## Usage
 
-The background job can easily be added to any .NET hosted application. It is recommanded, though, to create a dedicated background application to run background jobs.
+The background job can easily be added to any .NET hosted application. It is recommended though to create a dedicated background application to run background jobs.
 
 ```csharp
 using Microsoft.Extensions.Azure;
