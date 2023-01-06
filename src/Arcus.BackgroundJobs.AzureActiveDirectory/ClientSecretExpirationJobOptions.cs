@@ -64,7 +64,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         }
 
         /// <summary>
-        /// Gets or sets the threshold for the expiration, if the end datetime for a secret is lower than this value a <see cref="CloudNative.CloudEvents.CloudEvent"/> will be published.
+        /// Gets or sets the threshold for the expiration. If the end datetime for a secret is lower than this value a <see cref="CloudNative.CloudEvents.CloudEvent"/> will be published.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="value"/> is less than zero.</exception>
         public int ExpirationThreshold
