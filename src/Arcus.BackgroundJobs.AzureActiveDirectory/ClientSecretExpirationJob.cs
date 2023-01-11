@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Arcus.EventGrid.Publishing.Interfaces;
 using Azure.Identity;
+using Azure.Messaging.EventGrid; 
+using Arcus.EventGrid.Publishing.Interfaces; 
 using CloudNative.CloudEvents;
 using CronScheduler.Extensions.Scheduler;
 using GuardNet;
@@ -19,9 +20,29 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
     public class ClientSecretExpirationJob : IScheduledJob
     {
         private readonly ClientSecretExpirationJobSchedulerOptions _options;
-        private readonly IEventGridPublisher _eventGridPublisher;
+        private readonly EventGridPublisherClient _publisherClient;
+        private readonly IEventGridPublisher _eventGridPublisher; 
         private readonly ILogger<ClientSecretExpirationJob> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClientSecretExpirationJob" /> class.
+        /// </summary>
+        public ClientSecretExpirationJob(
+            IOptionsMonitor<ClientSecretExpirationJobSchedulerOptions> options,
+            EventGridPublisherClient publisherClient,
+            ILogger<ClientSecretExpirationJob> logger)
+        {
+            Guard.NotNull(options, nameof(options));
+            Guard.NotNull(publisherClient, nameof(publisherClient));
+            Guard.NotNull(logger, nameof(logger));
+
+            ClientSecretExpirationJobSchedulerOptions value = options.Get(Name);
+            Guard.NotNull(options, nameof(options), "Requires a registered options instance for this background job");
+
+            _options = value;
+            _publisherClient = publisherClient;
+            _logger = logger;
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientSecretExpirationJob"/> class.
         /// </summary>
@@ -32,6 +53,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         ///     Thrown when the <paramref name="options"/>, <paramref name="eventGridPublisher"/>, <paramref name="logger"/> is <c>null</c>
         ///     or the <see cref="IOptionsMonitor{TOptions}.Get"/> on the  <paramref name="options"/> returns <c>null</c>.
         /// </exception>
+        [Obsolete("Use the constructor overload with the Microsoft " + nameof(EventGridPublisherClient) + " instead")]
         public ClientSecretExpirationJob(
             IOptionsMonitor<ClientSecretExpirationJobSchedulerOptions> options,
             IEventGridPublisher eventGridPublisher,
@@ -140,8 +162,21 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
 
         private async Task PublishPotentialSecretEventAsync(AzureApplication application, ClientSecretExpirationEventType eventType)
         {
-            CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType);
-            await _eventGridPublisher.PublishAsync(@event);
+            if (_publisherClient != null)
+            {
+                Azure.Messaging.CloudEvent @event = _options.UserOptions.CreateCloudEvent(application, eventType);
+                await _publisherClient.SendEventAsync(@event);
+            } 
+            else if (_eventGridPublisher != null)
+            {
+                CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType);
+                await _eventGridPublisher.PublishAsync(@event);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Cannot determine EventGrid publisher instance, either use the Microsoft {nameof(EventGridPublisherClient)} or the deprecated Arcus {nameof(IEventGridPublisher)} when initializing this background job");
+            }
         }
     }
 }

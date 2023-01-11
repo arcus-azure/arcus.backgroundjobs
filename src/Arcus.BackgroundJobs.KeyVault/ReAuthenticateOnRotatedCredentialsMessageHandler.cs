@@ -13,6 +13,11 @@ using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest.Azure;
+#if NET6_0
+using CloudEvent = Azure.Messaging.CloudEvent;
+#else
+using CloudEvent = CloudNative.CloudEvents.CloudEvent;
+#endif
 
 namespace Arcus.BackgroundJobs.KeyVault
 {
@@ -82,7 +87,11 @@ namespace Arcus.BackgroundJobs.KeyVault
 
             _logger.LogTrace("Receiving new Azure Key Vault notification...");
             
+#if NET6_0
+            var secretNewVersionCreated = message.Data?.ToObjectFromJson<SecretNewVersionCreated>(); 
+#else
             var secretNewVersionCreated = message.GetPayload<SecretNewVersionCreated>();
+#endif
             if (secretNewVersionCreated is null)
             {
                 _logger.LogWarning("Azure Key Vault job cannot map Event Grid event to CloudEvent because the event data isn't recognized as a 'SecretNewVersionCreated' schema");

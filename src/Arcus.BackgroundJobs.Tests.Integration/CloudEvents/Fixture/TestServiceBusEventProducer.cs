@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
+using Azure.Messaging;
 using Azure.Messaging.ServiceBus;
+using CloudNative.CloudEvents;
 using GuardNet;
 using Microsoft.Extensions.Configuration;
+using OldCloudEvent = CloudNative.CloudEvents.CloudEvent;
+using CloudEvent = Azure.Messaging.CloudEvent;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture
 {
@@ -47,6 +53,51 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture
         {
             Guard.NotNullOrWhitespace(entityScopedConnectionString, nameof(entityScopedConnectionString), "Requires a non-blank Azure Service Bus entity-scoped connection string");
             return new TestServiceBusEventProducer(entityScopedConnectionString);
+        }
+
+        public async Task ProduceAsync(CloudEvent cloudEvent)
+        {
+            ServiceBusMessage message = CreateServiceBusMessageFor(cloudEvent);
+            await ProduceAsync(message);
+        }
+
+        private static ServiceBusMessage CreateServiceBusMessageFor(CloudEvent cloudEvent)
+        {
+            BinaryData data = BinaryData.FromObjectAsJson(cloudEvent);
+            string json = data.ToString();
+            var message = new ServiceBusMessage(data)
+            {
+                ApplicationProperties =
+                {
+                    {"Content-Type", "application/json"},
+                    {"Message-Encoding", Encoding.UTF8.WebName}
+                }
+            };
+
+            return message;
+        }
+
+        public async Task ProduceAsync(OldCloudEvent cloudEvent)
+        {
+            ServiceBusMessage message = CreateServiceBusMessageFor(cloudEvent);
+            await ProduceAsync(message);
+        }
+
+        private static ServiceBusMessage CreateServiceBusMessageFor(OldCloudEvent cloudEvent)
+        {
+            var formatter = new JsonEventFormatter();
+            byte[] bytes = formatter.EncodeStructuredEvent(cloudEvent, out ContentType contentType);
+
+            var message = new ServiceBusMessage(bytes)
+            {
+                ApplicationProperties =
+                {
+                    {"Content-Type", "application/json"},
+                    {"Message-Encoding", Encoding.UTF8.WebName}
+                }
+            };
+
+            return message;
         }
 
         /// <summary>

@@ -5,10 +5,16 @@ using Arcus.Messaging.Abstractions;
 using Arcus.Messaging.Abstractions.ServiceBus;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Security.Core.Caching;
+using Azure.Messaging;
 using CloudNative.CloudEvents;
 using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Rest.Azure;
+#if NET6_0
+using CloudEvent = Azure.Messaging.CloudEvent;
+#else
+using CloudEvent = CloudNative.CloudEvents.CloudEvent;
+#endif
 
 namespace Arcus.BackgroundJobs.KeyVault
 {
@@ -50,7 +56,11 @@ namespace Arcus.BackgroundJobs.KeyVault
         {
             Guard.NotNull(message, nameof(message), "Cannot invalidate Azure KeyVault secret from a 'null' CloudEvent");
 
+#if NET6_0
+            var secretNewVersionCreated = message.Data?.ToObjectFromJson<SecretNewVersionCreated>(); 
+#else
             var secretNewVersionCreated = message.GetPayload<SecretNewVersionCreated>();
+#endif
             if (secretNewVersionCreated is null)
             {
                 throw new CloudException(

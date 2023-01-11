@@ -5,6 +5,7 @@ using Arcus.EventGrid;
 using Arcus.EventGrid.Contracts;
 using Arcus.EventGrid.Parsers;
 using Arcus.EventGrid.Testing.Infrastructure.Hosts.ServiceBus;
+using Azure.Messaging;
 using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -63,6 +64,17 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture
             return eventBatch;
         }
 
+        public CloudEvent ConsumeCloudEvent(string eventId)
+        {
+            Guard.NotNullOrWhitespace(eventId, nameof(eventId), "Requires a non-blank event ID to identity the produced event on the Azure Service Bus");
+            
+            string receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent(eventId, retryCount: 10);
+            Assert.NotEmpty(receivedEvent);
+
+            CloudEvent cloudEvent = CloudEvent.Parse(BinaryData.FromString(receivedEvent));
+            return cloudEvent;
+        }
+        
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources asynchronously.
         /// </summary>

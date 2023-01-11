@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Arcus.BackgroundJobs.AzureAppConfiguration;
 using Arcus.Messaging.Abstractions;
 using Arcus.Messaging.Abstractions.ServiceBus;
+using Azure.Messaging;
 using Azure.Messaging.ServiceBus;
-using CloudNative.CloudEvents;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -82,10 +82,9 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AppConfiguration
             var correlationInfo = new MessageCorrelationInfo("operation-id", "transaction-id");
 
             string appConfigurationEndpoint = "https://some.appconfig.io";
-            var cloudEvent = new CloudEvent("appconfig.change", new Uri("http://source"))
+            var cloudEvent = new CloudEvent("http://source", eventType, jsonSerializableData: null)
             {
                 Subject = appConfigurationEndpoint,
-                Type = eventType
             };
 
             // Act / Assert
@@ -114,10 +113,9 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AppConfiguration
             var correlationInfo = new MessageCorrelationInfo("operation-id", "transaction-id");
 
             string appConfigurationEndpoint = "https://some.appconfig.io";
-            var cloudEvent = new CloudEvent("appconfig.change", new Uri("http://source"))
+            var cloudEvent = new CloudEvent("http://source", eventType, jsonSerializableData: null)
             {
                 Subject = appConfigurationEndpoint,
-                Type = eventType
             };
 
             // Act / Assert
@@ -144,10 +142,9 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AppConfiguration
                 new Dictionary<string, object>());
             var correlationInfo = new MessageCorrelationInfo("operation-id", "transaction-id");
 
-            var cloudEvent = new CloudEvent("appconfig.change", new Uri("http://source"))
+            var cloudEvent = new CloudEvent("http://source", "Microsoft.AppConfiguration.KeyValueModified", jsonSerializableData: null)
             {
-                Subject = "some-other-value-thats-not-any-uri",
-                Type = "Microsoft.AppConfiguration.KeyValueModified"
+                Subject = "some-other-value-thats-not-any-uri"
             };
 
             // Act / Assert

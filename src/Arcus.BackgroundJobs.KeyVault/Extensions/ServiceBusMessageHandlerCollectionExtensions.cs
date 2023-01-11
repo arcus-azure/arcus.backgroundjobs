@@ -2,7 +2,7 @@
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Messaging.Pumps.ServiceBus.Configuration;
-using CloudNative.CloudEvents;
+using Azure.Messaging;
 using GuardNet;
 
 // ReSharper disable once CheckNamespace
