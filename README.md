@@ -1,6 +1,6 @@
 # Arcus Background Jobs
 
-[![Build Status](https://dev.azure.com/codit/Arcus/_apis/build/status/Commit%20builds/CI%20-%20Arcus.BackgroundJobs?branchName=master)](https://dev.azure.com/codit/Arcus/_build/latest?definitionId=794&branchName=master)
+[![Build Status](https://dev.azure.com/codit/Arcus/_apis/build/status/Commit%20builds/CI%20-%20Arcus.BackgroundJobs?branchName=main)](https://dev.azure.com/codit/Arcus/_build/latest?definitionId=794&branchName=main)
 [![NuGet Badge](https://buildstats.info/nuget/Arcus.BackgroundJobs.CloudEvents?includePreReleases=true)](https://www.nuget.org/packages/Arcus.BackgroundJobs.CloudEvents/)
 
 Background job development in a breeze.
