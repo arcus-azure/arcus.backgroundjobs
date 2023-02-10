@@ -5,7 +5,7 @@
 
 Background job development in a breeze.
 
-![Arcus](https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png)
+![Arcus](https://raw.githubusercontent.com/arcus-azure/arcus/main/media/arcus.png)
 
 # Documentation
 All documentation can be found on [here](https://background-jobs.arcus-azure.net/).
