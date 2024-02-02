@@ -1,9 +1,17 @@
 ﻿using System;
+using System.Linq;
+using Arcus.BackgroundJobs.KeyVault;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Messaging.Pumps.ServiceBus.Configuration;
-using Azure.Messaging;
 using GuardNet;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+#if NET6_0
+using CloudEvent = Azure.Messaging.CloudEvent;
+#else
+using CloudEvent = CloudNative.CloudEvents.CloudEvent;
+#endif
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -13,6 +21,8 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class ServiceBusMessageHandlerCollectionExtensions
     {
+        private const string SecretNewVersionCreatedEventType = "Microsoft.KeyVault.SecretNewVersionCreated";
+
         /// <summary>
         /// Adds a background job to the <see cref="IServiceCollection"/> to automatically restart a <see cref="AzureServiceBusMessagePump"/> with a specific <paramref name="jobId"/>
         /// when the Azure Key Vault secret that holds the Azure Service Bus connection string was updated.
@@ -84,16 +94,32 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNullOrWhitespace(serviceBusTopicConnectionStringSecretKey, nameof(serviceBusTopicConnectionStringSecretKey), "Requires a non-blank secret key that points to a Azure Service Bus Topic");
             Guard.NotNullOrWhitespace(messagePumpConnectionStringKey, nameof(messagePumpConnectionStringKey), "Requires a non-blank secret key that points to the credentials that holds the connection string of the target message pump");
 
-#pragma warning disable CS0618 // Deprecated version still has the actual implementation, it can be moved to here once the next major version deletes the deprecated version.
-            services.Services.AddAutoRestartServiceBusMessagePumpOnRotatedCredentialsBackgroundJob(
-#pragma warning restore CS0618
-                jobId,
-                subscriptionNamePrefix,
-                serviceBusTopicConnectionStringSecretKey,
-                messagePumpConnectionStringKey,
-                configureBackgroundJob);
+            return services.Services.AddCloudEventBackgroundJob(
+                        subscriptionNamePrefix,
+                        serviceBusTopicConnectionStringSecretKey,
+                        configureBackgroundJob)
+                    .WithServiceBusMessageHandler<ReAuthenticateOnRotatedCredentialsMessageHandler, CloudEvent>(
+                        messageBodyFilter: cloudEvent => cloudEvent?.Type == SecretNewVersionCreatedEventType,
+                        implementationFactory: serviceProvider =>
+                        {
+                            AzureServiceBusMessagePump messagePump =
+                                serviceProvider.GetServices<IHostedService>()
+                                               .OfType<AzureServiceBusMessagePump>()
+                                               .FirstOrDefault(pump => pump.JobId == jobId);
 
-            return services;
+                            if (messagePump is null)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Cannot register re-authentication without a '{nameof(AzureServiceBusMessagePump)}' with job id {jobId}");
+                            }
+
+                            var messageHandlerLogger = serviceProvider.GetRequiredService<ILogger<ReAuthenticateOnRotatedCredentialsMessageHandler>>();
+                            return new ReAuthenticateOnRotatedCredentialsMessageHandler(
+                                messagePumpConnectionStringKey,
+                                messagePump,
+                                messageHandlerLogger);
+
+                        });
+            }
         }
-    }
 }
