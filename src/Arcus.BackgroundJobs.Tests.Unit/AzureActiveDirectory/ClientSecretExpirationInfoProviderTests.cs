@@ -1,16 +1,21 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
+using System.Net;
+using System.Net.Http;
+using System.Net.Mime;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.AzureActiveDirectory;
-using Azure.Core;
-using Azure.Identity;
 using Bogus;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Graph;
-using Moq;
+using Microsoft.Graph.Models;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Serialization;
+using Microsoft.Kiota.Abstractions.Store;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
@@ -28,46 +33,6 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
         }
 
         [Fact]
-        public void CreateClientSecretExpirationInfoProvider_WithNullLogger_Throws()
-        {
-            // Arrange
-            GraphServiceClient client = new GraphServiceClient(
-                new DelegateAuthenticationProvider((requestMessage) =>
-                {
-                    requestMessage
-                    .Headers
-                    .Authorization = new AuthenticationHeaderValue("bearer", BogusGenerator.Random.ToString());
-
-                    return Task.CompletedTask;
-                })
-            );
-
-            // Assert
-            Assert.ThrowsAny<ArgumentException>(() => new ClientSecretExpirationInfoProvider(client, null));
-        }
-
-        [Fact]
-        public async Task GetApplicationsWithPotentialExpiredSecrets_WithExpirationThresholdLessThanZero_Throws()
-        {
-            // Arrange
-            int expirationThreshold = -1;
-            GraphServiceClient client = new GraphServiceClient(
-                new DelegateAuthenticationProvider((requestMessage) =>
-                {
-                    requestMessage
-                    .Headers
-                    .Authorization = new AuthenticationHeaderValue("bearer", BogusGenerator.Random.ToString());
-
-                    return Task.CompletedTask;
-                })
-            );
-            var provider = new ClientSecretExpirationInfoProvider(client, NullLogger.Instance);
-
-            // Act / Assert
-            await Assert.ThrowsAnyAsync<ArgumentException>(() => provider.GetApplicationsWithPotentialExpiredSecrets(expirationThreshold));
-        }
-
-        [Fact]
         public async Task GetApplicationsWithPotentialExpiredSecrets_WithExpiredSecret_ReturnsSecret()
         {
             // Arrange
@@ -80,7 +45,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
             var application = new Application
             {
                 DisplayName = BogusGenerator.Commerce.ProductName(),
-                PasswordCredentials = new [] { credentials }
+                PasswordCredentials = new List<PasswordCredential> { credentials }
             };
             
             GraphServiceClient client = CreateStubbedGraphClient(new [] { application });
@@ -246,7 +211,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
             IEnumerable<Application> applications = Enumerable.Repeat(new Application
             {
                 DisplayName = BogusGenerator.Commerce.ProductName(),
-                PasswordCredentials = credentials
+                PasswordCredentials = credentials?.ToList()
             }, count);
 
             return applications.ToArray();
@@ -254,24 +219,106 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
 
         private static GraphServiceClient CreateStubbedGraphClient(IEnumerable<Application> applications)
         {
-            var clientStub = new Mock<GraphServiceClient>(new DefaultAzureCredential(), null, null);
+            return new GraphServiceClient(new StubAzureApplicationsRequestAdapter(applications));
+        }
 
-            var pageStub = new Mock<IGraphServiceApplicationsCollectionPage>();
-            pageStub.Setup(page => page.GetEnumerator())
-                    .Returns(() => applications.GetEnumerator());
+        private class StubAzureApplicationsRequestAdapter : IRequestAdapter
+        {
+            private readonly IEnumerable<Application> _applications;
 
-            var responseStub = new Mock<IGraphServiceApplicationsCollectionRequest>();
-            responseStub.Setup(response => response.GetAsync(default))
-                        .ReturnsAsync(pageStub.Object);
-            
-            var requestStub = new Mock<IGraphServiceApplicationsCollectionRequestBuilder>();
-            requestStub.Setup(request => request.Request())
-                       .Returns(responseStub.Object);
+            /// <summary>
+            /// Initializes a new instance of the <see cref="StubAzureApplicationsRequestAdapter" /> class.
+            /// </summary>
+            public StubAzureApplicationsRequestAdapter(IEnumerable<Application> applications)
+            {
+                _applications = applications;
+            }
 
-            clientStub.Setup(client => client.Applications)
-                      .Returns(() => requestStub.Object);
-            
-            return clientStub.Object;
+            public ISerializationWriterFactory SerializationWriterFactory { get; }
+            public string BaseUrl { get; set; }
+
+            public void EnableBackingStore(IBackingStoreFactory backingStoreFactory)
+            {
+            }
+
+            public Task<ModelType> SendAsync<ModelType>(
+                RequestInformation requestInfo,
+                ParsableFactory<ModelType> factory,
+                Dictionary<string, ParsableFactory<IParsable>> errorMapping = null,
+                CancellationToken cancellationToken = new CancellationToken()) where ModelType : IParsable
+            {
+                var response = new ApplicationCollectionResponse
+                {
+                    Value = _applications.ToList()
+                };
+
+                return Task.FromResult((ModelType) Convert.ChangeType(response, typeof(ModelType)));
+            }
+
+            public Task<IEnumerable<ModelType>> SendCollectionAsync<ModelType>(
+                RequestInformation requestInfo,
+                ParsableFactory<ModelType> factory,
+                Dictionary<string, ParsableFactory<IParsable>> errorMapping = null,
+                CancellationToken cancellationToken = new CancellationToken()) where ModelType : IParsable
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<ModelType> SendPrimitiveAsync<ModelType>(
+                RequestInformation requestInfo,
+                Dictionary<string, ParsableFactory<IParsable>> errorMapping = null,
+                CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IEnumerable<ModelType>> SendPrimitiveCollectionAsync<ModelType>(
+                RequestInformation requestInfo,
+                Dictionary<string, ParsableFactory<IParsable>> errorMapping = null,
+                CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SendNoContentAsync(
+                RequestInformation requestInfo,
+                Dictionary<string, ParsableFactory<IParsable>> errorMapping = null,
+                CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<T> ConvertToNativeRequestAsync<T>(
+                RequestInformation requestInfo,
+                CancellationToken cancellationToken = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class StubAzureApplicationsHttpMessageHandler : HttpMessageHandler
+        {
+            private readonly IEnumerable<Application> _applications;
+
+            public StubAzureApplicationsHttpMessageHandler(IEnumerable<Application> applications)
+            {
+                _applications = applications;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var collection = new ApplicationCollectionResponse
+                {
+                    Value = _applications.ToList()
+                };
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(collection), Encoding.UTF8, MediaTypeNames.Application.Json)
+                };
+
+                return Task.FromResult(response);
+            }
         }
     }
 }

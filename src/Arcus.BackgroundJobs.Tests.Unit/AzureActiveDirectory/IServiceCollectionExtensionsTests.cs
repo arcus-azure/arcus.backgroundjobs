@@ -1,5 +1,4 @@
 ﻿using System;
-using Arcus.EventGrid.Publishing;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,27 +11,6 @@ namespace Arcus.BackgroundJobs.Tests.Unit.AzureActiveDirectory
     [Trait(name: "Category", value: "Unit")]
     public class IServiceCollectionExtensionsTests
     {
-        [Fact]
-        public void AddClientSecretExpirationJob_WithoutOptionsWithArcusEventGridPublisher_Succeeds()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddSingleton(
-                EventGridPublisherBuilder
-                    .ForTopic("https://some-topic")
-                    .UsingAuthenticationKey("<key>")
-                    .Build());
-
-            // Act
-            services.AddClientSecretExpirationJob();
-
-            // Assert
-            IServiceProvider provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetService<IHostedService>());
-        }
-
         [Fact]
         public void AddClientSecretExpirationJob_WithoutOptionsWithMicrosoftEventGridPublisherClient_Succeeds()
         {

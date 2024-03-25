@@ -195,13 +195,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                                topicName: properties.EntityPath,
                                subscriptionNamePrefix: "Test-",
                                serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey,
-                               opt => opt.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
+                               opt => opt.Routing.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
                            .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
                    });
 
             var operationId = $"operation-{Guid.NewGuid()}";
             OrderV2 order = OrderGenerator.GenerateOrderV2();
-            ServiceBusMessage message = order.AsServiceBusMessage(operationId: operationId);
+            ServiceBusMessage message = 
+                ServiceBusMessageBuilder.CreateForBody(order)
+                                        .WithOperationId(operationId)
+                                        .Build();
 
             await using (var worker = await Worker.StartNewAsync(options))
             {
@@ -328,13 +331,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        services.AddCloudEventBackgroundJob(
                                    subscriptionNamePrefix: "Test-",
                                    serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
-                                   opt => opt.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
+                                   opt => opt.Routing.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
                                .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
                    });
 
             var operationId = $"operation-{Guid.NewGuid()}";
             OrderV2 order = OrderGenerator.GenerateOrderV2();
-            ServiceBusMessage message = order.AsServiceBusMessage(operationId: operationId);
+            ServiceBusMessage message = 
+                ServiceBusMessageBuilder.CreateForBody(order)
+                                        .WithOperationId(operationId)
+                                        .Build();
 
             // Act
             await using (var worker = await Worker.StartNewAsync(options))

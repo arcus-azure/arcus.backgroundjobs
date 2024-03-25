@@ -83,7 +83,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                 await keyVaultClient.SetSecretAsync(KeyVaultSecretName, newSecondaryConnectionString);
 
                 Order order = OrderGenerator.GenerateOrder();
-                ServiceBusMessage message = order.AsServiceBusMessage($"operation-{Guid.NewGuid()}");
+                ServiceBusMessage message = 
+                    ServiceBusMessageBuilder.CreateForBody(order)
+                                            .WithOperationId($"operation-{Guid.NewGuid()}")
+                                            .Build();
 
                 await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(config, _logger))
                 {
@@ -103,9 +106,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 
         [Theory]
         [InlineData(TopicSubscription.None, false)]
-        [InlineData(TopicSubscription.CreateOnStart, true)]
-        [InlineData(TopicSubscription.DeleteOnStop, false)]
-        [InlineData(TopicSubscription.CreateOnStart | TopicSubscription.DeleteOnStop, true)]
+        [InlineData(TopicSubscription.Automatic, true)]
         public async Task AutoRestartServiceBusMessagePump_WithTopicSubscriptionInOptions_UsesOptions(
             TopicSubscription topicSubscription,
             bool expected)
