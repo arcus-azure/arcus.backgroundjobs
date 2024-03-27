@@ -51,20 +51,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture
         /// </summary>
         /// <param name="eventId">The ID to identity the produced event.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="eventId"/> is blank.</exception>
-        public EventBatch<Event> Consume(string eventId)
-        {
-            Guard.NotNullOrWhitespace(eventId, nameof(eventId), "Requires a non-blank event ID to identity the produced event on the Azure Service Bus");
-            
-            string receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent(eventId, retryCount: 10);
-            Assert.NotEmpty(receivedEvent);
-            
-            EventBatch<Event> eventBatch = EventParser.Parse(receivedEvent);
-            Assert.NotNull(eventBatch);
-
-            return eventBatch;
-        }
-
-        public CloudEvent ConsumeCloudEvent(string eventId)
+        public CloudEvent Consume(string eventId)
         {
             Guard.NotNullOrWhitespace(eventId, nameof(eventId), "Requires a non-blank event ID to identity the produced event on the Azure Service Bus");
             

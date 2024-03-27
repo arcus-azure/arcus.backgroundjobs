@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
-using Arcus.EventGrid.Publishing.Interfaces;
 using Arcus.Messaging.Abstractions;
 using Arcus.Messaging.Abstractions.ServiceBus;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
-using CloudNative.CloudEvents;
+using Azure.Messaging;
+using Azure.Messaging.EventGrid;
 using GuardNet;
 using Microsoft.Extensions.Logging;
 
@@ -14,10 +13,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
 {
     public class OrdersV2AzureServiceBusMessageHandler : IAzureServiceBusMessageHandler<OrderV2>
     {
-        private readonly IEventGridPublisher _eventGridPublisher;
+        private readonly EventGridPublisherClient _eventGridPublisher;
         private readonly ILogger _logger;
 
-        public OrdersV2AzureServiceBusMessageHandler(IEventGridPublisher eventGridPublisher, ILogger<OrdersV2AzureServiceBusMessageHandler> logger)
+        public OrdersV2AzureServiceBusMessageHandler(EventGridPublisherClient eventGridPublisher, ILogger<OrdersV2AzureServiceBusMessageHandler> logger)
         {
             Guard.NotNull(eventGridPublisher, nameof(eventGridPublisher));
             Guard.NotNull(logger, nameof(logger));
@@ -60,17 +59,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
                 correlationInfo);
 
             var orderCreatedEvent = new CloudEvent(
-                CloudEventsSpecVersion.V1_0,
+                "http://test-host",
                 "OrderCreatedEvent",
-                new Uri("http://test-host"),
-                operationId,
-                DateTime.UtcNow)
+                BinaryData.FromObjectAsJson(eventData),
+                "application/json")
             {
-                Data = eventData,
-                DataContentType = new ContentType("application/json")
+                Id = operationId,
+                Time = DateTimeOffset.UtcNow,
             };
 
-            await _eventGridPublisher.PublishAsync(orderCreatedEvent);
+            await _eventGridPublisher.SendEventAsync(orderCreatedEvent);
 
             _logger.LogInformation("Event {EventId} was published with subject {EventSubject}", orderCreatedEvent.Id, orderCreatedEvent.Subject);
         }

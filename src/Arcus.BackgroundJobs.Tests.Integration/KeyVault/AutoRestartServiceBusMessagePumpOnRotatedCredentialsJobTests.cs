@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
-using Arcus.EventGrid;
-using Arcus.EventGrid.Contracts;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Testing.Logging;
@@ -16,12 +13,13 @@ using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Azure.Management.ServiceBus.Models;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Polly;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
 {
@@ -42,66 +40,72 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
             _logger = new XunitTestLogger(outputWriter);
         }
 
+        private TestConfig Config { get; } = TestConfig.Create();
+        private KeyRotationConfig KeyRotationConfig => Config.GetKeyRotationConfig();
+
         [Fact]
         public async Task ServiceBusMessagePump_RotateServiceBusConnectionKeysOnSecretNewVersionNotification_MessagePumpRestartsThenMessageSuccessfullyProcessed()
         {
             // Arrange
-            var config = TestConfig.Create();
-            var serviceBusClient = ServiceBusConfiguration.CreateFrom(config, _logger);
+            ServiceBusConfiguration serviceBusClient = CreateServiceBusClient();
             string freshConnectionString = await serviceBusClient.RotateConnectionStringKeysForQueueAsync(KeyType.PrimaryKey);
-            SecretClient keyVaultClient = CreateKeyVaultClient(config);
+            
+            SecretClient keyVaultClient = CreateKeyVaultClient(Config);
             await keyVaultClient.SetSecretAsync(KeyVaultSecretName, freshConnectionString);
 
-            var jobId = Guid.NewGuid().ToString();
             var options = new WorkerOptions();
-            options.ConfigureLogging(_logger)
-                   .ConfigureServices(services =>
-                   {
-                       services.AddEventGridPublisher(config);
-                       services.AddSecretStore(stores =>
-                       {
-                           KeyRotationConfig rotationConfig = config.GetKeyRotationConfig();
-                           stores.AddInMemory(ConnectionStringSecretKey, rotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString)
-                                 .AddAzureKeyVaultWithServicePrincipal(config);
-                       }); 
-                       services.AddServiceBusQueueMessagePump(KeyVaultSecretName, opt =>
-                       { 
-                           opt.JobId = jobId;
-                           // Unrealistic big maximum exception count so that we're certain that the message pump gets restarted based on the notification and not the unauthorized exception.
-                           opt.MaximumUnauthorizedExceptionsBeforeRestart = 1000;
-                       }).WithServiceBusMessageHandler<OrdersAzureServiceBusMessageHandler, Order>()
-                         .WithAutoRestartOnRotatedCredentials(
-                           jobId: jobId,
-                           subscriptionNamePrefix: "TestSub",
-                           serviceBusTopicConnectionStringSecretKey: ConnectionStringSecretKey,
-                           messagePumpConnectionStringKey: KeyVaultSecretName);
-                   });
+            AddTestMessagePumpWithAutoRestart(options);
 
             await using (var worker = await Worker.StartNewAsync(options))
             {
                 string newSecondaryConnectionString = await serviceBusClient.RotateConnectionStringKeysForQueueAsync(KeyType.SecondaryKey);
                 await keyVaultClient.SetSecretAsync(KeyVaultSecretName, newSecondaryConnectionString);
 
-                Order order = OrderGenerator.GenerateOrder();
-                ServiceBusMessage message = 
-                    ServiceBusMessageBuilder.CreateForBody(order)
-                                            .WithOperationId($"operation-{Guid.NewGuid()}")
-                                            .Build();
+                // Act
+                await serviceBusClient.RotateConnectionStringKeysForQueueAsync(KeyType.PrimaryKey);
 
-                await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(config, _logger))
-                {
-                    // Act
-                    string newPrimaryConnectionString = await serviceBusClient.RotateConnectionStringKeysForQueueAsync(KeyType.PrimaryKey);
-
-                    // Assert
-                    var producer = TestServiceBusEventProducer.Create(newPrimaryConnectionString);
-                    await producer.ProduceAsync(message);
-                    EventBatch<Event> eventBatch = consumer.Consume(message.CorrelationId);
-                    Event @event = Assert.Single(eventBatch.Events);
-                    var eventData = @event.GetPayload<OrderCreatedEventData>();
-                    Assert.Equal(order.Id, eventData.Id);
-                }
+                // Assert
+                AssertTestMessagePumpRestarted(worker);
             }
+        }
+
+        private void AddTestMessagePumpWithAutoRestart(WorkerOptions options)
+        {
+            options.ConfigureLogging(_logger)
+                   .ConfigureServices(services =>
+                   {
+                       services.AddEventGridPublisher(Config);
+                       services.AddSecretStore(stores =>
+                       {
+                           KeyRotationConfig rotationConfig = Config.GetKeyRotationConfig();
+                           stores.AddInMemory(ConnectionStringSecretKey, rotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString)
+                                 .AddAzureKeyVaultWithServicePrincipal(Config);
+                       }); 
+                       services.AddTestSpyServiceBusMessagePump()
+                               .WithAutoRestartOnRotatedCredentials(
+                                   subscriptionNamePrefix: "TestSub",
+                                   serviceBusTopicConnectionStringSecretKey: ConnectionStringSecretKey,
+                                   messagePumpConnectionStringKey: KeyVaultSecretName,
+                                   opt => opt.TopicSubscription = TopicSubscription.Automatic);
+                   });
+        }
+
+        private ServiceBusConfiguration CreateServiceBusClient()
+        {
+            return ServiceBusConfiguration.CreateFrom(Config, _logger);
+        }
+
+        private static void AssertTestMessagePumpRestarted(Worker worker)
+        {
+            var serviceBusPump = Assert.Single(
+                worker.ServiceProvider.GetServices<IHostedService>(),
+                p => p is TestSpyRestartServiceBusMessagePump);
+            var testPump = Assert.IsType<TestSpyRestartServiceBusMessagePump>(serviceBusPump);
+
+            Policy.Timeout(TimeSpan.FromSeconds(60))
+                  .Wrap(Policy.Handle<XunitException>()
+                              .WaitAndRetryForever(_ => TimeSpan.FromMicroseconds(500)))
+                  .Execute(() => Assert.True(testPump.IsRestarted, "Rotated secret should restart message pump"));
         }
 
         [Theory]
@@ -109,19 +113,34 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
         [InlineData(TopicSubscription.Automatic, true)]
         public async Task AutoRestartServiceBusMessagePump_WithTopicSubscriptionInOptions_UsesOptions(
             TopicSubscription topicSubscription,
-            bool expected)
+            bool expectedContainsTopicSubscription)
         {
-            var config = TestConfig.Create();
-            KeyRotationConfig rotationConfig = config.GetKeyRotationConfig();
+            // Arrange
             var subscriptionPrefix = "AutoRestart";
-
             var options = new WorkerOptions();
+            AddTopicMessagePumpWithAutoRestart(options, topicSubscription, subscriptionPrefix);
+
+            // Act
+            await using (await Worker.StartNewAsync(options))
+            {
+                // Assert
+               bool actualContainsTopicSubscription = await ContainsTopicSubscriptionAsync(subscriptionPrefix);
+                Assert.True(expectedContainsTopicSubscription == actualContainsTopicSubscription, 
+                    $"Azure Service Bus topic subscription was not created/deleted as expected {expectedContainsTopicSubscription} != {actualContainsTopicSubscription} when topic subscription '{topicSubscription}'");
+            }
+        }
+
+        private void AddTopicMessagePumpWithAutoRestart(
+            WorkerOptions options,
+            TopicSubscription topicSubscription,
+            string subscriptionPrefix)
+        {
             options.ConfigureServices(services =>
             {
                 services.AddSecretStore(stores =>
                 {
-                    stores.AddInMemory(ConnectionStringSecretKey, rotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString)
-                          .AddAzureKeyVaultWithServicePrincipal(config);
+                    stores.AddInMemory(ConnectionStringSecretKey, KeyRotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString)
+                          .AddAzureKeyVaultWithServicePrincipal(Config);
                 });
                 var collection = new ServiceBusMessageHandlerCollection(services);
                 collection.WithAutoRestartOnRotatedCredentials(
@@ -131,24 +150,13 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                     messagePumpConnectionStringKey: KeyVaultSecretName,
                     opt => opt.TopicSubscription = topicSubscription);
             });
-
-            // Act
-            await using (var worker = await Worker.StartNewAsync(options))
-            {
-                // Assert
-                var client = new ServiceBusAdministrationClient(rotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString);
-                var properties = ServiceBusConnectionStringProperties.Parse(rotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString);
-
-                bool actual = await ContainsTopicSubscriptionAsync(client, properties, subscriptionPrefix);
-                Assert.True(expected == actual, $"Azure Service Bus topic subscription was not created/deleted as expected {expected} != {actual} when topic subscription '{topicSubscription}'");
-            }
         }
 
-        private static async Task<bool> ContainsTopicSubscriptionAsync(
-            ServiceBusAdministrationClient client,
-            ServiceBusConnectionStringProperties properties,
-            string subscriptionPrefix)
+        private async Task<bool> ContainsTopicSubscriptionAsync(string subscriptionPrefix)
         {
+            var client = new ServiceBusAdministrationClient(KeyRotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString);
+            var properties = ServiceBusConnectionStringProperties.Parse(KeyRotationConfig.KeyVault.SecretNewVersionCreated.ConnectionString);
+
             var actual = false;
             AsyncPageable<SubscriptionProperties> subscriptions = client.GetSubscriptionsAsync(properties.EntityPath);
             await foreach (SubscriptionProperties sub in subscriptions)

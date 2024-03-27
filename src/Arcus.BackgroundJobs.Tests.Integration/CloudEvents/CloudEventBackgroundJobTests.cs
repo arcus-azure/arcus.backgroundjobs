@@ -74,35 +74,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     await producer.ProduceAsync(expected);
 
                     // Assert
-                    CloudEvent actual = consumer.ConsumeCloudEvent(expected.Id);
-                    AssertCloudEvent(expected, actual);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task CloudEventsBackgroundJobOnNamespace_ReceivesOldCloudEvents_ProcessesCorrectly()
-        {
-            // Arrange
-            var options = new WorkerOptions();
-            ConfigureCloudEventsBackgroundJobOnNamespace<OldCloudEventToEventGridAzureServiceBusMessageHandler, OldCloudEvent>(options)
-                .ConfigureServices(services => services.AddEventGridPublisher(_configuration));
-
-            OldCloudEvent expected = CreateOldCloudEvent();
-
-            await using (var worker = await Worker.StartNewAsync(options))
-            {
-                TestServiceBusEventProducer producer = CreateEventProducer();
-                await using (TestServiceBusEventConsumer consumer = await CreateEventConsumerAsync())
-                {
-                    // Act
-                    await producer.ProduceAsync(expected);
-
-                    // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
-                    Event @event = Assert.Single(eventBatch.Events);
-                    OldCloudEvent actual = @event.AsCloudEvent();
-                    
+                    CloudEvent actual = consumer.Consume(expected.Id);
                     AssertCloudEvent(expected, actual);
                 }
             }
@@ -133,41 +105,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                         await producer.ProduceAsync(expected);
 
                         // Assert
-                        CloudEvent actual = consumer.ConsumeCloudEvent(expected.Id);
-                        AssertCloudEvent(expected, actual);
-                    }
-                }
-            }
-        }
-
-        [Fact]
-        public async Task CloudEventsBackgroundJobOnNamespaceUsingManagedIdentity_ReceivesOldCloudEvents_ProcessesCorrectly()
-        {
-            // Arrange
-            ServicePrincipal servicePrincipal = _configuration.GetServicePrincipal();
-            AzureEnvironment environment = _configuration.GetAzureEnvironment();
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, environment.TenantId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, servicePrincipal.ClientId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, servicePrincipal.ClientSecret))
-            {
-                var options = new WorkerOptions();
-                ConfigureCloudEventsBackgroundJobOnNamespaceUsingManagedIdentity<OldCloudEventToEventGridAzureServiceBusMessageHandler, OldCloudEvent>(options)
-                    .ConfigureServices(services => services.AddEventGridPublisher(_configuration));
-
-                OldCloudEvent expected = CreateOldCloudEvent();
-
-                await using (var worker = await Worker.StartNewAsync(options))
-                {
-                    TestServiceBusEventProducer producer = CreateEventProducer();
-                    await using (TestServiceBusEventConsumer consumer = await CreateEventConsumerAsync())
-                    {
-                        // Act
-                        await producer.ProduceAsync(expected);
-
-                        // Assert
-                        EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
-                        Event @event = Assert.Single(eventBatch.Events);
-                        OldCloudEvent actual = @event.AsCloudEvent();
+                        CloudEvent actual = consumer.Consume(expected.Id);
                         AssertCloudEvent(expected, actual);
                     }
                 }
@@ -215,10 +153,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     await producer.ProduceAsync(message);
 
                     // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume(operationId);
-                    Event @event = Assert.Single(eventBatch.Events);
+                    CloudEvent @event = consumer.Consume(operationId);
+                    Assert.NotNull(@event.Data);
 
-                    var orderCreatedEventData = @event.GetPayload<OrderCreatedEventData>();
+                    var orderCreatedEventData = @event.Data.ToObjectFromJson<OrderCreatedEventData>();
                     Assert.NotNull(orderCreatedEventData);
                     Assert.NotNull(orderCreatedEventData.CorrelationInfo);
                     Assert.Equal(order.Id, orderCreatedEventData.Id);
@@ -282,34 +220,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     await producer.ProduceAsync(expected);
 
                     // Assert
-                    CloudEvent actual = consumer.ConsumeCloudEvent(expected.Id);
-                    AssertCloudEvent(expected, actual);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task CloudEventsBackgroundJobOnTopic_ReceivesOldCloudEvents_ProcessesCorrectly()
-        {
-            // Arrange
-            var options = new WorkerOptions();
-            ConfigureCloudEventsBackgroundJobOnTopic<OldCloudEventToEventGridAzureServiceBusMessageHandler, OldCloudEvent>(options)
-                .ConfigureServices(services => services.AddEventGridPublisher(_configuration));
-
-            OldCloudEvent expected = CreateOldCloudEvent();
-
-            await using (var worker = await Worker.StartNewAsync(options))
-            {
-                TestServiceBusEventProducer producer = CreateEventProducer();
-                await using (TestServiceBusEventConsumer consumer = await CreateEventConsumerAsync())
-                {
-                    // Act
-                    await producer.ProduceAsync(expected);
-
-                    // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
-                    Event @event = Assert.Single(eventBatch.Events);
-                    OldCloudEvent actual = @event.AsCloudEvent();
+                    CloudEvent actual = consumer.Consume(expected.Id);
                     AssertCloudEvent(expected, actual);
                 }
             }
@@ -352,10 +263,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     await producer.ProduceAsync(message);
 
                     // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume(operationId);
-                    Event @event = Assert.Single(eventBatch.Events);
+                    CloudEvent @event = consumer.Consume(operationId);
+                    Assert.NotNull(@event.Data);
 
-                    var orderCreatedEventData = @event.GetPayload<OrderCreatedEventData>();
+                    var orderCreatedEventData = @event.Data.ToObjectFromJson<OrderCreatedEventData>();
                     Assert.NotNull(orderCreatedEventData);
                     Assert.NotNull(orderCreatedEventData.CorrelationInfo);
                     Assert.Equal(order.Id, orderCreatedEventData.Id);
