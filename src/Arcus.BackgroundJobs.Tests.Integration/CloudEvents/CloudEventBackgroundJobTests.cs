@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Net.Mime;
-using System.Text;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
-using Arcus.EventGrid;
-using Arcus.EventGrid.Contracts;
 using Arcus.Messaging.Abstractions.MessageHandling;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
@@ -16,9 +12,7 @@ using Azure;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Bogus;
-using CloudNative.CloudEvents;
 using Microsoft.Azure.EventGrid.Models;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +20,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
-using OldCloudEvent = CloudNative.CloudEvents.CloudEvent;
 using CloudEvent = Azure.Messaging.CloudEvent;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
@@ -242,7 +235,11 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        services.AddCloudEventBackgroundJob(
                                    subscriptionNamePrefix: "Test-",
                                    serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
-                                   opt => opt.Routing.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
+                                   opt =>
+                                   {
+                                       opt.TopicSubscription = TopicSubscription.Automatic;
+                                       opt.Routing.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore;
+                                   })
                                .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
                    });
 
@@ -331,16 +328,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
             Assert.Equal(expectedData.ClientRequestId, actualData.ClientRequestId);
         }
 
-        private static void AssertCloudEvent(OldCloudEvent expected, OldCloudEvent actual)
-        {
-            Assert.Equal(expected.Id, actual.Id);
-
-            var expectedData = expected.GetPayload<StorageBlobCreatedEventData>();
-            var actualData = actual.GetPayload<StorageBlobCreatedEventData>();
-            Assert.Equal(expectedData.Api, actualData.Api);
-            Assert.Equal(expectedData.ClientRequestId, actualData.ClientRequestId);
-        }
-
         private WorkerOptions ConfigureCloudEventsBackgroundJobOnTopic<TMessageHandler, TMessage>(WorkerOptions options) 
             where TMessageHandler : class, IAzureServiceBusMessageHandler<TMessage> 
             where TMessage : class
@@ -351,7 +338,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                    {
                        services.AddCloudEventBackgroundJob(
                                    subscriptionNamePrefix: "Test-",
-                                   serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey)
+                                   serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
+                                   opt => opt.TopicSubscription = TopicSubscription.Automatic)
                                .WithServiceBusMessageHandler<TMessageHandler, TMessage>();
                    });
 
@@ -372,7 +360,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        services.AddCloudEventBackgroundJobUsingManagedIdentity(
                                    topicName: properties.EntityPath, 
                                    subscriptionNamePrefix: "Test-", 
-                                   serviceBusNamespace: properties.FullyQualifiedNamespace)
+                                   serviceBusNamespace: properties.FullyQualifiedNamespace,
+                                   configureBackgroundJob: opt => opt.TopicSubscription = TopicSubscription.Automatic)
                                .WithServiceBusMessageHandler<TMessageHandler, TMessage>();
                    });
 
@@ -393,7 +382,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        services.AddCloudEventBackgroundJob(
                                    topicName: properties.EntityPath,
                                    subscriptionNamePrefix: "Test-",
-                                   serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey)
+                                   serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey,
+                                   opt => opt.TopicSubscription = TopicSubscription.Automatic)
                                .WithServiceBusMessageHandler<TMessageHandler, TMessage>();
                    });
 
@@ -407,36 +397,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                 host.ConfigureAppConfiguration(context => context.AddConfiguration(_configuration))
                     .ConfigureSecretStore((config, stores) => stores.AddConfiguration(config));
             });
-        }
-
-        private static OldCloudEvent CreateOldCloudEvent()
-        {
-            var cloudEvent = new OldCloudEvent(
-                specVersion: CloudEventsSpecVersion.V1_0,
-                type: "Microsoft.Storage.BlobCreated",
-                source: new Uri(
-                    "/subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.Storage/storageAccounts/{storage-account}#blobServices/default/containers/{storage-container}/blobs/{new-file}",
-                    UriKind.Relative),
-                id: "173d9985-401e-0075-2497-de268c06ff25",
-                time: DateTime.UtcNow)
-            {
-                Data = new StorageBlobCreatedEventData(
-                    api: "PutBlockList",
-                    clientRequestId: "6d79dbfb-0e37-4fc4-981f-442c9ca65760",
-                    requestId: "831e1650-001e-001b-66ab-eeb76e000000",
-                    eTag: "0x8D4BCC2E4835CD0",
-                    contentType: "application/octet-stream",
-                    contentLength: 524288,
-                    blobType: "BlockBlob",
-                    url: "https://oc2d2817345i60006.blob.core.windows.net/oc2d2817345i200097container/oc2d2817345i20002296blob",
-                    sequencer: "00000000000004420000000000028963",
-                    storageDiagnostics: new
-                    {
-                        batchId = "b68529f3-68cd-4744-baa4-3c0498ec19f0"
-                    })
-            };
-
-            return cloudEvent;
         }
 
         private static CloudEvent CreateCloudEvent()
