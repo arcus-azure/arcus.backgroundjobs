@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Net.Mime;
-using System.Text;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.CloudEvents.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
-using Arcus.EventGrid;
-using Arcus.EventGrid.Contracts;
 using Arcus.Messaging.Abstractions.MessageHandling;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
@@ -16,9 +12,7 @@ using Azure;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Bogus;
-using CloudNative.CloudEvents;
 using Microsoft.Azure.EventGrid.Models;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +20,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
-using OldCloudEvent = CloudNative.CloudEvents.CloudEvent;
 using CloudEvent = Azure.Messaging.CloudEvent;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
@@ -74,35 +67,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     await producer.ProduceAsync(expected);
 
                     // Assert
-                    CloudEvent actual = consumer.ConsumeCloudEvent(expected.Id);
-                    AssertCloudEvent(expected, actual);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task CloudEventsBackgroundJobOnNamespace_ReceivesOldCloudEvents_ProcessesCorrectly()
-        {
-            // Arrange
-            var options = new WorkerOptions();
-            ConfigureCloudEventsBackgroundJobOnNamespace<OldCloudEventToEventGridAzureServiceBusMessageHandler, OldCloudEvent>(options)
-                .ConfigureServices(services => services.AddEventGridPublisher(_configuration));
-
-            OldCloudEvent expected = CreateOldCloudEvent();
-
-            await using (var worker = await Worker.StartNewAsync(options))
-            {
-                TestServiceBusEventProducer producer = CreateEventProducer();
-                await using (TestServiceBusEventConsumer consumer = await CreateEventConsumerAsync())
-                {
-                    // Act
-                    await producer.ProduceAsync(expected);
-
-                    // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
-                    Event @event = Assert.Single(eventBatch.Events);
-                    OldCloudEvent actual = @event.AsCloudEvent();
-                    
+                    CloudEvent actual = consumer.Consume(expected.Id);
                     AssertCloudEvent(expected, actual);
                 }
             }
@@ -133,41 +98,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                         await producer.ProduceAsync(expected);
 
                         // Assert
-                        CloudEvent actual = consumer.ConsumeCloudEvent(expected.Id);
-                        AssertCloudEvent(expected, actual);
-                    }
-                }
-            }
-        }
-
-        [Fact]
-        public async Task CloudEventsBackgroundJobOnNamespaceUsingManagedIdentity_ReceivesOldCloudEvents_ProcessesCorrectly()
-        {
-            // Arrange
-            ServicePrincipal servicePrincipal = _configuration.GetServicePrincipal();
-            AzureEnvironment environment = _configuration.GetAzureEnvironment();
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, environment.TenantId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, servicePrincipal.ClientId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, servicePrincipal.ClientSecret))
-            {
-                var options = new WorkerOptions();
-                ConfigureCloudEventsBackgroundJobOnNamespaceUsingManagedIdentity<OldCloudEventToEventGridAzureServiceBusMessageHandler, OldCloudEvent>(options)
-                    .ConfigureServices(services => services.AddEventGridPublisher(_configuration));
-
-                OldCloudEvent expected = CreateOldCloudEvent();
-
-                await using (var worker = await Worker.StartNewAsync(options))
-                {
-                    TestServiceBusEventProducer producer = CreateEventProducer();
-                    await using (TestServiceBusEventConsumer consumer = await CreateEventConsumerAsync())
-                    {
-                        // Act
-                        await producer.ProduceAsync(expected);
-
-                        // Assert
-                        EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
-                        Event @event = Assert.Single(eventBatch.Events);
-                        OldCloudEvent actual = @event.AsCloudEvent();
+                        CloudEvent actual = consumer.Consume(expected.Id);
                         AssertCloudEvent(expected, actual);
                     }
                 }
@@ -195,13 +126,16 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                                topicName: properties.EntityPath,
                                subscriptionNamePrefix: "Test-",
                                serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey,
-                               opt => opt.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
+                               opt => opt.Routing.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
                            .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
                    });
 
             var operationId = $"operation-{Guid.NewGuid()}";
             OrderV2 order = OrderGenerator.GenerateOrderV2();
-            ServiceBusMessage message = order.AsServiceBusMessage(operationId: operationId);
+            ServiceBusMessage message = 
+                ServiceBusMessageBuilder.CreateForBody(order)
+                                        .WithOperationId(operationId)
+                                        .Build();
 
             await using (var worker = await Worker.StartNewAsync(options))
             {
@@ -212,10 +146,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     await producer.ProduceAsync(message);
 
                     // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume(operationId);
-                    Event @event = Assert.Single(eventBatch.Events);
+                    CloudEvent @event = consumer.Consume(operationId);
+                    Assert.NotNull(@event.Data);
 
-                    var orderCreatedEventData = @event.GetPayload<OrderCreatedEventData>();
+                    var orderCreatedEventData = @event.Data.ToObjectFromJson<OrderCreatedEventData>();
                     Assert.NotNull(orderCreatedEventData);
                     Assert.NotNull(orderCreatedEventData.CorrelationInfo);
                     Assert.Equal(order.Id, orderCreatedEventData.Id);
@@ -279,34 +213,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     await producer.ProduceAsync(expected);
 
                     // Assert
-                    CloudEvent actual = consumer.ConsumeCloudEvent(expected.Id);
-                    AssertCloudEvent(expected, actual);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task CloudEventsBackgroundJobOnTopic_ReceivesOldCloudEvents_ProcessesCorrectly()
-        {
-            // Arrange
-            var options = new WorkerOptions();
-            ConfigureCloudEventsBackgroundJobOnTopic<OldCloudEventToEventGridAzureServiceBusMessageHandler, OldCloudEvent>(options)
-                .ConfigureServices(services => services.AddEventGridPublisher(_configuration));
-
-            OldCloudEvent expected = CreateOldCloudEvent();
-
-            await using (var worker = await Worker.StartNewAsync(options))
-            {
-                TestServiceBusEventProducer producer = CreateEventProducer();
-                await using (TestServiceBusEventConsumer consumer = await CreateEventConsumerAsync())
-                {
-                    // Act
-                    await producer.ProduceAsync(expected);
-
-                    // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume(expected.Id);
-                    Event @event = Assert.Single(eventBatch.Events);
-                    OldCloudEvent actual = @event.AsCloudEvent();
+                    CloudEvent actual = consumer.Consume(expected.Id);
                     AssertCloudEvent(expected, actual);
                 }
             }
@@ -328,13 +235,20 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        services.AddCloudEventBackgroundJob(
                                    subscriptionNamePrefix: "Test-",
                                    serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
-                                   opt => opt.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore)
+                                   opt =>
+                                   {
+                                       opt.TopicSubscription = TopicSubscription.Automatic;
+                                       opt.Routing.Deserialization.AdditionalMembers = AdditionalMemberHandling.Ignore;
+                                   })
                                .WithServiceBusMessageHandler<OrdersV2AzureServiceBusMessageHandler, OrderV2>();
                    });
 
             var operationId = $"operation-{Guid.NewGuid()}";
             OrderV2 order = OrderGenerator.GenerateOrderV2();
-            ServiceBusMessage message = order.AsServiceBusMessage(operationId: operationId);
+            ServiceBusMessage message = 
+                ServiceBusMessageBuilder.CreateForBody(order)
+                                        .WithOperationId(operationId)
+                                        .Build();
 
             // Act
             await using (var worker = await Worker.StartNewAsync(options))
@@ -346,10 +260,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                     await producer.ProduceAsync(message);
 
                     // Assert
-                    EventBatch<Event> eventBatch = consumer.Consume(operationId);
-                    Event @event = Assert.Single(eventBatch.Events);
+                    CloudEvent @event = consumer.Consume(operationId);
+                    Assert.NotNull(@event.Data);
 
-                    var orderCreatedEventData = @event.GetPayload<OrderCreatedEventData>();
+                    var orderCreatedEventData = @event.Data.ToObjectFromJson<OrderCreatedEventData>();
                     Assert.NotNull(orderCreatedEventData);
                     Assert.NotNull(orderCreatedEventData.CorrelationInfo);
                     Assert.Equal(order.Id, orderCreatedEventData.Id);
@@ -414,16 +328,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
             Assert.Equal(expectedData.ClientRequestId, actualData.ClientRequestId);
         }
 
-        private static void AssertCloudEvent(OldCloudEvent expected, OldCloudEvent actual)
-        {
-            Assert.Equal(expected.Id, actual.Id);
-
-            var expectedData = expected.GetPayload<StorageBlobCreatedEventData>();
-            var actualData = actual.GetPayload<StorageBlobCreatedEventData>();
-            Assert.Equal(expectedData.Api, actualData.Api);
-            Assert.Equal(expectedData.ClientRequestId, actualData.ClientRequestId);
-        }
-
         private WorkerOptions ConfigureCloudEventsBackgroundJobOnTopic<TMessageHandler, TMessage>(WorkerOptions options) 
             where TMessageHandler : class, IAzureServiceBusMessageHandler<TMessage> 
             where TMessage : class
@@ -434,7 +338,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                    {
                        services.AddCloudEventBackgroundJob(
                                    subscriptionNamePrefix: "Test-",
-                                   serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey)
+                                   serviceBusTopicConnectionStringSecretKey: TopicConnectionStringSecretKey,
+                                   opt => opt.TopicSubscription = TopicSubscription.Automatic)
                                .WithServiceBusMessageHandler<TMessageHandler, TMessage>();
                    });
 
@@ -455,7 +360,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        services.AddCloudEventBackgroundJobUsingManagedIdentity(
                                    topicName: properties.EntityPath, 
                                    subscriptionNamePrefix: "Test-", 
-                                   serviceBusNamespace: properties.FullyQualifiedNamespace)
+                                   serviceBusNamespace: properties.FullyQualifiedNamespace,
+                                   configureBackgroundJob: opt => opt.TopicSubscription = TopicSubscription.Automatic)
                                .WithServiceBusMessageHandler<TMessageHandler, TMessage>();
                    });
 
@@ -476,7 +382,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                        services.AddCloudEventBackgroundJob(
                                    topicName: properties.EntityPath,
                                    subscriptionNamePrefix: "Test-",
-                                   serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey)
+                                   serviceBusNamespaceConnectionStringSecretKey: NamespaceConnectionStringSecretKey,
+                                   opt => opt.TopicSubscription = TopicSubscription.Automatic)
                                .WithServiceBusMessageHandler<TMessageHandler, TMessage>();
                    });
 
@@ -490,36 +397,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.CloudEvents
                 host.ConfigureAppConfiguration(context => context.AddConfiguration(_configuration))
                     .ConfigureSecretStore((config, stores) => stores.AddConfiguration(config));
             });
-        }
-
-        private static OldCloudEvent CreateOldCloudEvent()
-        {
-            var cloudEvent = new OldCloudEvent(
-                specVersion: CloudEventsSpecVersion.V1_0,
-                type: "Microsoft.Storage.BlobCreated",
-                source: new Uri(
-                    "/subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.Storage/storageAccounts/{storage-account}#blobServices/default/containers/{storage-container}/blobs/{new-file}",
-                    UriKind.Relative),
-                id: "173d9985-401e-0075-2497-de268c06ff25",
-                time: DateTime.UtcNow)
-            {
-                Data = new StorageBlobCreatedEventData(
-                    api: "PutBlockList",
-                    clientRequestId: "6d79dbfb-0e37-4fc4-981f-442c9ca65760",
-                    requestId: "831e1650-001e-001b-66ab-eeb76e000000",
-                    eTag: "0x8D4BCC2E4835CD0",
-                    contentType: "application/octet-stream",
-                    contentLength: 524288,
-                    blobType: "BlockBlob",
-                    url: "https://oc2d2817345i60006.blob.core.windows.net/oc2d2817345i200097container/oc2d2817345i20002296blob",
-                    sequencer: "00000000000004420000000000028963",
-                    storageDiagnostics: new
-                    {
-                        batchId = "b68529f3-68cd-4744-baa4-3c0498ec19f0"
-                    })
-            };
-
-            return cloudEvent;
         }
 
         private static CloudEvent CreateCloudEvent()

@@ -34,7 +34,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus
             _environment = environment;
             _servicePrincipal = servicePrincipal;
             _rotationConfig = rotationConfig;
-            _logger = logger ?? NullLogger.Instance;
+            _logger = NullLogger.Instance;
         }
 
         /// <summary>

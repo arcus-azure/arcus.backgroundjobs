@@ -1,9 +1,14 @@
 ﻿using System;
-using Arcus.EventGrid.Publishing;
-using Arcus.EventGrid.Publishing.Interfaces;
+using Arcus.BackgroundJobs.Tests.Integration.Fixture.ServiceBus;
+using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
+using Arcus.Messaging.Pumps.ServiceBus;
+using Azure.Messaging.EventGrid;
 using GuardNet;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
@@ -15,7 +20,7 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
     public static class IServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds an <see cref="IEventGridPublisher"/> instance to the current <paramref name="services"/>' services.
+        /// Adds an <see cref="EventGridPublisherClient"/> instance to the current <paramref name="services"/>.
         /// </summary>
         /// <param name="services">The available application services to configure a test <see cref="Worker"/>.</param>
         /// <param name="config">The current configuration for the integration test.</param>
@@ -25,21 +30,38 @@ namespace Arcus.BackgroundJobs.Tests.Integration.Hosting
             Guard.NotNull(services, nameof(services), "Requires a set of worker options to add the Azure EventGrid publisher");
             Guard.NotNull(config, nameof(config), "Requires a test configuration instance to configure the Azure EventGrid publisher");
 
-            services.AddTransient(serviceProvider =>
+            string secretName = "EventGridAuthKey";
+            var topicEndpointSecret = config.GetRequiredValue<string>("Arcus:Infra:EventGrid:AuthKey");
+            services.AddSecretStore(stores => stores.AddInMemory(secretName, topicEndpointSecret));
+
+            services.AddAzureClients(clients =>
             {
                 var topicEndpoint = config.GetRequiredValue<string>("Arcus:Infra:EventGrid:TopicUri");
-                var topicEndpointSecret = config.GetRequiredValue<string>("Arcus:Infra:EventGrid:AuthKey");
-
-                IEventGridPublisher publisher =
-                    EventGridPublisherBuilder
-                        .ForTopic(topicEndpoint)
-                        .UsingAuthenticationKey(topicEndpointSecret)
-                        .Build();
-
-                return publisher;
+                clients.AddEventGridPublisherClient(topicEndpoint, secretName);
             });
 
             return services;
+        }
+
+        /// <summary>
+        /// Adds an <see cref="TestSpyRestartServiceBusMessagePump"/> instance to the current <paramref name="services"/>.
+        /// </summary>
+        /// <param name="services">The available application services to configure a test <see cref="Worker"/>.</param>
+        public static ServiceBusMessageHandlerCollection AddTestSpyServiceBusMessagePump(this IServiceCollection services)
+        {
+            Guard.NotNull(services, nameof(services));
+
+            string jobId = Guid.NewGuid().ToString();
+            services.AddMessagePump(provider =>
+            {
+                return new TestSpyRestartServiceBusMessagePump(jobId, provider.GetService<ILogger<AzureServiceBusMessagePump>>());
+            });
+            var collection = new ServiceBusMessageHandlerCollection(services)
+            {
+                JobId = jobId
+            };
+
+            return collection;
         }
     }
 }

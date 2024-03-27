@@ -66,7 +66,7 @@ namespace Arcus.BackgroundJobs.Databricks.Extensions
                     }
                 }
 
-                logger.LogMetric(metricName, value: 1, context: startContext);
+                logger.LogCustomMetric(metricName, value: 1, context: startContext);
             }
         }
     }

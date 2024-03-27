@@ -4,8 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Messaging.EventGrid; 
-using Arcus.EventGrid.Publishing.Interfaces; 
-using CloudNative.CloudEvents;
 using CronScheduler.Extensions.Scheduler;
 using GuardNet;
 using Microsoft.Extensions.Logging;
@@ -21,7 +19,6 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
     {
         private readonly ClientSecretExpirationJobSchedulerOptions _options;
         private readonly EventGridPublisherClient _publisherClient;
-        private readonly IEventGridPublisher _eventGridPublisher; 
         private readonly ILogger<ClientSecretExpirationJob> _logger;
 
         /// <summary>
@@ -43,33 +40,6 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
             _publisherClient = publisherClient;
             _logger = logger;
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ClientSecretExpirationJob"/> class.
-        /// </summary>
-        /// <param name="options">The options to configure the job to query Azure Active Directory.</param>
-        /// <param name="eventGridPublisher">The Event Grid Publisher which will be used to send the events to Azure Event Grid.</param>
-        /// <param name="logger">The logger instance to to write telemetry to.</param>
-        /// <exception cref="ArgumentNullException">
-        ///     Thrown when the <paramref name="options"/>, <paramref name="eventGridPublisher"/>, <paramref name="logger"/> is <c>null</c>
-        ///     or the <see cref="IOptionsMonitor{TOptions}.Get"/> on the  <paramref name="options"/> returns <c>null</c>.
-        /// </exception>
-        [Obsolete("Use the constructor overload with the Microsoft " + nameof(EventGridPublisherClient) + " instead")]
-        public ClientSecretExpirationJob(
-            IOptionsMonitor<ClientSecretExpirationJobSchedulerOptions> options,
-            IEventGridPublisher eventGridPublisher,
-            ILogger<ClientSecretExpirationJob> logger)
-        {
-            Guard.NotNull(options, nameof(options));
-            Guard.NotNull(eventGridPublisher, nameof(eventGridPublisher));
-            Guard.NotNull(logger, nameof(logger));
-
-            ClientSecretExpirationJobSchedulerOptions value = options.Get(Name);
-            Guard.NotNull(options, nameof(options), "Requires a registered options instance for this background job");
-
-            _options = value;
-            _eventGridPublisher = eventGridPublisher;
-            _logger = logger;
-        }
 
         /// <summary>
         /// The name of the executing job.
@@ -82,13 +52,13 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
         /// This method is called when the <see cref="T:Microsoft.Extensions.Hosting.IHostedService" /> starts. The implementation should return a task that represents
         /// the lifetime of the long running operation(s) being performed.
         /// </summary>
-        /// <param name="stoppingToken">
+        /// <param name="cancellationToken">
         ///     Triggered when <see cref="M:Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)" /> is called.
         /// </param>
         /// <returns>
         ///     A <see cref="T:System.Threading.Tasks.Task" /> that represents the long running operations.
         /// </returns>
-        public async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -103,6 +73,7 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
 
                     await PublishPotentialSecretEventAsync(application, eventType);
                 }
+
                 _logger.LogTrace("Executing {Name} finished", Name);
             }
             catch (Exception exception)
@@ -162,21 +133,8 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
 
         private async Task PublishPotentialSecretEventAsync(AzureApplication application, ClientSecretExpirationEventType eventType)
         {
-            if (_publisherClient != null)
-            {
-                Azure.Messaging.CloudEvent @event = _options.UserOptions.CreateCloudEvent(application, eventType);
-                await _publisherClient.SendEventAsync(@event);
-            } 
-            else if (_eventGridPublisher != null)
-            {
-                CloudEvent @event = _options.UserOptions.CreateEvent(application, eventType);
-                await _eventGridPublisher.PublishAsync(@event);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"Cannot determine EventGrid publisher instance, either use the Microsoft {nameof(EventGridPublisherClient)} or the deprecated Arcus {nameof(IEventGridPublisher)} when initializing this background job");
-            }
+            Azure.Messaging.CloudEvent @event = _options.UserOptions.CreateCloudEvent(application, eventType);
+            await _publisherClient.SendEventAsync(@event);
         }
     }
 }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Arcus.EventGrid.Publishing;
-using Arcus.EventGrid.Publishing.Interfaces;
-using Arcus.Security.Core;
 using CronScheduler.Extensions.Scheduler;
 using GuardNet;
 

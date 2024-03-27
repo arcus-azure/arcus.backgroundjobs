@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CloudNative.CloudEvents;
+using Azure.Messaging;
 using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
+using Microsoft.Graph.Models;
 
 namespace Arcus.BackgroundJobs.AzureActiveDirectory
 {
@@ -43,12 +44,12 @@ namespace Arcus.BackgroundJobs.AzureActiveDirectory
             Guard.NotLessThan(expirationThresholdInDays, 0, nameof(expirationThresholdInDays), "Requires an expiration threshold in maximum remaining days the secrets are allowed to stay active");
 
             var applicationsList = new List<AzureApplication>();
-            IGraphServiceApplicationsCollectionPage applications = await _graphServiceClient.Applications.Request().GetAsync();
-            Application[] applicationsWithSecrets = applications.Where(app => app.PasswordCredentials?.Any() is true).ToArray();
+            ApplicationCollectionResponse applications = await _graphServiceClient.Applications.GetAsync();
+            Application[] applicationsWithSecrets = applications?.Value?.Where(app => app.PasswordCredentials?.Any() is true).ToArray() ?? Array.Empty<Application>();
 
             foreach (Application application in applicationsWithSecrets)
             {
-                foreach (PasswordCredential passwordCredential in application.PasswordCredentials)
+                foreach (PasswordCredential passwordCredential in application.PasswordCredentials ?? Enumerable.Empty<PasswordCredential>())
                 {
                     string applicationName = application.DisplayName;
                     Guid? keyId = passwordCredential.KeyId;
