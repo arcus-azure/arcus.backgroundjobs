@@ -6,10 +6,7 @@ using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.Testing.Logging;
 using CloudNative.CloudEvents;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -36,77 +33,52 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory
         public async Task CheckPotentialExpiredClientSecretsInAzureActiveDirectory_WithExpiredSecrets_PublishEventsViaMicrosoftEventGridPublisherClient()
         {
             // Arrange
-            var authKeyName = "EventGrid.AuthKey";
-            var topicEndpoint = _config.GetRequiredValue<string>("Arcus:Infra:EventGrid:TopicUri");
-            var topicEndpointSecret = _config.GetRequiredValue<string>("Arcus:Infra:EventGrid:AuthKey");
-
-            // Act / Assert
-            await TestEventPublishingOfPotentialExpiredClientSecretsAsync(services =>
-            {
-                services.AddCorrelation();
-                services.AddSecretStore(stores => stores.AddInMemory(authKeyName, topicEndpointSecret));
-                services.AddAzureClients(clients =>
-                {
-                    clients.AddEventGridPublisherClient(topicEndpoint, authKeyName);
-                });
-            });
-        }
-
-        [Fact]
-        public async Task CheckPotentialExpiredClientSecretsInAzureActiveDirectory_WithExpiredSecrets_PublishEventsViaArcusEventGridPublisher()
-        {
-            await TestEventPublishingOfPotentialExpiredClientSecretsAsync(services =>
-            {
-                services.AddEventGridPublisher(_config);
-            });
-        }
-
-        private async Task TestEventPublishingOfPotentialExpiredClientSecretsAsync(
-            Action<IServiceCollection> configureServices)
-        {
-             // Arrange
-            int expirationThreshold = 14;
             AzureActiveDirectoryConfig activeDirectoryConfig = _config.GetActiveDirectoryConfig();
+            using var connection = TemporaryManagedIdentityConnection.Create(activeDirectoryConfig);
 
-            // Act
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, activeDirectoryConfig.TenantId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, activeDirectoryConfig.ServicePrincipal.ClientId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, activeDirectoryConfig.ServicePrincipal.ClientSecret))
-            {
-                var options = new WorkerOptions();
-                options.ConfigureLogging(_logger)
-                       .ConfigureServices(services =>
+            int expirationThreshold = 14;
+            var options = new WorkerOptions();
+            options.ConfigureLogging(_logger)
+                   .ConfigureServices(services =>
+                   {
+                       services.AddClientSecretExpirationJob(opt =>
                        {
-                           services.AddEventGridPublisher(_config);
-                           services.AddClientSecretExpirationJob(opt =>
-                           {
-                               opt.RunImmediately = true;
-                               opt.ExpirationThreshold = expirationThreshold;
-                               opt.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
-                           });
+                           opt.RunImmediately = true;
+                           opt.ExpirationThreshold = expirationThreshold;
+                           opt.EventUri = new Uri("https://github.com/arcus-azure/arcus.backgroundjobs");
                        });
 
-                await using (var worker = await Worker.StartNewAsync(options))
-                {
-                    await using (var consumer = await TestServiceBusEventConsumer.StartNewAsync(_config, _logger))
-                    {
-                        // Assert
-                        CloudEvent cloudEvent = consumer.Consume();
-                        Assert.NotNull(cloudEvent.Id);
-                        Assert.True(Enum.TryParse(cloudEvent.Type, out ClientSecretExpirationEventType eventType),
-                            $"Event should have either '{ClientSecretExpirationEventType.ClientSecretAboutToExpire}' or '{ClientSecretExpirationEventType.ClientSecretExpired}' as event type");
+                       services.AddCorrelation();
+                       services.AddEventGridPublisher(_config);
+                   });
 
-                        var data = cloudEvent.GetPayload<AzureApplication>();
-                        Assert.IsType<Guid>(data.KeyId);
+            await using var consumer = await TestServiceBusEventConsumer.StartNewAsync(_config, _logger);
+            
+            // Act
+            await using var worker = await Worker.StartNewAsync(options);
 
-                        bool isAboutToExpire = eventType == ClientSecretExpirationEventType.ClientSecretAboutToExpire;
-                        bool isExpired = eventType == ClientSecretExpirationEventType.ClientSecretExpired;
+            // Assert
+            CloudEvent cloudEvent = consumer.Consume();
+            AssertCloudSecretExpirationEvent(cloudEvent, expirationThreshold);
+        }
 
-                        Assert.True(isAboutToExpire == (data.RemainingValidDays > 0 && data.RemainingValidDays < expirationThreshold), $"Remaining days should be between 1-{expirationThreshold - 1} when the secret is about to expire");
-                        Assert.True(isExpired == data.RemainingValidDays < 0, "Remaining days should be negative when the secret is expired");
-                    }
-                }
-            }
+        private static void AssertCloudSecretExpirationEvent(CloudEvent cloudEvent, int expirationThreshold)
+        {
+            Assert.NotNull(cloudEvent.Id);
+            Assert.True(Enum.TryParse(cloudEvent.Type, out ClientSecretExpirationEventType eventType),
+                $"Event should have either '{ClientSecretExpirationEventType.ClientSecretAboutToExpire}' or '{ClientSecretExpirationEventType.ClientSecretExpired}' as event type");
+
+            var data = cloudEvent.GetPayload<AzureApplication>();
+            Assert.IsType<Guid>(data.KeyId);
+
+            bool isAboutToExpire = eventType == ClientSecretExpirationEventType.ClientSecretAboutToExpire;
+            bool isExpired = eventType == ClientSecretExpirationEventType.ClientSecretExpired;
+
+            Assert.True(isAboutToExpire == (data.RemainingValidDays > 0 && data.RemainingValidDays < expirationThreshold),
+                $"Remaining days should be between 1-{expirationThreshold - 1} when the secret is about to expire");
+            
+            Assert.True(isExpired == data.RemainingValidDays < 0,
+                "Remaining days should be negative when the secret is expired");
         }
     }
 }
