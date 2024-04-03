@@ -3,9 +3,12 @@ using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.AppConfiguration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
+using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Testing.Logging;
+using Azure;
 using Azure.Data.AppConfiguration;
 using Azure.Messaging.ServiceBus;
+using Bogus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +21,8 @@ using Xunit.Sdk;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
 {
+    public enum AuthType { ConnectionString, ManagedIdentity }
+
     [Trait("Category", "Integration")]
     [Collection(TestCollections.Integration)]
     public class AutoRefreshAppConfigurationBackgroundJobTests
@@ -25,7 +30,10 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
         private readonly ILogger _logger;
         private readonly TestConfig _testConfiguration;
         
-        private const string ServiceBusTopicConnectionStringSecretKey = "Arcus.AppConfiguration.ServiceBusConnectionStringWithKey";
+        private const string ServiceBusTopicConnectionStringSecretKey = "Arcus.AppConfiguration.ServiceBusConnectionStringWithKey",
+                             TopicSubscriptionNamePrefix = "TestSub";
+
+        private static readonly Faker Bogus = new();
         
         /// <summary>
         /// Initializes a new instance of the <see cref="AutoRefreshAppConfigurationBackgroundJobTests" /> class.
@@ -34,357 +42,230 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
         {
             _logger = new XunitTestLogger(outputWriter);
             _testConfiguration = TestConfig.Create();
+            TopicConnectionString = ServiceBusConnectionStringProperties.Parse(AppConfig.ServiceBusTopicConnectionString);
         }
 
-        private AppTestConfiguration AppConfiguration => _testConfiguration.GetAppConfiguration();
-        private ConfigurationClient AppConfigurationClient => new ConfigurationClient(AppConfiguration.ConnectionString);
+        private AppTestConfiguration AppConfig => _testConfiguration.GetAppConfiguration();
+        private ConfigurationClient AppConfigClient => new(AppConfig.ConnectionString);
+        private ServiceBusConnectionStringProperties TopicConnectionString { get; }
+        private string ConfigKey { get; } = $"Key-{Bogus.Lorem.Word()}";
+        private string ConfigValue { get; } = $"Value-{Bogus.Lorem.Word()}";
+        private string ConfigUpdatedValue { get; } = $"Updated-{Bogus.Lorem.Word()}";
 
-        [Fact]
-        public async Task AutoAppConfigurationRefreshUsingManagedIdentity_WithModifiedKeyValue_UpdatesConfiguration()
+        [Theory]
+        [InlineData(AuthType.ConnectionString)]
+        [InlineData(AuthType.ManagedIdentity)]
+        public async Task AutoAppConfigurationRefresh_WithModifiedKeyValue_UpdatesConfiguration(AuthType authentication)
         {
             // Arrange
-            const string key = "ArcusKey", value = "ArcusValue", updatedValue = "ArcusUpdatedValue";
-            await AppConfigurationClient.SetConfigurationSettingAsync(key, value);
+            await SetConfigSettingAsync(ConfigKey, ConfigValue);
 
-            ServicePrincipal servicePrincipal = _testConfiguration.GetServicePrincipal();
-            AzureEnvironment environment = _testConfiguration.GetAzureEnvironment();
+            using IDisposable connection = EnsureRemoteAuthenticationForType(authentication);
+            await using Worker worker = await CreateJobOnKeyAsync(ConfigKey, authentication);
+            
+            Assert.Equal(ConfigValue, GetConfigValue(worker, ConfigKey));
 
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, environment.TenantId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, servicePrincipal.ClientId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, servicePrincipal.ClientSecret))
-            {
-                var properties = ServiceBusConnectionStringProperties.Parse(AppConfiguration.ServiceBusTopicConnectionString);
-                var options = new WorkerOptions();
-                options.ConfigureAppConfiguration(configBuilder =>
-                       {
-                           configBuilder.AddAzureAppConfiguration(opt =>
-                           {
-                               opt.Connect(AppConfiguration.ConnectionString)
-                                  .ConfigureRefresh(refresh => refresh.Register(key));
-                           });
-                       })
-                       .ConfigureLogging(_logger)
-                       .ConfigureServices(services =>
-                       {
-                           services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfiguration.ServiceBusTopicConnectionString))
-                                   .AddAutoRefreshAppConfigurationBackgroundJobUsingManagedIdentity(properties.EntityPath, "TestSub", properties.FullyQualifiedNamespace);
-                       });
+            // Act
+            await SetConfigSettingAsync(ConfigKey, ConfigUpdatedValue);
 
-                await using (var worker = await Worker.StartNewAsync(options))
-                {
-                    var workerConfiguration = worker.ServiceProvider.GetRequiredService<IConfiguration>();
-                    Assert.Equal(value, workerConfiguration.GetValue<string>(key));
-
-                    // Act
-                    await AppConfigurationClient.SetConfigurationSettingAsync(key, updatedValue);
-
-                    // Assert
-                    RetryAssertion(() => Assert.Equal(updatedValue, workerConfiguration.GetValue<string>(key)));
-                } 
-            }
+            // Assert
+            RetryAssertion(() => Assert.Equal(ConfigUpdatedValue, GetConfigValue(worker, ConfigKey)));
         }
 
-        [Fact]
-        public async Task AutoAppConfigurationRefreshUsingManagedIdentity_WithDeletedKeyValue_UpdatesConfiguration()
+        [Theory]
+        [InlineData(AuthType.ConnectionString)]
+        [InlineData(AuthType.ManagedIdentity)]
+        public async Task AutoAppConfigurationRefresh_WithDeletedKeyValue_UpdatesConfiguration(AuthType authentication)
         {
             // Arrange
-            const string key = "ArcusKey", value = "ArcusValue";
-            await AppConfigurationClient.SetConfigurationSettingAsync(key, value);
+            await SetConfigSettingAsync(ConfigKey, ConfigValue);
 
-            ServicePrincipal servicePrincipal = _testConfiguration.GetServicePrincipal();
-            AzureEnvironment environment = _testConfiguration.GetAzureEnvironment();
+            using IDisposable connection = EnsureRemoteAuthenticationForType(authentication);
+            await using Worker worker = await CreateJobOnKeyAsync(ConfigKey, authentication);
+            
+            Assert.Equal(ConfigValue, GetConfigValue(worker, ConfigKey));
 
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, environment.TenantId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, servicePrincipal.ClientId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, servicePrincipal.ClientSecret))
-            {
-                var properties = ServiceBusConnectionStringProperties.Parse(AppConfiguration.ServiceBusTopicConnectionString);
-                var options = new WorkerOptions();
-                options.ConfigureAppConfiguration(configBuilder =>
-                       {
-                           configBuilder.AddAzureAppConfiguration(opt =>
-                           {
-                               opt.Connect(AppConfiguration.ConnectionString)
-                                  .ConfigureRefresh(refresh => refresh.Register(key));
-                           });
-                       })
-                       .ConfigureLogging(_logger)
-                       .ConfigureServices(services =>
-                       {
-                           services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfiguration.ServiceBusTopicConnectionString))
-                                   .AddAutoRefreshAppConfigurationBackgroundJobUsingManagedIdentity(properties.EntityPath, "TestSub", properties.FullyQualifiedNamespace);
-                       });
-
-                await using (var worker = await Worker.StartNewAsync(options))
-                {
-                    var workerConfiguration = worker.ServiceProvider.GetRequiredService<IConfiguration>();
-                    Assert.Equal(value, workerConfiguration.GetValue<string>(key));
-
-                    // Act
-                    await AppConfigurationClient.DeleteConfigurationSettingAsync(key);
+            // Act
+            await DeleteConfigSettingAsync(ConfigKey);
                 
-                    // Assert
-                    RetryAssertion(() => Assert.Null(workerConfiguration.GetValue<string>(key)));
-                } 
-            }
+            // Assert
+            RetryAssertion(() => Assert.Null(GetConfigValue(worker, ConfigKey)));
         }
 
-        [Fact]
-        public async Task AutoAppConfigurationRefresh_WithModifiedKeyValue_UpdatesConfiguration()
+        private string GetConfigValue(Worker worker, string configKey)
         {
-            // Arrange
-            const string key = "ArcusKey", value = "ArcusValue", updatedValue = "ArcusUpdatedValue";
-            await AppConfigurationClient.SetConfigurationSettingAsync(key, value);
+            _logger.LogTrace("Get local app configuration key '{Key}'", configKey);
 
-            var options = new WorkerOptions();
-            options.ConfigureAppConfiguration(configBuilder =>
-                   {
-                       configBuilder.AddAzureAppConfiguration(opt =>
-                       {
-                           opt.Connect(AppConfiguration.ConnectionString)
-                              .ConfigureRefresh(refresh => refresh.Register(key));
-                       });
-                   })
-                   .ConfigureLogging(_logger)
-                   .ConfigureServices(services =>
-                   {
-                       services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfiguration.ServiceBusTopicConnectionString))
-                               .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey);
-                   });
-
-            await using (var worker = await Worker.StartNewAsync(options))
-            {
-                var workerConfiguration = worker.ServiceProvider.GetRequiredService<IConfiguration>();
-                Assert.Equal(value, workerConfiguration.GetValue<string>(key));
-
-                // Act
-                await AppConfigurationClient.SetConfigurationSettingAsync(key, updatedValue);
-                
-                // Assert
-                RetryAssertion(() => Assert.Equal(updatedValue, workerConfiguration.GetValue<string>(key)));
-            }
+            var config = worker.ServiceProvider.GetRequiredService<IConfiguration>();
+            return config.GetValue<string>(configKey);
         }
 
-         [Fact]
-        public async Task AutoAppConfigurationRefresh_WithDeletedKeyValue_UpdatesConfiguration()
+        [Theory]
+        [InlineData(AuthType.ConnectionString)]
+        [InlineData(AuthType.ManagedIdentity)]
+        public async Task AutoAppConfigurationRefresh_WithModifiedFeatureToggle_UpdatesConfiguration(AuthType authentication)
         {
             // Arrange
-            const string key = "ArcusKey", value = "ArcusValue";
-            await AppConfigurationClient.SetConfigurationSettingAsync(key, value);
+            await EnableConfigSettingAsync(ConfigKey);
 
-            var options = new WorkerOptions();
-            options.ConfigureAppConfiguration(configBuilder =>
-                   {
-                       configBuilder.AddAzureAppConfiguration(opt =>
-                       {
-                           opt.Connect(AppConfiguration.ConnectionString)
-                              .ConfigureRefresh(refresh => refresh.Register(key));
-                       });
-                   })
-                   .ConfigureLogging(_logger)
-                   .ConfigureServices(services =>
-                   {
-                       services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfiguration.ServiceBusTopicConnectionString))
-                               .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey);
-                   });
+            using IDisposable connection = EnsureRemoteAuthenticationForType(authentication);
+            await using Worker worker = await CreateJobOnKeyAsync(ConfigKey, authentication);
 
-            await using (var worker = await Worker.StartNewAsync(options))
+            await EnsureFeatureManagerEnabledAsync(worker, ConfigKey);
+
+            // Act
+            await DisableConfigSettingAsync(ConfigKey);
+
+            // Assert
+            await RetryAssertionAsync(async () =>
             {
-                var workerConfiguration = worker.ServiceProvider.GetRequiredService<IConfiguration>();
-                Assert.Equal(value, workerConfiguration.GetValue<string>(key));
-
-                // Act
-                await AppConfigurationClient.DeleteConfigurationSettingAsync(key);
-                
-                // Assert
-               RetryAssertion(() => Assert.Null(workerConfiguration.GetValue<string>(key)));
-            }
+                await EnsureFeatureManagerEnabledAsync(worker, ConfigKey);
+            });
         }
 
-        [Fact]
-        public async Task AutoAppConfigurationRefreshUsingManagedIdentity_WithModifiedFeatureToggle_UpdatesConfiguration()
+        [Theory]
+        [InlineData(AuthType.ConnectionString)]
+        [InlineData(AuthType.ManagedIdentity)]
+        public async Task AutoAppConfigurationRefresh_WithDeletedFeatureToggle_UpdatesConfiguration(AuthType authentication)
         {
             // Arrange
-            const string key = "ArcusFeature";
-            await AppConfigurationClient.SetConfigurationSettingAsync(new FeatureFlagConfigurationSetting(key, isEnabled: true));
+            await EnableConfigSettingAsync(ConfigKey);
 
-            ServicePrincipal servicePrincipal = _testConfiguration.GetServicePrincipal();
-            AzureEnvironment environment = _testConfiguration.GetAzureEnvironment();
+            using IDisposable connection = EnsureRemoteAuthenticationForType(authentication);
+            await using Worker worker = await CreateJobOnKeyAsync(ConfigKey, authentication);
 
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, environment.TenantId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, servicePrincipal.ClientId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, servicePrincipal.ClientSecret))
+            await EnsureFeatureManagerEnabledAsync(worker, ConfigKey);
+
+            // Act
+            await DeleteConfigSettingAsync(ConfigKey);
+
+            // Assert
+            await RetryAssertionAsync(async () =>
             {
-                var properties = ServiceBusConnectionStringProperties.Parse(AppConfiguration.ServiceBusTopicConnectionString);
-                var options = new WorkerOptions();
-                options.ConfigureAppConfiguration(configBuilder =>
-                       {
-                           configBuilder.AddAzureAppConfiguration(opt =>
-                           {
-                               opt.Connect(AppConfiguration.ConnectionString)
-                                  .ConfigureRefresh(refreshOptions => refreshOptions.Register(key))
-                                  .UseFeatureFlags();
-                           });
-                       })
-                       .ConfigureLogging(_logger)
-                       .ConfigureServices(services =>
-                       {
-                           services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfiguration.ServiceBusTopicConnectionString))
-                                   .AddAutoRefreshAppConfigurationBackgroundJobUsingManagedIdentity(properties.EntityPath, "TestSub", properties.FullyQualifiedNamespace)
-                                   .AddFeatureManagement();
-                       });
+                await EnsureFeatureManagerEnabledAsync(worker, ConfigKey);
+            });
+        }
 
-                await using (var worker = await Worker.StartNewAsync(options))
-                {
-                    var featureManager = worker.ServiceProvider.GetRequiredService<IFeatureManager>();
-                    Assert.True(await featureManager.IsEnabledAsync(key));
+        private IDisposable EnsureRemoteAuthenticationForType(AuthType type)
+        {
+            if (type is AuthType.ManagedIdentity)
+            {
+                return TemporaryManagedIdentityConnection.Create(_testConfiguration);
+            }
 
-                    // Act
-                    await AppConfigurationClient.SetConfigurationSettingAsync(new FeatureFlagConfigurationSetting(key, isEnabled: false));
+            return null;
+        }
 
-                    // Assert
-                    await RetryAssertionAsync(async () =>
+        private async Task<Worker> CreateJobOnKeyAsync(string key)
+        {
+            WorkerOptions options = CreateDefaultOptionsOnKey(key);
+            options.ConfigureServices(services =>
+            {
+                services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfig.ServiceBusTopicConnectionString))
+                        .AddAutoRefreshAppConfigurationBackgroundJob(
+                            TopicSubscriptionNamePrefix,
+                            ServiceBusTopicConnectionStringSecretKey,
+                            opt =>
+                            {
+                                opt.TopicSubscription = TopicSubscription.Automatic;
+                            });
+            });
+
+            return await Worker.StartNewAsync(options);
+        }
+
+        private Task<Worker> CreateJobOnKeyAsync(string key, AuthType authentication)
+        {
+            return authentication switch
+            {
+                AuthType.ConnectionString => CreateJobOnKeyAsync(key),
+                AuthType.ManagedIdentity => CreateJobUsingManagedIdentityOnKeyAsync(key),
+                _ => throw new ArgumentOutOfRangeException(nameof(authentication), authentication, "Unknown authentication type")
+            };
+        }
+
+        private async Task<Worker> CreateJobUsingManagedIdentityOnKeyAsync(string key)
+        {
+            WorkerOptions options = CreateDefaultOptionsOnKey(key);
+            options.ConfigureServices(services =>
+            {
+                services.AddAutoRefreshAppConfigurationBackgroundJobUsingManagedIdentity(
+                    TopicConnectionString.EntityPath,
+                    TopicSubscriptionNamePrefix,
+                    TopicConnectionString.FullyQualifiedNamespace,
+                    opt =>
                     {
-                        bool isEnabled = await featureManager.IsEnabledAsync(key);
-                        Assert.False(isEnabled);
+                        opt.TopicSubscription = TopicSubscription.Automatic;
                     });
-                } 
-            }
+            });
+
+            return await Worker.StartNewAsync(options);
         }
 
-         [Fact]
-        public async Task AutoAppConfigurationRefreshUsingManagedIdentity_WithDeletedFeatureToggle_UpdatesConfiguration()
+        private WorkerOptions CreateDefaultOptionsOnKey(string key)
         {
-             // Arrange
-            const string key = "ArcusFeature";
-            await AppConfigurationClient.SetConfigurationSettingAsync(new FeatureFlagConfigurationSetting(key, isEnabled: true));
-
-            ServicePrincipal servicePrincipal = _testConfiguration.GetServicePrincipal();
-            AzureEnvironment environment = _testConfiguration.GetAzureEnvironment();
-
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureTenantId, environment.TenantId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientId, servicePrincipal.ClientId))
-            using (TemporaryEnvironmentVariable.Create(EnvironmentVariables.AzureServicePrincipalClientSecret, servicePrincipal.ClientSecret))
-            {
-                var properties = ServiceBusConnectionStringProperties.Parse(AppConfiguration.ServiceBusTopicConnectionString);
-                var options = new WorkerOptions();
-                options.ConfigureAppConfiguration(configBuilder =>
-                       {
-                           configBuilder.AddAzureAppConfiguration(opt =>
-                           {
-                               opt.Connect(AppConfiguration.ConnectionString)
-                                  .ConfigureRefresh(refreshOptions => refreshOptions.Register(key))
-                                  .UseFeatureFlags();
-                           });
-                       })
-                       .ConfigureLogging(_logger)
-                       .ConfigureServices(services =>
-                       {
-                           services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfiguration.ServiceBusTopicConnectionString))
-                                   .AddAutoRefreshAppConfigurationBackgroundJobUsingManagedIdentity(properties.EntityPath, "TestSub", properties.FullyQualifiedNamespace)
-                                   .AddFeatureManagement();
-                       });
-
-                await using (var worker = await Worker.StartNewAsync(options))
-                {
-                    var featureManager = worker.ServiceProvider.GetRequiredService<IFeatureManager>();
-                    Assert.True(await featureManager.IsEnabledAsync(key));
-
-                    // Act
-                    await AppConfigurationClient.DeleteConfigurationSettingAsync(new FeatureFlagConfigurationSetting(key, isEnabled: false));
-
-                    // Assert
-                    await RetryAssertionAsync(async () =>
-                    {
-                        bool isEnabled = await featureManager.IsEnabledAsync(key);
-                        Assert.False(isEnabled);
-                    });
-                } 
-            }
-        }
-
-        [Fact]
-        public async Task AutoAppConfigurationRefresh_WithModifiedFeatureToggle_UpdatesConfiguration()
-        {
-            // Arrange
-            const string key = "ArcusFeature";
-            await AppConfigurationClient.SetConfigurationSettingAsync(new FeatureFlagConfigurationSetting(key, isEnabled: true));
-
             var options = new WorkerOptions();
             options.ConfigureAppConfiguration(configBuilder =>
-                   {
-                       configBuilder.AddAzureAppConfiguration(opt =>
-                       {
-                           opt.Connect(AppConfiguration.ConnectionString)
-                              .ConfigureRefresh(refreshOptions => refreshOptions.Register(key))
-                              .UseFeatureFlags();
-                       });
-                   })
-                   .ConfigureLogging(_logger)
-                   .ConfigureServices(services =>
-                   {
-                       services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfiguration.ServiceBusTopicConnectionString))
-                               .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey)
-                               .AddFeatureManagement();
-                   });
-
-            await using (var worker = await Worker.StartNewAsync(options))
             {
-                var featureManager = worker.ServiceProvider.GetRequiredService<IFeatureManager>();
-                Assert.True(await featureManager.IsEnabledAsync(key));
-
-                // Act
-                await AppConfigurationClient.SetConfigurationSettingAsync(new FeatureFlagConfigurationSetting(key, isEnabled: false));
-                
-                // Assert
-                await RetryAssertionAsync(async () =>
+                configBuilder.AddAzureAppConfiguration(opt =>
                 {
-                    bool isEnabled = await featureManager.IsEnabledAsync(key);
-                    Assert.False(isEnabled);
+                    opt.Connect(AppConfig.ConnectionString)
+                       .ConfigureRefresh(refresh => refresh.Register(key))
+                       .UseFeatureFlags();
                 });
-            }
+            }).ConfigureLogging(_logger)
+              .ConfigureServices(services => services.AddFeatureManagement());
+
+            return options;
         }
 
-        [Fact]
-        public async Task AutoAppConfigurationRefresh_WithDeletedFeatureToggle_UpdatesConfiguration()
+        private static async Task EnsureFeatureManagerEnabledAsync(Worker worker, string configKey)
         {
-             // Arrange
-            const string key = "ArcusFeature";
-            await AppConfigurationClient.SetConfigurationSettingAsync(new FeatureFlagConfigurationSetting(key, isEnabled: true));
+            var featureManager = worker.ServiceProvider.GetRequiredService<IFeatureManager>();
+            Assert.True(await featureManager.IsEnabledAsync(configKey), "Feature manager should be enabled at this point");
+        }
 
-            var options = new WorkerOptions();
-            options.ConfigureAppConfiguration(configBuilder =>
-                   {
-                       configBuilder.AddAzureAppConfiguration(opt =>
-                       {
-                           opt.Connect(AppConfiguration.ConnectionString)
-                              .ConfigureRefresh(refreshOptions => refreshOptions.Register(key))
-                              .UseFeatureFlags();
-                       });
-                   })
-                   .ConfigureLogging(_logger)
-                   .ConfigureServices(services =>
-                   {
-                       services.AddSecretStore(stores => stores.AddInMemory(ServiceBusTopicConnectionStringSecretKey, AppConfiguration.ServiceBusTopicConnectionString))
-                               .AddAutoRefreshAppConfigurationBackgroundJob("TestSub", ServiceBusTopicConnectionStringSecretKey)
-                               .AddFeatureManagement();
-                   });
+        private async Task SetConfigSettingAsync(string configKey, string configValue)
+        {
+            _logger.LogTrace("Set remote app configuration key '{Key}'='{Value}'", configKey, configValue);
 
-            await using (var worker = await Worker.StartNewAsync(options))
-            {
-                var featureManager = worker.ServiceProvider.GetRequiredService<IFeatureManager>();
-                Assert.True(await featureManager.IsEnabledAsync(key));
+            Response<ConfigurationSetting> response = await AppConfigClient.SetConfigurationSettingAsync(configKey, configValue);
+            using Response raw = response.GetRawResponse();
+            Assert.False(raw.IsError, $"HTTP {raw.Status} {raw.ReasonPhrase}: {raw.Content}");
+        }
 
-                // Act
-                await AppConfigurationClient.DeleteConfigurationSettingAsync(new FeatureFlagConfigurationSetting(key, isEnabled: false));
-                
-                // Assert
-                await RetryAssertionAsync(async () =>
-                {
-                    bool isEnabled = await featureManager.IsEnabledAsync(key);
-                    Assert.False(isEnabled);
-                });
-            }
+        private async Task EnableConfigSettingAsync(string configKey)
+        {
+            _logger.LogTrace("Enable remote app configuration key '{Key}'", configKey);
+
+            Response<ConfigurationSetting> response = await AppConfigClient.SetConfigurationSettingAsync(new FeatureFlagConfigurationSetting(configKey, isEnabled: true));
+            using Response raw = response.GetRawResponse();
+            Assert.False(raw.IsError, $"HTTP {raw.Status} {raw.ReasonPhrase}: {raw.Content}");
+        }
+
+        private async Task DisableConfigSettingAsync(string configKey)
+        {
+            _logger.LogTrace("Disable remote app configuration key '{Key}'", configKey);
+
+            Response<ConfigurationSetting> response = await AppConfigClient.SetConfigurationSettingAsync(new FeatureFlagConfigurationSetting(configKey, isEnabled: false));
+            using Response raw = response.GetRawResponse();
+            Assert.False(raw.IsError, $"HTTP {raw.Status} {raw.ReasonPhrase}: {raw.Content}");
+        }
+
+        private async Task DeleteConfigSettingAsync(string configKey)
+        {
+            _logger.LogTrace("Delete remote app configuration key '{Key}'", configKey);
+
+            await AppConfigClient.DeleteConfigurationSettingAsync(new FeatureFlagConfigurationSetting(configKey, isEnabled: false));
+            await AppConfigClient.DeleteConfigurationSettingAsync(ConfigKey);
+        }
+
+        private static void RetryAssertion(Action assertion)
+        {
+            Policy.Timeout(TimeSpan.FromSeconds(10))
+                  .Wrap(Policy.Handle<AssertActualExpectedException>()
+                              .WaitAndRetryForever(index => TimeSpan.FromSeconds(1)))
+                  .Execute(assertion);
         }
 
         private static async Task RetryAssertionAsync(Func<Task> assertion)
@@ -393,14 +274,6 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AppConfiguration
                         .WrapAsync(Policy.Handle<AssertActualExpectedException>()
                                          .WaitAndRetryForeverAsync(index => TimeSpan.FromSeconds(1)))
                         .ExecuteAsync(assertion);
-        }
-        
-        private static void RetryAssertion(Action assertion)
-        {
-            Policy.Timeout(TimeSpan.FromSeconds(10))
-                  .Wrap(Policy.Handle<AssertActualExpectedException>()
-                              .WaitAndRetryForever(index => TimeSpan.FromSeconds(1)))
-                  .Execute(assertion);
         }
     }
 }
