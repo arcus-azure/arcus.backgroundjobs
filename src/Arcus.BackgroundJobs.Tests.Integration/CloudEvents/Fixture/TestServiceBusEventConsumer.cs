@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
-using Arcus.EventGrid;
-using Arcus.EventGrid.Contracts;
-using Arcus.EventGrid.Parsers;
 using Arcus.EventGrid.Testing.Infrastructure.Hosts.ServiceBus;
 using Azure.Messaging;
 using GuardNet;
