@@ -8,16 +8,11 @@ using Arcus.Messaging.Abstractions.MessageHandling;
 using Arcus.Messaging.Abstractions.ServiceBus;
 using Arcus.Messaging.Abstractions.ServiceBus.MessageHandling;
 using Arcus.Messaging.Pumps.ServiceBus;
-using CloudNative.CloudEvents;
+using Azure.Messaging;
 using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Rest.Azure;
-#if NET6_0
-using CloudEvent = Azure.Messaging.CloudEvent;
-#else
-using CloudEvent = CloudNative.CloudEvents.CloudEvent;
-#endif
 
 namespace Arcus.BackgroundJobs.KeyVault
 {
@@ -87,11 +82,7 @@ namespace Arcus.BackgroundJobs.KeyVault
 
             _logger.LogTrace("Receiving new Azure Key Vault notification...");
             
-#if NET6_0
             var secretNewVersionCreated = message.Data?.ToObjectFromJson<SecretNewVersionCreated>(); 
-#else
-            var secretNewVersionCreated = message.GetPayload<SecretNewVersionCreated>();
-#endif
             if (secretNewVersionCreated is null)
             {
                 _logger.LogWarning("Azure Key Vault job cannot map Event Grid event to CloudEvent because the event data isn't recognized as a 'SecretNewVersionCreated' schema");
@@ -102,7 +93,7 @@ namespace Arcus.BackgroundJobs.KeyVault
                 {
                     _logger.LogTrace("Received Azure Key vault 'Secret New Version Created' event, restarting target message pump '{JobId}' on entity path '{EntityPath}' in '{Namespace}'", _messagePump.JobId, _messagePump.EntityPath, _messagePump.Namespace);
                     await _messagePump.RestartAsync();
-                    _logger.LogEvent("Message pump restarted", new Dictionary<string, object>
+                    _logger.LogCustomEvent("Message pump restarted", new Dictionary<string, object>
                     {
                         ["JobId"] = _messagePump.JobId,
                         ["EntityPath"] = _messagePump.EntityPath,

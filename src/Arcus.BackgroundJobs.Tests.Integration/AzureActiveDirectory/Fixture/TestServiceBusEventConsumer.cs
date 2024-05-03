@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Arcus.BackgroundJobs.AzureActiveDirectory;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
-using Arcus.EventGrid;
-using Arcus.EventGrid.Contracts;
 using Arcus.EventGrid.Testing.Infrastructure.Hosts.ServiceBus;
 using CloudNative.CloudEvents;
 using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture
 {
@@ -53,8 +48,8 @@ namespace Arcus.BackgroundJobs.Tests.Integration.AzureActiveDirectory.Fixture
         public CloudEvent Consume()
         {
             CloudEvent receivedEvent = _serviceBusEventConsumerHost.GetReceivedEvent(
-                        data => data.Source == new Uri("https://github.com/arcus-azure/arcus.backgroundjobs"),
-                        TimeSpan.FromMinutes(8));
+                data => data.Source == new Uri("https://github.com/arcus-azure/arcus.backgroundjobs"),
+                TimeSpan.FromMinutes(8));
 
             return receivedEvent;
         }

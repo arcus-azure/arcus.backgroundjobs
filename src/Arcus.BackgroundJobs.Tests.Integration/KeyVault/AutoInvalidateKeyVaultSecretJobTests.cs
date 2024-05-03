@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Arcus.BackgroundJobs.Tests.Integration.Fixture;
 using Arcus.BackgroundJobs.Tests.Integration.Hosting;
 using Arcus.BackgroundJobs.Tests.Integration.KeyVault.Fixture;
+using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Arcus.Testing.Logging;
@@ -55,16 +56,19 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                        .ConfigureServices(services =>
                        {
                            services.AddSecretStore(stores => stores.AddProvider(spySecretProvider, configureOptions: null));
-                           services.AddAutoInvalidateKeyVaultSecretUsingManagedIdentityBackgroundJob(properties.EntityPath, "TestSub", properties.FullyQualifiedNamespace);
+                           services.AddAutoInvalidateKeyVaultSecretUsingManagedIdentityBackgroundJob(
+                               properties.EntityPath, 
+                               subscriptionNamePrefix: "TestSub", 
+                               properties.FullyQualifiedNamespace, 
+                               opt => opt.TopicSubscription = TopicSubscription.Automatic);
                        });
 
-                await using (var worker = await Worker.StartNewAsync(options))
+                await using (await Worker.StartNewAsync(options))
                 await using (var tempSecret = await TemporaryAzureKeyVaultSecret.CreateNewAsync(client))
                 {
                     await tempSecret.UpdateSecretAsync(Guid.NewGuid().ToString());
 
                     RetryAssertion(
-                        // ReSharper disable once AccessToDisposedClosure - disposal happens after retry.
                         () => Assert.True(spySecretProvider.IsSecretInvalidated), 
                         timeout: TimeSpan.FromMinutes(8),
                         interval: TimeSpan.FromMilliseconds(500));
@@ -95,18 +99,18 @@ namespace Arcus.BackgroundJobs.Tests.Integration.KeyVault
                                .AddSingleton<ICachedSecretProvider>(spySecretProvider)
                                .AddAutoInvalidateKeyVaultSecretBackgroundJob(
                                    subscriptionNamePrefix: "TestSub",
-                                   serviceBusTopicConnectionStringSecretKey: secretKey);
+                                   serviceBusTopicConnectionStringSecretKey: secretKey,
+                                   opt => opt.TopicSubscription = TopicSubscription.Automatic);
                    });
 
             // Act
-            await using (var worker = await Worker.StartNewAsync(options))
+            await using (await Worker.StartNewAsync(options))
             await using (var tempSecret = await TemporaryAzureKeyVaultSecret.CreateNewAsync(client))
             {
                 await tempSecret.UpdateSecretAsync(secretValue);
 
                 // Assert
                 RetryAssertion(
-                    // ReSharper disable once AccessToDisposedClosure - disposal happens after retry.
                     () => Assert.True(spySecretProvider.IsSecretInvalidated), 
                     timeout: TimeSpan.FromMinutes(8),
                     interval: TimeSpan.FromMilliseconds(500));

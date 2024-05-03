@@ -24,7 +24,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
 
             // Assert
             IServiceProvider provider = services.BuildServiceProvider();
-            Assert.NotNull(provider.GetService<IMessageHandler<CloudEvent, AzureServiceBusMessageContext>>());
+            Assert.NotNull(provider.GetService<MessageHandler>());
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace Arcus.BackgroundJobs.Tests.Unit.KeyVault
 
             // Assert
             IServiceProvider provider = services.BuildServiceProvider();
-            Assert.ThrowsAny<InvalidOperationException>(() => provider.GetService<IMessageHandler<CloudEvent, AzureServiceBusMessageContext>>());
+            Assert.ThrowsAny<InvalidOperationException>(() => provider.GetService<MessageHandler>());
         }
 
         [Theory]
