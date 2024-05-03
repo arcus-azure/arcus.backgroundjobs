@@ -31,6 +31,11 @@ stages:
         pool:
           vmImage: '$(Vm.Image)'
         steps:
+          - task: UseDotNet@2
+            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.PreviousVersion))'
+            inputs:
+              packageType: 'sdk'
+              version: '$(DotNet.Sdk.PreviousVersion)'
           - template: build/build-solution.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
@@ -61,6 +66,11 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
+          - task: UseDotNet@2
+            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.PreviousVersion))'
+            inputs:
+              packageType: 'sdk'
+              version: '$(DotNet.Sdk.PreviousVersion)'
           - template: test/run-unit-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
@@ -81,6 +91,11 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
+          - task: UseDotNet@2
+            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.PreviousVersion))'
+            inputs:
+              packageType: 'sdk'
+              version: '$(DotNet.Sdk.PreviousVersion)'
           - template: test/run-integration-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'

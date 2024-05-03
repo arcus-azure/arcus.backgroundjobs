@@ -117,6 +117,16 @@ namespace Arcus.BackgroundJobs.Databricks
         /// </summary>
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+
+        }
+
+        /// <summary>
+        /// Performs an additional custom application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
             _databricksClient?.Dispose();
         }
     }
